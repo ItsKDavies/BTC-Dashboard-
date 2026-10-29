@@ -109,7 +109,7 @@ details summary{list-style:revert}
 body.locked{position:fixed;left:0;right:0;overflow:hidden}
 .subc{height:110px;margin-top:4px;position:relative}
 .subc .lab{position:absolute;left:6px;top:4px;z-index:3;font-size:11.5px;color:var(--fg3);pointer-events:none}
-.ohlc{font-size:12.5px;color:var(--fg2);min-height:18px;margin:2px 0 4px;font-family:var(--mono)}
+.ohlc .nw{font-style:normal;white-space:nowrap}.ohlc{font-size:12.5px;color:var(--fg2);min-height:18px;margin:2px 0 4px;font-family:var(--mono)}
 .chart-msg{padding:40px 10px;text-align:center;color:var(--fg3)}
 /* flow read */
 .flow{display:grid;gap:8px}
@@ -2281,6 +2281,10 @@ class CChart {
     g.fillStyle = C.fg3; g.textAlign = "left";
     for (const [v, y] of yt) if (y > 8 && y < L.mainH - 8 && !placed.some((q) => Math.abs(q.y - y) < 13)) g.fillText(n0(v), L.r + 6, y);
     for (const t of placed) this.tag(g, L, t.y, t.text, t.color, t.solid, t.cross);
+    // countdown to this candle's close, under the live price tag (like TradingView / CoinWise)
+    { const pt = placed.find((t) => t.prio === 1000); if (pt) { const left = Math.max(0, last.t + this.sec - Date.now() / 1000), hh = Math.floor(left / 3600), mm = Math.floor((left % 3600) / 60), ss = Math.floor(left % 60);
+      const txt = (hh ? hh + ":" + String(mm).padStart(2, "0") : mm) + ":" + String(ss).padStart(2, "0"), y = pt.y + 16 > L.mainH - 8 ? pt.y - 16 : pt.y + 16;
+      g.fillStyle = rgba(lc, 0.22); g.fillRect(L.r + 1, y - 7, L.axW - 2, 14); g.fillStyle = lc; g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(txt, L.r + 5, y + 0.5); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
     // time axis
     g.fillStyle = C.bg; g.fillRect(0, L.tTop, this.W, this.H - L.tTop); g.fillStyle = C.fg3; g.textAlign = "center";
     for (const [t, x] of xt) { const d = new Date(t * 1000), lab = step >= 86400 || (d.getHours() === 0 && d.getMinutes() === 0) ? d.toLocaleDateString([], { month: "short", day: "numeric" }) : d.toLocaleTimeString([], { hour: "numeric", minute: step < 3600 ? "2-digit" : undefined }); if (x > 20 && x < L.r - 20) g.fillText(lab, x, L.tTop + 10); }
@@ -2371,6 +2375,15 @@ function myAddBar() {
   el.innerHTML = MYADD ? `<button class="chip" id="bAddLv" style="border-color:var(--my);color:var(--my)">+ Add level ${n0(MYADD)}</button>${n ? `<span class="mut" style="font-size:12px">${n} on chart</span>` : ""}`
     : `<span class="mut" style="font-size:12px">${n ? `${n} of your levels on the chart (pink). ` : ""}Tap the chart, then “+ Add level” to mark a price.</span>`;
 }
+// richer price line: OHLC + change, range, volume, buyer share and net taker delta for the candle under the crosshair (or the live one)
+showOhlc = function (d) {
+  const el = $("#ohlc"); if (!el) return; if (!d) { const k = CC && CC.k.length ? CC.k : D.kl && D.kl.k; d = k && k[k.length - 1]; if (!d) { el.textContent = ""; return; } }
+  const o = d.open ?? d.o, h = d.high ?? d.h, l = d.low ?? d.l, c = d.close ?? d.c, ch = ((c - o) / o) * 100, rg = ((h - l) / l) * 100;
+  const v = d.v, tb = d.tb, buy = ok(v) && v > 0 && ok(tb) ? (tb / v) * 100 : null, dl = ok(v) && ok(tb) ? 2 * tb - v : null;
+  el.innerHTML = `<span>O ${n0(o)} H ${n0(h)} L ${n0(l)} C <span class="${cls(ch)}">${n0(c)} ${pct(ch)}</span></span>` +
+    `<span class="mut"> · <i class="nw">range ${rg.toFixed(2)}%</i>${ok(v) ? ` · <i class="nw">vol ${kfmt(v)} BTC (${usd(v * c)})</i>` : ""}${ok(buy) ? ` · <i class="nw">buy <b class="${buy >= 50 ? "up" : "dn"}">${buy.toFixed(0)}%</b></i>` : ""}${ok(dl) ? ` · <i class="nw">Δ <b class="${cls(dl)}">${sgn(dl, 0)} BTC</b></i>` : ""}</span>`;
+};
+setInterval(() => { if (CC && ST.tab === "overview" && !document.hidden) CC.dirty(); }, 1000);
 function drawMyLevels() { myAddBar();
   const box = $("#myList"); if (!box) return;
   box.innerHTML = MYLV.list.length ? `<div class="mut" style="font-size:12px;margin:6px 0">${MYLV.list.length} levels saved ${MYLV.at ? `on ${new Date(MYLV.at).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}` : ""}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${MYLV.list.map((l, i) => `<span class="chip" style="border-color:var(--my);color:var(--my);display:inline-flex;align-items:center;gap:6px">${esc(l.label)} <b>${n0(l.p)}</b><button data-rmlv="${i}" aria-label="Remove level" style="border:none;background:none;color:inherit;padding:0 2px;font-size:15px;line-height:1">×</button></span>`).join("")}</div>` : `<div class="mut" style="font-size:12.5px;margin-top:6px">No levels saved yet.</div>`;
@@ -2408,7 +2421,7 @@ let CC = null;
 function initChart() {
   const host = $("#cMain"); if (!host || CC) return;
   CC = new CChart(host); CC.colors = chartColors; CC.onView = () => { CH.xKey = null; chartExtras(true); };
-  CC.onCross = (b) => { showOhlc(b ? { o: b.o, h: b.h, l: b.l, c: b.c } : null); if (b && CC.cross && CC.cross.y < CC.layout().mainH) { MYADD = Math.round(CC.P(CC.cross.y)); } myAddBar(); };
+  CC.onCross = (b) => { showOhlc(b || null); if (b && CC.cross && CC.cross.y < CC.layout().mainH) { MYADD = Math.round(CC.P(CC.cross.y)); } myAddBar(); };
   CH.ready = true;
 }
 function resetView() { if (CC) CC.reset(); }
