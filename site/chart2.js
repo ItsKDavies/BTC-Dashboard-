@@ -2,7 +2,7 @@
 /* ===================== Stage 3: own canvas chart engine + new visuals ===================== */
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
 Object.assign(ST, {
-  heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
+  heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), tlN: LS.get("tlN", "more"), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
   lowers: LS.get("lowers", ["bcvd"]), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false,
 });
 
@@ -455,7 +455,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -500,10 +500,38 @@ function drawStructure(L, k, C) {
   const lab = (arr, isHi) => arr.slice(-6).forEach((q, j, s) => { if (!j && arr.length < 7) return; const prev = j ? s[j - 1] : arr[arr.length - 7]; const t = isHi ? (q.p > prev.p ? "HH" : "LH") : q.p > prev.p ? "HL" : "LL", good = t === "HH" || t === "HL";
     L.draw.push({ type: "text", i: q.i, p: q.p, dy: isHi ? -12 : 16, text: t, color: good ? C.up : C.dn, size: 10.5 }); });
   lab(hi, true); lab(lo, false);
-  const line = (arr, color, name) => { if (arr.length < 2) return; const [p1, p2] = arr.slice(-2), m = (p2.p - p1.p) / (p2.i - p1.i || 1), i1 = n + 8;
-    L.draw.push({ type: "seg", i0: p1.i, p0: p1.p, i1, p1: p2.p + m * (i1 - p2.i), color, w: 1.6, dash: [7, 5], glow: true }, { type: "dot", i: p1.i, p: p1.p, color }, { type: "dot", i: p2.i, p: p2.p, color });
-    L.hlines.push({ p: p2.p + m * (n - 1 - p2.i), color, alpha: 0, tag: name, prio: 52 }); };
-  line(hi, C.dn, "Res line"); line(lo, C.up, "Sup line");
+  trendLines(L, k, C);
+}
+// Trendlines: every pair of swing points (minor 3-bar and major 8-bar swings) is a candidate line. A line counts if no candle
+// closed through it between its two anchors; it scores for extra touches, length and recency. Best N per side are drawn,
+// broken ones fade out a few bars after the break.
+function trendLines(L, k, C) {
+  const n = k.length, N = { few: 1, more: 3, max: 5 }[ST.tlN] || 3, W0 = Math.max(0, n - 220), seg = k.slice(W0, -1);
+  const A = TA.atr ? TA.atr(k) : null, at = (A && A[n - 1]) || (k[n - 1].c * 0.004), tol = at * 0.35;
+  const piv = (Lb) => { const { hi, lo } = TA.pivots(seg, Lb, Lb); [hi, lo].forEach((a) => a.forEach((q) => { q.i += W0; q.major = Lb >= 8; })); return { hi, lo }; };
+  const mi = piv(3), ma = piv(8), uniq = (a) => a.sort((x, y) => x.i - y.i).filter((q, j, s) => !j || q.i !== s[j - 1].i || ((s[j - 1].major = s[j - 1].major || q.major), false));
+  const side = (P, res) => {
+    const pts = uniq(P).slice(-14), cand = [];
+    for (let x = 0; x < pts.length; x++) for (let y = x + 1; y < pts.length; y++) {
+      const a = pts[x], b = pts[y]; if (b.i - a.i < 5) continue; const m = (b.p - a.p) / (b.i - a.i), f = (i) => a.p + m * (i - a.i);
+      if (Math.abs(m) > at * 0.22 || n - b.i > 150) continue; // too steep or too old to matter
+      let bad = false; for (let i = a.i + 1; i < b.i; i++) { const c = k[i].c; if (res ? c > f(i) + tol : c < f(i) - tol) { bad = true; break; } } if (bad) continue;
+      let touch = 2; for (const q of pts) if (q !== a && q !== b && q.i > a.i && Math.abs(q.p - f(q.i)) < tol) touch++;
+      let brk = -1; for (let i = b.i + 1; i < n; i++) { const c = k[i].c; if (res ? c > f(i) + tol : c < f(i) - tol) { brk = i; break; } }
+      const major = a.major && b.major, score = touch * 3 + (major ? 3 : 0) + (b.i - a.i) / 30 + (b.i - W0) / 40 - (brk >= 0 ? 4 + (n - brk) / 10 : 0);
+      cand.push({ a, b, m, f, touch, brk, major, score });
+    }
+    cand.sort((x, y) => y.score - x.score); const pick = [];
+    for (const c of cand) { if (pick.length >= N) break; if (c.brk >= 0 && n - c.brk > 40) continue; if (pick.some((q) => (Math.abs(q.f(n - 1) - c.f(n - 1)) < at * 0.8 && Math.sign(q.m) === Math.sign(c.m)) || q.a === c.a || q.b === c.b || q.a === c.b || q.b === c.a)) continue; pick.push(c); }
+    const col = res ? C.dn : C.up;
+    pick.forEach((c, j) => {
+      const end = c.brk >= 0 ? Math.min(n + 2, c.brk + 4) : n + 8, live = c.brk < 0, w = (c.major ? 2.1 : 1.4) + (j === 0 ? 0.3 : 0);
+      L.draw.push({ type: "seg", i0: c.a.i, p0: c.a.p, i1: end, p1: c.f(end), color: live ? col : rgba(col, 0.45), w, dash: c.major ? null : [7, 5], glow: live && j === 0 });
+      L.draw.push({ type: "dot", i: c.a.i, p: c.a.p, color: col }, { type: "dot", i: c.b.i, p: c.b.p, color: col });
+      if (live && j < 2) L.hlines.push({ p: c.f(n - 1), color: col, alpha: 0, tag: `${res ? "Res" : "Sup"} ${c.touch}×`, prio: 52 - j });
+    });
+  };
+  side([...mi.hi, ...ma.hi], true); side([...mi.lo, ...ma.lo], false);
 }
 function drawGeo(L, k, C) {
   const key = ST.tf + ":" + k.length + ":" + k[k.length - 2].t; if (GEOC.key !== key) GEOC = { key, v: TA.geoPatterns(k, ST.tf) };
@@ -536,6 +564,7 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("#bFull") && ST.layersOpen) { ST.layersOpen = false; $("#layers").hidden = true; CH.xKey = null; chartExtras(); }
   if (e.target.closest("#bLayers")) { ST.layersOpen = !ST.layersOpen; $("#layers").hidden = !ST.layersOpen; CH.xKey = null; chartExtras(); return; }
   if (e.target.closest("#bClean")) { ST.clean = !ST.clean; LS.set("clean", ST.clean); $("#bClean").setAttribute("aria-pressed", ST.clean); CH.xKey = null; chartExtras(); return; }
+  const tl = e.target.closest("[data-tln]"); if (tl) { ST.tlN = tl.dataset.tln; LS.set("tlN", ST.tlN); if (!ST.trend) { ST.trend = true; LS.set("trend", true); syncCtl(); } syncLow(); CH.xKey = null; chartExtras(); return; }
   const lp = e.target.closest("[data-lps]"); if (lp) { ST.lpStyle = lp.dataset.lps; LS.set("lpStyle", ST.lpStyle); if (!ST.lowers.includes("pos")) { ST.lowers.push("pos"); while (ST.lowers.length > 3) ST.lowers.shift(); LS.set("lowers", ST.lowers); tick("pfc"); } syncLow(); CH.xKey = null; chartExtras(); return; }
   const lw = e.target.closest("[data-low]"); if (lw) { const id = lw.dataset.low, L2 = ST.lowers.filter((x) => x !== id); if (L2.length === ST.lowers.length) { L2.push(id); while (L2.length > 3) L2.shift(); } ST.lowers = L2; LS.set("lowers", L2); syncLow(); if (id === "pos" || id === "cvd" || id === "oi") tick("pfc"); CH.xKey = null; chartExtras(); return; }
   if (e.target.closest("#bMySave")) { const v = $("#myTxt").value; MYLV = { at: Date.now(), list: parseLevels(v, curPx()) }; LS.set("myLevels", MYLV); $("#myMsg").textContent = MYLV.list.length ? `Saved ${MYLV.list.length} levels. They're on the chart.` : "No prices found. Paste lines like “Support 79,750” or “R1 81.2k”."; drawMyLevels(); CH.xKey = null; chartExtras(); return; }
@@ -543,7 +572,7 @@ document.addEventListener("click", (e) => {
 });
 const _draw2 = drawStage2;
 drawStage2 = function (tab) { _draw2(tab); if (tab === "overview") { drawMood(); } };
-function syncLow() { document.querySelectorAll("[data-low]").forEach((b) => b.setAttribute("aria-pressed", ST.lowers.includes(b.dataset.low))); document.querySelectorAll("[data-lps]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lps === ST.lpStyle)); }
+function syncLow() { document.querySelectorAll("[data-low]").forEach((b) => b.setAttribute("aria-pressed", ST.lowers.includes(b.dataset.low))); document.querySelectorAll("[data-lps]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lps === ST.lpStyle)); document.querySelectorAll("[data-tln]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tln === ST.tlN)); }
 syncLow(); $("#tfSeg").addEventListener("click", () => setTimeout(() => { if (D.pfc && D.pfc.per !== PFC_PER[ST.tf]) tick("pfc"); }, 0));
 if ($("#bClean")) $("#bClean").setAttribute("aria-pressed", ST.clean);
 drawMyLevels(); initChart(); if (CC) { CC.subAdj = ST.subAdj; CC.onSplit = (v) => { ST.subAdj = v; LS.set("subAdj", v); }; } syncCtl(); render();
