@@ -114,6 +114,14 @@ body.locked{position:fixed;left:0;right:0;overflow:hidden}
 .flow{display:grid;gap:8px}
 .frow{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start;padding:8px 0;border-top:1px solid var(--weak)}
 .frow:first-child{border-top:none}
+.fcols{display:grid;gap:8px;grid-template-columns:repeat(4,1fr)}
+@media (max-width:760px){.fcols{grid-template-columns:repeat(2,1fr)}}
+.fcol{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 100%,var(--fg) 2.5%),var(--bg));border:1px solid var(--weak);border-radius:10px;padding:8px 8px 4px}
+.fch{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:14px}.fch .ftag{font-size:11px;padding:1px 7px;border-radius:6px;background:color-mix(in srgb,currentColor 13%,transparent)}
+.fdiv{font-size:11px;font-weight:600;text-align:center;padding-bottom:4px}
+.fgrid{width:100%;border-collapse:separate;border-spacing:3px}.fgrid td,.fgrid th{text-align:center;padding:6px 4px;border-radius:7px;font-size:12.5px;font-weight:600}.fgrid td.l{text-align:left;color:var(--fg2);font-weight:500}
+.fgrid .ftag{font-size:10.5px;padding:2px 5px;border-radius:6px;background:color-mix(in srgb,currentColor 13%,transparent);display:inline-block;line-height:1.2;white-space:normal}
+.fgrid{table-layout:fixed}.fgrid th:first-child,.fgrid td.l{width:58px}@media (max-width:520px){.fgrid td,.fgrid th{font-size:11.5px;padding:5px 2px}}
 .fwin{font-weight:700;font-size:13px;color:var(--fg2);padding-top:2px}
 .ftag{display:inline-block;font-weight:650;font-size:13.5px;padding:2px 8px;border-radius:7px;margin-right:6px}
 .fnote{font-size:13px;color:var(--fg2);margin-top:4px}
@@ -2803,6 +2811,71 @@ function drawPf() {
   PFI = Math.max(0, Math.min(PFN - 1, Math.floor((x / PFW) * PFN))); drawPf();
 }));
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-pftf]"); if (!b) return; ST.pfTf = b.dataset.pftf; LS.set("pfTf", ST.pfTf); PFI = null; tick("pf"); drawPf(); });
+
+
+/* ---------- Flow read: 4 views (Columns, Grid, Quadrant, Text) ---------- */
+ST.flowView = LS.get("flowView", "cols");
+const _drawFlowText = drawFlow;
+function flowData() {
+  const W = [["15m", 3, 900], ["1h", 12, 3600], ["4h", 48, 14400], ["24h", 287, 86400]];
+  return W.map(([lab, bars, sec]) => {
+    const w = live("k5") ? win(D.k5.k, bars) : null, oi = live("okxOI") ? seriesChg(D.okxOI.s, sec) : null, ti = live("okxTk") ? takerImb(D.okxTk.s, sec) : null;
+    let tag = "Price only", tc = "mut";
+    if (w && ok(oi)) { const pu = w.pChg >= 0, ou = oi >= 0; if (Math.abs(oi) < 0.15) tag = "OI flat"; else if (pu && ou) { tag = "Longs opening"; tc = "up"; } else if (!pu && ou) { tag = "Shorts opening"; tc = "dn"; } else if (pu) { tag = "Shorts closing"; tc = "wn"; } else { tag = "Longs closing"; tc = "wn"; } }
+    let div = 0; if (w && w.pChg > 0.15 && w.cvd < 0) div = -1; if (w && w.pChg < -0.15 && w.cvd > 0) div = 1;
+    return { lab, p: w ? w.pChg : null, oi, cvd: w ? w.cvd : null, tk: ti, tag, tc, div };
+  });
+}
+const FLOW_M = [["p", "Price", (v) => pct(v)], ["oi", "OI", (v) => pct(v)], ["cvd", "Spot CVD", (v) => `${sgn(v, 0)}`], ["tk", "Perp takers", (v) => pct(v, 1)]];
+function flowCols(F, C) {
+  const mx = {}; FLOW_M.forEach(([k]) => (mx[k] = Math.max(1e-9, ...F.map((r) => Math.abs(r[k] || 0)))));
+  return `<div class="fcols">${F.map((r) => {
+    const W = 168, H = 136, mid = 68, cw = 26, gap = (W - 4 * cw) / 5;
+    let svg = `<svg viewBox="0 0 ${W} ${H + 30}" width="100%" style="display:block"><defs>${["up", "dn"].map((d) => `<linearGradient id="fg${d}" x1="0" x2="0" y1="${d === "up" ? 1 : 0}" y2="${d === "up" ? 0 : 1}"><stop offset="0" stop-color="${C[d]}" stop-opacity=".35"/><stop offset="1" stop-color="${C[d]}" stop-opacity="1"/></linearGradient>`).join("")}</defs>`;
+    svg += `<line x1="0" x2="${W}" y1="${mid}" y2="${mid}" stroke="${C.line}" stroke-dasharray="2 3"/>`;
+    FLOW_M.forEach(([k, name, fmt], j) => { const v = r[k], x = gap + j * (cw + gap);
+      if (ok(v)) { const h = Math.max(2, (Math.abs(v) / mx[k]) * (mid - 18)), up = v >= 0, y = up ? mid - h : mid;
+        svg += `<rect x="${x}" y="${y.toFixed(1)}" width="${cw}" height="${h.toFixed(1)}" rx="5" fill="url(#fg${up ? "up" : "dn"})"/>`;
+        svg += `<text x="${x + cw / 2}" y="${up ? y - 4 : y + h + 11}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${up ? C.up : C.dn}">${fmt(v)}</text>`; }
+      else svg += `<text x="${x + cw / 2}" y="${mid + 4}" text-anchor="middle" font-size="10" fill="${C.fg3}">–</text>`;
+      svg += `<text x="${x + cw / 2}" y="${H + 18}" text-anchor="middle" font-size="9.5" fill="${C.fg3}">${name.replace("Perp takers", "Takers").replace("Spot CVD", "CVD")}</text>`; });
+    svg += `</svg>`;
+    return `<div class="fcol"><div class="fch"><b>${r.lab}</b><span class="ftag ${r.tc}">${r.tag}</span></div>${svg}${r.div ? `<div class="fdiv ${r.div > 0 ? "up" : "dn"}">${r.div > 0 ? "Bullish" : "Bearish"} CVD divergence</div>` : ""}</div>`;
+  }).join("")}</div>`;
+}
+function flowGrid(F, C) {
+  const mx = {}; FLOW_M.forEach(([k]) => (mx[k] = Math.max(1e-9, ...F.map((r) => Math.abs(r[k] || 0)))));
+  const cell = (k, v, fmt) => { if (!ok(v)) return `<td class="mut">–</td>`; const a = 0.08 + 0.4 * Math.min(1, Math.abs(v) / mx[k]), c = v >= 0 ? C.up : C.dn;
+    return `<td style="background:linear-gradient(135deg,${rgba(c, a)},${rgba(c, a * 0.45)});color:${c}">${fmt(v)}</td>`; };
+  return `<div class="tw"><table class="fgrid"><thead><tr><th></th>${F.map((r) => `<th>${r.lab}</th>`).join("")}</tr></thead><tbody>
+    <tr><td class="l">Read</td>${F.map((r) => `<td><span class="ftag ${r.tc}">${r.tag}</span></td>`).join("")}</tr>
+    ${FLOW_M.map(([k, name, fmt]) => `<tr><td class="l">${name.replace("Perp takers", "Takers").replace("Spot CVD", "CVD")}</td>${F.map((r) => cell(k, r[k], fmt)).join("")}</tr>`).join("")}
+    <tr><td class="l">Div.</td>${F.map((r) => `<td class="${r.div > 0 ? "up" : r.div < 0 ? "dn" : "mut"}">${r.div > 0 ? "Bullish" : r.div < 0 ? "Bearish" : "–"}</td>`).join("")}</tr></tbody></table></div>`;
+}
+function flowQuad(F, C) {
+  const P = F.filter((r) => ok(r.p) && ok(r.oi)); if (!P.length) return `<div class="unavail">Needs price and OI history</div>`;
+  const S = 300, m = 26, c = S / 2, mxX = Math.max(0.3, ...P.map((r) => Math.abs(r.oi))) * 1.25, mxY = Math.max(0.3, ...P.map((r) => Math.abs(r.p))) * 1.25, mc = Math.max(1, ...P.map((r) => Math.abs(r.cvd || 0)));
+  const X = (v) => c + (v / mxX) * (c - m), Y = (v) => c - (v / mxY) * (c - m);
+  const q = [[S - 4, 14, "end", "Longs opening", C.up], [4, 14, "start", "Shorts closing", C.warn], [S - 4, S - 6, "end", "Shorts opening", C.dn], [4, S - 6, "start", "Longs closing", C.warn]];
+  let s = `<svg viewBox="0 0 ${S} ${S}" width="100%" style="display:block;max-width:420px;margin:0 auto">`;
+  s += `<rect x="${c}" y="0" width="${c}" height="${c}" fill="${rgba(C.up, 0.07)}"/><rect x="0" y="${c}" width="${c}" height="${c}" fill="${rgba(C.warn, 0.06)}"/><rect x="${c}" y="${c}" width="${c}" height="${c}" fill="${rgba(C.dn, 0.07)}"/><rect x="0" y="0" width="${c}" height="${c}" fill="${rgba(C.warn, 0.06)}"/>`;
+  s += `<line x1="${c}" x2="${c}" y1="0" y2="${S}" stroke="${C.line}"/><line x1="0" x2="${S}" y1="${c}" y2="${c}" stroke="${C.line}"/>`;
+  q.forEach(([x, y, a, t, col]) => (s += `<text x="${x}" y="${y}" text-anchor="${a}" font-size="11" font-weight="700" fill="${col}">${t}</text>`));
+  s += `<text x="${S - 4}" y="${c - 5}" text-anchor="end" font-size="9.5" fill="${C.fg3}">OI ↑</text><text x="${c + 5}" y="${m - 4}" font-size="9.5" fill="${C.fg3}">Price ↑</text>`;
+  const pts = P.slice().reverse(); s += `<polyline fill="none" stroke="${C.fg3}" stroke-dasharray="3 3" points="${pts.map((r) => `${X(r.oi).toFixed(1)},${Y(r.p).toFixed(1)}`).join(" ")}"/>`;
+  P.forEach((r) => { const rr = 6 + 8 * Math.sqrt(Math.abs(r.cvd || 0) / mc), col = (r.cvd || 0) >= 0 ? C.up : C.dn;
+    s += `<circle cx="${X(r.oi).toFixed(1)}" cy="${Y(r.p).toFixed(1)}" r="${rr.toFixed(1)}" fill="${rgba(col, 0.28)}" stroke="${col}" stroke-width="1.5"/><text x="${X(r.oi).toFixed(1)}" y="${(Y(r.p) + 3.5).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="${C.fg}">${r.lab}</text>`; });
+  return s + `</svg><div class="src" style="text-align:center">Each dot is a time window: across = OI change, up = price change. Dot size = spot CVD, green = buyers, red = sellers. The dashed line runs 24h → 15m.</div>`;
+}
+drawFlow = function () {
+  const el = $("#flow"); if (!el) return; const C = chartColors(), v = ST.flowView;
+  const seg = `<div class="ctl" style="margin:0 0 6px"><span class="seg">${[["cols", "Columns"], ["grid", "Grid"], ["quad", "Quadrant"], ["text", "Text"]].map(([k, l]) => `<button data-fv="${k}" aria-pressed="${v === k}">${l}</button>`).join("")}</span></div>`;
+  if (v === "text") { _drawFlowText(); el.innerHTML = seg + el.innerHTML; return; }
+  const F = flowData(); if (!F.some((r) => ok(r.p))) { el.innerHTML = seg + `<div class="unavail">Waiting for price data</div>`; return; }
+  el.innerHTML = seg + (v === "grid" ? flowGrid(F, C) : v === "quad" ? flowQuad(F, C) : flowCols(F, C));
+  const st = ["k5", "okxOI", "okxTk"].map(status); $("#flowSt").className = "st " + (st.every((x) => x === "ok") ? "ok" : st.includes("ok") ? "stale" : "wait"); $("#flowSt").textContent = st.every((x) => x === "ok") ? "live" : st.includes("ok") ? "partial" : "loading";
+};
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-fv]"); if (!b) return; ST.flowView = b.dataset.fv; LS.set("flowView", ST.flowView); drawFlow(); });
 
 /* ---------- wiring ---------- */
 const _d3 = drawStage2;
