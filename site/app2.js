@@ -137,7 +137,7 @@ function analysis() {
   if (live("okxOI1h")) {
     const k1 = K["1h"], byT = new Map(k1.map((x) => [x.t, x.c]));
     const oi = D.okxOI1h.s.map((x) => ({ t: x.t, v: x.v > 1e7 ? x.v / (byT.get(x.t) || px) : x.v }));
-    const A = aggr(), scale = A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 4;
+    const A = aggr(), scale = okxScale(4);
     L = TA.liqMap(k1, oi, px, scale);
   }
   // levels → zones
@@ -573,7 +573,9 @@ function drawStage2(tab) {
     if (tab === "overview") {
       need("#ovAssess", (x) => ($("#ovAssess").innerHTML = assessHTML(x, false)));
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
-      if (ST.fib) fs.innerHTML = `<span class="mut" style="font-size:12px">Fib levels:</span>` + FIBS.map((r) => `<button class="chip" data-fib="${r}" aria-pressed="${!ST.fibOff[r]}" style="min-height:26px;padding:1px 8px;font-size:12px;${!ST.fibOff[r] ? `border-color:${fibColor(r)};color:${fibColor(r)}` : ""}">${r}</button>`).join("") + `<button class="chip" data-fib="all" style="min-height:26px;padding:1px 8px;font-size:12px">All</button><button class="chip" data-fib="key" style="min-height:26px;padding:1px 8px;font-size:12px">Key only</button>`;
+      if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
+        fs.innerHTML = `<span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="${!!ST.fibOpen}" style="${sm}">Pick ${ST.fibOpen ? "▴" : "▾"}</button></span>` +
+          (ST.fibOpen ? `<div style="display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%">` + FIBS.map((r) => `<button class="chip" data-fib="${r}" aria-pressed="${!ST.fibOff[r]}" style="${sm};${!ST.fibOff[r] ? `border-color:${fibColor(r)};color:${fibColor(r)}` : ""}">${r}</button>`).join("") + `</div>` : ""); }
     }
     if (tab === "ta") need("#taAssess", drawTA);
     if (tab === "pat") need("#pat30m", drawPatterns);
@@ -588,6 +590,7 @@ document.addEventListener("click", (e) => {
   const f = e.target.closest("[data-fib]");
   if (f) {
     const v = f.dataset.fib;
+    if (v === "edit") { ST.fibOpen = !ST.fibOpen; render(); return; }
     if (v === "all") ST.fibOff = {}; else if (v === "key") { ST.fibOff = {}; FIBS.forEach((r) => { if (![0, 0.382, 0.5, 0.618, 0.786, 1].includes(r)) ST.fibOff[r] = true; }); }
     else { const r = +v; if (ST.fibOff[r]) delete ST.fibOff[r]; else ST.fibOff[r] = true; }
     LS.set("fibOff", ST.fibOff); render(); return;

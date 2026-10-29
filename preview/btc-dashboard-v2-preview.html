@@ -996,6 +996,15 @@ def("bitget", "Bitget perp", "Venue: price, funding, OI", 30000, async () => {
   const t = j.data && j.data[0]; if (!t) throw new Error(j.msg || "no ticker");
   return { px: +t.lastPr, f8: +t.fundingRate, oi: +t.holdingAmount };
 });
+def("okxInv", "OKX coin-margined perp (BTC-USD)", "Venue: funding, OI", 30000, async () => {
+  const [tk, fr, oi] = await Promise.all([okx("/api/v5/market/ticker?instId=BTC-USD-SWAP"), okx("/api/v5/public/funding-rate?instId=BTC-USD-SWAP"), okx("/api/v5/public/open-interest?instType=SWAP&instId=BTC-USD-SWAP")]);
+  return { px: +tk[0].last, f8: +fr[0].fundingRate, oi: +oi[0].oiCcy };
+});
+def("bitgetInv", "Bitget coin-margined perp (BTCUSD)", "Venue: funding, OI", 30000, async () => {
+  const j = await getJSON("https://api.bitget.com/api/v2/mix/market/ticker?symbol=BTCUSD&productType=coin-futures");
+  const t = j.data && j.data[0]; if (!t) throw new Error(j.msg || "no ticker");
+  return { px: +t.lastPr, f8: +t.fundingRate, oi: +t.holdingAmount };
+});
 def("deribit", "Deribit perp", "Venue: price, funding, OI", 30000, async () => {
   const j = await getJSON("https://www.deribit.com/api/v2/public/ticker?instrument_name=BTC-PERPETUAL");
   const r = j.result; if (!r) throw new Error("no result");
@@ -1027,7 +1036,7 @@ def("bnf", "Binance futures", "Venue: price, funding, OI", 30000, async () => {
   const [pi, oi] = await Promise.all([getJSONp("https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT"), getJSONp("https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT")]);
   return { px: +pi.markPrice, f8: +pi.lastFundingRate, oi: +oi.openInterest };
 }, true);
-const VENUES = [["okx", "OKX"], ["bnf", "Binance"], ["bybit", "Bybit"], ["bitget", "Bitget"], ["hl", "Hyperliquid"], ["deribit", "Deribit"], ["kraken", "Kraken"], ["mexc", "MEXC"], ["bingx", "BingX"]];
+const VENUES = [["okx", "OKX"], ["okxInv", "OKX coin-m"], ["bnf", "Binance"], ["bybit", "Bybit"], ["bitget", "Bitget"], ["bitgetInv", "Bitget coin-m"], ["hl", "Hyperliquid"], ["deribit", "Deribit"], ["kraken", "Kraken"], ["mexc", "MEXC"], ["bingx", "BingX"]];
 
 /* ---------- scheduler ---------- */
 function status(id) {
@@ -1067,6 +1076,8 @@ function takerImb(s, sec) { if (!s || !s.length) return null; const t0 = s[s.len
 function venues() {
   return VENUES.map(([id, name]) => ({ id, name, st: status(id), d: live(id) ? D[id] : null }));
 }
+// OKX history stats (rubik, ccy=BTC) cover every OKX BTC contract, so scale them by all-venue OI over OKX's own total
+function okxScale(dflt) { const A = aggr(), o = (live("okx") ? D.okx.oi : 0) + (live("okxInv") ? D.okxInv.oi : 0); return A.oi && o ? A.oi / o : dflt; }
 function aggr() {
   const vs = venues().filter((v) => v.d); let oi = 0, wf = 0, w = 0, n = 0, fmin = Infinity, fmax = -Infinity;
   for (const v of vs) { if (ok(v.d.oi)) { oi += v.d.oi; n++; if (ok(v.d.f8)) { wf += v.d.f8 * v.d.oi; w += v.d.oi; } } if (ok(v.d.f8)) { fmin = Math.min(fmin, v.d.f8); fmax = Math.max(fmax, v.d.f8); } }
@@ -1499,7 +1510,7 @@ function analysis() {
   if (live("okxOI1h")) {
     const k1 = K["1h"], byT = new Map(k1.map((x) => [x.t, x.c]));
     const oi = D.okxOI1h.s.map((x) => ({ t: x.t, v: x.v > 1e7 ? x.v / (byT.get(x.t) || px) : x.v }));
-    const A = aggr(), scale = A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 4;
+    const A = aggr(), scale = okxScale(4);
     L = TA.liqMap(k1, oi, px, scale);
   }
   // levels → zones
@@ -1935,7 +1946,9 @@ function drawStage2(tab) {
     if (tab === "overview") {
       need("#ovAssess", (x) => ($("#ovAssess").innerHTML = assessHTML(x, false)));
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
-      if (ST.fib) fs.innerHTML = `<span class="mut" style="font-size:12px">Fib levels:</span>` + FIBS.map((r) => `<button class="chip" data-fib="${r}" aria-pressed="${!ST.fibOff[r]}" style="min-height:26px;padding:1px 8px;font-size:12px;${!ST.fibOff[r] ? `border-color:${fibColor(r)};color:${fibColor(r)}` : ""}">${r}</button>`).join("") + `<button class="chip" data-fib="all" style="min-height:26px;padding:1px 8px;font-size:12px">All</button><button class="chip" data-fib="key" style="min-height:26px;padding:1px 8px;font-size:12px">Key only</button>`;
+      if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
+        fs.innerHTML = `<span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="${!!ST.fibOpen}" style="${sm}">Pick ${ST.fibOpen ? "▴" : "▾"}</button></span>` +
+          (ST.fibOpen ? `<div style="display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%">` + FIBS.map((r) => `<button class="chip" data-fib="${r}" aria-pressed="${!ST.fibOff[r]}" style="${sm};${!ST.fibOff[r] ? `border-color:${fibColor(r)};color:${fibColor(r)}` : ""}">${r}</button>`).join("") + `</div>` : ""); }
     }
     if (tab === "ta") need("#taAssess", drawTA);
     if (tab === "pat") need("#pat30m", drawPatterns);
@@ -1950,6 +1963,7 @@ document.addEventListener("click", (e) => {
   const f = e.target.closest("[data-fib]");
   if (f) {
     const v = f.dataset.fib;
+    if (v === "edit") { ST.fibOpen = !ST.fibOpen; render(); return; }
     if (v === "all") ST.fibOff = {}; else if (v === "key") { ST.fibOff = {}; FIBS.forEach((r) => { if (![0, 0.382, 0.5, 0.618, 0.786, 1].includes(r)) ST.fibOff[r] = true; }); }
     else { const r = +v; if (ST.fibOff[r]) delete ST.fibOff[r]; else ST.fibOff[r] = true; }
     LS.set("fibOff", ST.fibOff); render(); return;
@@ -2373,7 +2387,7 @@ function heatData() {
   const key = SRC.okxOI1h.st.okAt + ":" + SRC.taK.st.okAt; if (HEAT.key === key) return HEAT.v;
   const k1 = D.taK["1h"], byT = new Map(k1.map((x) => [x.t, x.c])), px = curPx(), A = aggr();
   const oi = D.okxOI1h.s.map((x) => ({ t: x.t, v: x.v > 1e7 ? x.v / (byT.get(x.t) || px) : x.v }));
-  HEAT = { key, v: TA.liqHeat(k1, oi, px, A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 4) }; return HEAT.v;
+  HEAT = { key, v: TA.liqHeat(k1, oi, px, okxScale(4)) }; return HEAT.v;
 }
 /* ---------- lower panes: positions opening/closing, CVD spot vs perp, delta, OI ---------- */
 const PFC_PER = { "5m": "5m", "15m": "5m", "30m": "5m", "1h": "1H", "4h": "1H", "1d": "1D" }, PER_SEC = { "5m": 300, "1H": 3600, "1D": 86400 };
@@ -2386,7 +2400,7 @@ def("pfc", "OKX OI + taker flow (chart timeframe)", "Lower panes: longs/shorts, 
 function lowerPanes(k, C) {
   const out = [], sec = TF_SEC[ST.tf], idx = new Map(k.map((x, i) => [x.t, i])), B = (t) => Math.floor(t / sec) * sec, P = live("pfc") && D.pfc.per === PFC_PER[ST.tf] ? D.pfc : null;
   const sU = (v) => `${v < 0 ? "−" : "+"}${usd(Math.abs(v))}`, pxAt = (t) => { const i = idx.get(B(t)); return i === undefined ? curPx() : k[i].c; };
-  const oiU = (r) => (r.oi > 1e7 ? r.oi : r.oi * pxAt(r.t)), A = aggr(), scale = A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 1;
+  const oiU = (r) => (r.oi > 1e7 ? r.oi : r.oi * pxAt(r.t)), A = aggr(), scale = okxScale(1);
   const sum = (rows, f) => { const m = new Map(); for (const r of rows) { const bt = B(r.t); if (!idx.has(bt)) continue; m.set(bt, (m.get(bt) || 0) + f(r)); } return m; };
   const pts = (m) => [...m].sort((x, y) => x[0] - y[0]).map(([t, v]) => ({ t, v }));
   const delta = (rows) => { if (!rows.length) return new Map(); const tot = rows.map((r) => r.buy + r.sell).sort((x, y) => x - y), isUsd = tot[tot.length >> 1] > 1e6 * (PER_SEC[P.per] / 300); return sum(rows, (r) => (r.buy - r.sell) * (isUsd ? 1 : pxAt(r.t))); };
@@ -2695,7 +2709,7 @@ def("pf", "OKX OI + taker flow history", "Positions opening/closing", 60000, asy
 });
 let PFI = null, PFN = 0, PFW = 1;
 function pfRows() {
-  const A = aggr(), scale = A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 1, R = D.pf.rows, out = [];
+  const A = aggr(), scale = okxScale(1), R = D.pf.rows, out = [];
   for (let i = 1; i < R.length; i++) {
     const u = (r) => (r.oi > 1e7 ? r.oi : r.oi * (curPx() || 1)), d = (u(R[i]) - u(R[i - 1])) * scale, tot = R[i].buy + R[i].sell, b = tot ? R[i].buy / tot : 0.5;
     out.push({ t: R[i].t, oi: u(R[i]) * scale, lo: d > 0 ? d * b : 0, so: d > 0 ? d * (1 - b) : 0, lc: d < 0 ? -d * (1 - b) : 0, sc: d < 0 ? -d * b : 0, b });

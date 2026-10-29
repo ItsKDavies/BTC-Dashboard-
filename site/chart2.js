@@ -409,7 +409,7 @@ function heatData() {
   const key = SRC.okxOI1h.st.okAt + ":" + SRC.taK.st.okAt; if (HEAT.key === key) return HEAT.v;
   const k1 = D.taK["1h"], byT = new Map(k1.map((x) => [x.t, x.c])), px = curPx(), A = aggr();
   const oi = D.okxOI1h.s.map((x) => ({ t: x.t, v: x.v > 1e7 ? x.v / (byT.get(x.t) || px) : x.v }));
-  HEAT = { key, v: TA.liqHeat(k1, oi, px, A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 4) }; return HEAT.v;
+  HEAT = { key, v: TA.liqHeat(k1, oi, px, okxScale(4)) }; return HEAT.v;
 }
 /* ---------- lower panes: positions opening/closing, CVD spot vs perp, delta, OI ---------- */
 const PFC_PER = { "5m": "5m", "15m": "5m", "30m": "5m", "1h": "1H", "4h": "1H", "1d": "1D" }, PER_SEC = { "5m": 300, "1H": 3600, "1D": 86400 };
@@ -422,7 +422,7 @@ def("pfc", "OKX OI + taker flow (chart timeframe)", "Lower panes: longs/shorts, 
 function lowerPanes(k, C) {
   const out = [], sec = TF_SEC[ST.tf], idx = new Map(k.map((x, i) => [x.t, i])), B = (t) => Math.floor(t / sec) * sec, P = live("pfc") && D.pfc.per === PFC_PER[ST.tf] ? D.pfc : null;
   const sU = (v) => `${v < 0 ? "−" : "+"}${usd(Math.abs(v))}`, pxAt = (t) => { const i = idx.get(B(t)); return i === undefined ? curPx() : k[i].c; };
-  const oiU = (r) => (r.oi > 1e7 ? r.oi : r.oi * pxAt(r.t)), A = aggr(), scale = A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 1;
+  const oiU = (r) => (r.oi > 1e7 ? r.oi : r.oi * pxAt(r.t)), A = aggr(), scale = okxScale(1);
   const sum = (rows, f) => { const m = new Map(); for (const r of rows) { const bt = B(r.t); if (!idx.has(bt)) continue; m.set(bt, (m.get(bt) || 0) + f(r)); } return m; };
   const pts = (m) => [...m].sort((x, y) => x[0] - y[0]).map(([t, v]) => ({ t, v }));
   const delta = (rows) => { if (!rows.length) return new Map(); const tot = rows.map((r) => r.buy + r.sell).sort((x, y) => x - y), isUsd = tot[tot.length >> 1] > 1e6 * (PER_SEC[P.per] / 300); return sum(rows, (r) => (r.buy - r.sell) * (isUsd ? 1 : pxAt(r.t))); };

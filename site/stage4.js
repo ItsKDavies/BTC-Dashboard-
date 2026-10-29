@@ -178,7 +178,7 @@ def("pf", "OKX OI + taker flow history", "Positions opening/closing", 60000, asy
 });
 let PFI = null, PFN = 0, PFW = 1;
 function pfRows() {
-  const A = aggr(), scale = A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 1, R = D.pf.rows, out = [];
+  const A = aggr(), scale = okxScale(1), R = D.pf.rows, out = [];
   for (let i = 1; i < R.length; i++) {
     const u = (r) => (r.oi > 1e7 ? r.oi : r.oi * (curPx() || 1)), d = (u(R[i]) - u(R[i - 1])) * scale, tot = R[i].buy + R[i].sell, b = tot ? R[i].buy / tot : 0.5;
     out.push({ t: R[i].t, oi: u(R[i]) * scale, lo: d > 0 ? d * b : 0, so: d > 0 ? d * (1 - b) : 0, lc: d < 0 ? -d * (1 - b) : 0, sc: d < 0 ? -d * b : 0, b });

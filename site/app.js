@@ -127,6 +127,15 @@ def("bitget", "Bitget perp", "Venue: price, funding, OI", 30000, async () => {
   const t = j.data && j.data[0]; if (!t) throw new Error(j.msg || "no ticker");
   return { px: +t.lastPr, f8: +t.fundingRate, oi: +t.holdingAmount };
 });
+def("okxInv", "OKX coin-margined perp (BTC-USD)", "Venue: funding, OI", 30000, async () => {
+  const [tk, fr, oi] = await Promise.all([okx("/api/v5/market/ticker?instId=BTC-USD-SWAP"), okx("/api/v5/public/funding-rate?instId=BTC-USD-SWAP"), okx("/api/v5/public/open-interest?instType=SWAP&instId=BTC-USD-SWAP")]);
+  return { px: +tk[0].last, f8: +fr[0].fundingRate, oi: +oi[0].oiCcy };
+});
+def("bitgetInv", "Bitget coin-margined perp (BTCUSD)", "Venue: funding, OI", 30000, async () => {
+  const j = await getJSON("https://api.bitget.com/api/v2/mix/market/ticker?symbol=BTCUSD&productType=coin-futures");
+  const t = j.data && j.data[0]; if (!t) throw new Error(j.msg || "no ticker");
+  return { px: +t.lastPr, f8: +t.fundingRate, oi: +t.holdingAmount };
+});
 def("deribit", "Deribit perp", "Venue: price, funding, OI", 30000, async () => {
   const j = await getJSON("https://www.deribit.com/api/v2/public/ticker?instrument_name=BTC-PERPETUAL");
   const r = j.result; if (!r) throw new Error("no result");
@@ -158,7 +167,7 @@ def("bnf", "Binance futures", "Venue: price, funding, OI", 30000, async () => {
   const [pi, oi] = await Promise.all([getJSONp("https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT"), getJSONp("https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT")]);
   return { px: +pi.markPrice, f8: +pi.lastFundingRate, oi: +oi.openInterest };
 }, true);
-const VENUES = [["okx", "OKX"], ["bnf", "Binance"], ["bybit", "Bybit"], ["bitget", "Bitget"], ["hl", "Hyperliquid"], ["deribit", "Deribit"], ["kraken", "Kraken"], ["mexc", "MEXC"], ["bingx", "BingX"]];
+const VENUES = [["okx", "OKX"], ["okxInv", "OKX coin-m"], ["bnf", "Binance"], ["bybit", "Bybit"], ["bitget", "Bitget"], ["bitgetInv", "Bitget coin-m"], ["hl", "Hyperliquid"], ["deribit", "Deribit"], ["kraken", "Kraken"], ["mexc", "MEXC"], ["bingx", "BingX"]];
 
 /* ---------- scheduler ---------- */
 function status(id) {
@@ -198,6 +207,8 @@ function takerImb(s, sec) { if (!s || !s.length) return null; const t0 = s[s.len
 function venues() {
   return VENUES.map(([id, name]) => ({ id, name, st: status(id), d: live(id) ? D[id] : null }));
 }
+// OKX history stats (rubik, ccy=BTC) cover every OKX BTC contract, so scale them by all-venue OI over OKX's own total
+function okxScale(dflt) { const A = aggr(), o = (live("okx") ? D.okx.oi : 0) + (live("okxInv") ? D.okxInv.oi : 0); return A.oi && o ? A.oi / o : dflt; }
 function aggr() {
   const vs = venues().filter((v) => v.d); let oi = 0, wf = 0, w = 0, n = 0, fmin = Infinity, fmax = -Infinity;
   for (const v of vs) { if (ok(v.d.oi)) { oi += v.d.oi; n++; if (ok(v.d.f8)) { wf += v.d.f8 * v.d.oi; w += v.d.oi; } } if (ok(v.d.f8)) { fmin = Math.min(fmin, v.d.f8); fmax = Math.max(fmax, v.d.f8); } }
