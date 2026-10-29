@@ -314,8 +314,8 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
         <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button></div>
         <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><button class="chip" data-tog="cdl">Candle patterns</button></div>
         <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
-        <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
-        <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="pos">Longs / shorts</button><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 3. Drag the bar above the panes to resize, double-tap it to reset.</span></div>
+        <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqb">Liq bands</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
+        <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 3. Drag the bar above the panes to resize, double-tap it to reset.</span></div>
         <div class="ctl" id="fibSel" hidden></div>
       </div>
       <div class="ohlc" id="ohlc"></div>
@@ -1944,8 +1944,8 @@ syncCtl(); setTab(ST.tab);
 /* ===================== Stage 3: own canvas chart engine + new visuals ===================== */
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
 Object.assign(ST, {
-  heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", true), pat: LS.get("pat", true), trend: LS.get("trend", true), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
-  lowers: LS.get("lowers", ["pos", "cvd"]), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false,
+  heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
+  lowers: LS.get("lowers", ["bcvd"]), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false,
 });
 
 /* ---------- engine ---------- */
@@ -1967,7 +1967,7 @@ class CChart {
     this.resize(); this.bind();
   }
   nSub() { return this.L.subs ? this.L.subs.length : 0; }
-  subBase(n) { return [0, 0.24, 0.38, 0.48, 0.54][Math.min(4, n)]; }
+  subBase(n) { return [0, 0.22, 0.38, 0.48, 0.54][Math.min(4, n)]; }
   resize() { const r = this.host.getBoundingClientRect(), d = window.devicePixelRatio || 1; this.W = Math.max(200, r.width); this.H = Math.max(160, r.height); this.d = d; this.cv.width = Math.round(this.W * d); this.cv.height = Math.round(this.H * d); this.cv.style.width = this.W + "px"; this.cv.style.height = this.H + "px"; this.draw(); }
   setData(k, sec, keep) { const end = this.atEnd(), fresh = !this.k.length || !keep; this.k = k; this.sec = sec; if (fresh) this.reset(); else if (end) this.x0 = this.k.length + this.pad - this.bars; this.dirty(); }
   atEnd() { return !this.k.length || this.x0 + this.bars >= this.k.length - 1; }
@@ -2058,16 +2058,12 @@ class CChart {
     // liquidation heatmap
     const H = Ls.heat;
     if (H && H.max > 0) {
-      // scale colors to what's on screen (97th percentile), so one huge cluster doesn't wash everything else out
-      const ca = Math.max(0, Math.floor((t0 - H.t0) / H.dt) - 1), rLo = Math.max(0, Math.floor((this.yLo - H.lo) / H.step)), rHi = Math.min(H.rows - 1, Math.ceil((this.yHi - H.lo) / H.step)), vals = [];
-      for (let c = ca; c < H.cols; c++) { if (this.X(this.ti(H.t0 + c * H.dt) - 0.5) > L.r) break; for (let r = rLo; r <= rHi; r++) { const v = H.grid[c * H.rows + r]; if (v > 0) vals.push(v); } }
-      vals.sort((x, y) => x - y); const vmax = vals.length ? vals[Math.floor(vals.length * 0.97)] || vals[vals.length - 1] : 0;
-      if (vmax > 0) for (let c = ca; c < H.cols; c++) {
-        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5); let xb = this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.r) break; if (xb < 0) continue;
-        if (c === H.cols - 1) xb = L.r; // carry the latest map into the empty space right of the last candle
-        for (let r = rLo; r <= rHi; r++) {
-          const v = H.grid[c * H.rows + r]; if (v < vmax * 0.12) continue; const pa = H.lo + r * H.step, y1 = this.Y(pa + H.step), y2 = this.Y(pa);
-          g.fillStyle = heatColor(Math.min(1, Math.pow(v / vmax, 0.85))); g.fillRect(xa, y1, Math.max(1, xb - xa + 0.5), Math.max(1, y2 - y1 + 0.5));
+      const ca = Math.max(0, Math.floor(this.ti(t0) * this.sec / H.dt + (this.k[0].t - H.t0) / H.dt) - 1);
+      for (let c = ca; c < H.cols; c++) {
+        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5), xb = this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.r) break; if (xb < 0) continue;
+        for (let r = 0; r < H.rows; r++) {
+          const v = H.grid[c * H.rows + r]; if (v < H.max * 0.06) continue; const pa = H.lo + r * H.step, y1 = this.Y(pa + H.step), y2 = this.Y(pa); if (y2 < 0 || y1 > L.mainH) continue;
+          const t = Math.pow(v / H.max, 0.75); g.fillStyle = heatColor(t); g.fillRect(xa, y1, Math.max(1, xb - xa + 0.5), Math.max(1, y2 - y1 + 0.5));
         }
       }
     }
@@ -2159,7 +2155,17 @@ class CChart {
         g.save(); g.beginPath(); g.rect(0, top, L.r, h); g.clip();
         const tags = [];
         if (S.empty) { font(400, 11); g.fillStyle = C.fg3; g.fillText(S.empty, 8, y0 + hh / 2); }
-        else if (S.kind === "mirror") {
+        else if (S.kind === "ohlc") {
+          const V = S.bars.filter(inV);
+          if (V.length) { let lo = Math.min(...V.map((x) => x.l)), hi = Math.max(...V.map((x) => x.h)); const pd = (hi - lo) * 0.08 || 1; lo -= pd; hi += pd; const Yo = (v) => y0 + (1 - (v - lo) / (hi - lo)) * hh;
+            if (lo < 0 && hi > 0) { g.strokeStyle = rgba(C.fg3, 0.5); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(0, Yo(0)); g.lineTo(L.r, Yo(0)); g.stroke(); g.setLineDash([]); }
+            for (const x of V) { const X = Math.round(this.X(this.ti(x.t))) + 0.5, upb = x.c >= x.o, col = upb ? S.color : rgba(C.fg3, 0.9), t1 = Math.min(Yo(x.o), Yo(x.c)), hb = Math.max(1, Math.abs(Yo(x.c) - Yo(x.o)));
+              g.strokeStyle = col; g.beginPath(); g.moveTo(X, Yo(x.h)); g.lineTo(X, Yo(x.l)); g.stroke(); g.fillStyle = col; g.fillRect(X - cwid / 2, t1, cwid, hb); }
+            const lv = V[V.length - 1]; tags.push([Yo(lv.c), S.fmt(lv.c), lv.c >= lv.o ? S.color : C.fg3]); }
+          g.restore();
+          if (!S._m) S._m = new Map(S.bars.map((x) => [x.t, x])); const cb = S._m.get(ct);
+          S.read = cb ? [[S.fmt(cb.c), S.color], [`${cb.c >= cb.o ? "▲" : "▼"} ${usd(Math.abs(cb.c - cb.o))}`, cb.c >= cb.o ? S.color : C.fg3]] : [];
+        } else if (S.kind === "mirror") {
           const U = S.up.filter(inV), Dn = S.dn.filter(inV), m = Math.max(1, ...U.map((p) => p.v), ...Dn.map((p) => p.v)), mid = y0 + hh / 2, sc = (hh / 2 - 2) / m;
           g.strokeStyle = rgba(C.fg3, 0.5); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(0, Math.round(mid) + 0.5); g.lineTo(L.r, Math.round(mid) + 0.5); g.stroke(); g.setLineDash([]);
           for (const p of U) { const X = this.X(this.ti(p.t)), hgt = p.v * sc; if (hgt < 0.4) continue; g.fillStyle = S.color; g.fillRect(X - cwid / 2, mid - hgt, cwid, hgt); }
@@ -2187,7 +2193,7 @@ class CChart {
         }
         if (!S.empty && S.kind !== "mirror") { const done = []; tags.sort((x, y) => x[0] - y[0]).forEach(([y, t, c]) => { y = Math.max(top + 8, Math.min(top + h - 8, y)); if (done.some((q) => Math.abs(q - y) < 15)) return; done.push(y); this.tag(g, L, y, t, c, true); }); }
         if (S.empty) g.restore();
-        else { const fp = (S.up || (S.lines && S.lines[0] && S.lines[0].pts) || S.hist || [])[0], fx = fp ? this.X(this.ti(fp.t)) : 0;
+        else { const fp = (S.up || S.bars || (S.lines && S.lines[0] && S.lines[0].pts) || S.hist || [])[0], fx = fp ? this.X(this.ti(fp.t)) : 0;
           if (fx > 150) { font(400, 10.5); g.fillStyle = C.fg3; g.textAlign = "right"; g.fillText("OKX history starts here →", fx - 8, top + h / 2 + 4); g.textAlign = "left"; } }
         // title + readout
         font(600, 10.5); g.fillStyle = C.fg; let x = 8; g.fillText(S.name, x, top + 9); x += g.measureText(S.name).width + 10;
@@ -2227,7 +2233,7 @@ const HEAT_STOPS = [[0, [40, 11, 84]], [0.25, [59, 82, 139]], [0.5, [33, 145, 14
 function heatColor(t) {
   let i = 1; while (i < HEAT_STOPS.length - 1 && HEAT_STOPS[i][0] < t) i++;
   const [ta, ca] = HEAT_STOPS[i - 1], [tb, cb] = HEAT_STOPS[i], f = Math.max(0, Math.min(1, (t - ta) / (tb - ta)));
-  const c = ca.map((v, j) => Math.round(v + (cb[j] - v) * f)); return `rgba(${c[0]},${c[1]},${c[2]},${(0.06 + 0.56 * t).toFixed(2)})`;
+  const c = ca.map((v, j) => Math.round(v + (cb[j] - v) * f)); return `rgba(${c[0]},${c[1]},${c[2]},${(0.08 + 0.55 * t).toFixed(2)})`;
 }
 
 /* ---------- big trades: Binance spot, OKX perp, Coinbase ---------- */
@@ -2365,8 +2371,11 @@ function lowerPanes(k, C) {
       if (!P) { out.push(wait("Longs / shorts")); continue; }
       const T = new Map(P.pf.map((r) => [r.t, r])), rows = [];
       for (let i = 1; i < P.oi.length; i++) { const tk = T.get(P.oi[i].t); if (!tk) continue; const d = (oiU(P.oi[i]) - oiU(P.oi[i - 1])) * scale, b = tk.buy / (tk.buy + tk.sell || 1); rows.push({ t: P.oi[i].t, lo: d > 0 ? d * b : 0, so: d > 0 ? d * (1 - b) : 0, lc: d < 0 ? -d * (1 - b) : 0, sc: d < 0 ? -d * b : 0 }); }
-      const f = (key) => pts(sum(rows, (r) => r[key]));
-      out.push({ name: "Longs", kind: "mirror", up: f("lo"), dn: f("lc"), color: C.up, fmt: usd }, { name: "Shorts", kind: "mirror", up: f("so"), dn: f("sc"), color: C.dn, fmt: usd });
+      // running net positions added since OKX history starts, as candles (open/high/low/close per chart candle) or a line
+      const ohlc = (f) => { const m = new Map(); let v = 0; for (const r of rows) { const bt = B(r.t); const o = m.get(bt) || { t: bt, o: v, h: v, l: v, c: v }; v += f(r); o.c = v; o.h = Math.max(o.h, v); o.l = Math.min(o.l, v); if (idx.has(bt)) m.set(bt, o); } return [...m.values()].sort((x, y) => x.t - y.t); };
+      const LO = ohlc((r) => r.lo - r.lc), SO = ohlc((r) => r.so - r.sc), t0 = rows.length ? fmtT(rows[0].t, { month: "short", day: "numeric", hour: "numeric" }) : "";
+      const mk = (name, bars, color) => (ST.lpStyle === "lines" ? { name, zero: true, fmt: sU, lines: [{ pts: bars.map((x) => ({ t: x.t, v: x.c })), color, label: "", w: 2 }] } : { name, kind: "ohlc", zero: true, bars, color, fmt: sU });
+      out.push(mk(`Longs · net added since ${t0}`, LO, C.up), mk(`Shorts · net added since ${t0}`, SO, C.dn));
     }
     if (id === "cvd") {
       const bn = new Map(k.map((x) => [x.t, (2 * x.tb - x.v) * x.c])), sp = P ? delta(P.sp) : new Map(), pf = P ? delta(P.pf) : new Map();
@@ -2374,6 +2383,7 @@ function lowerPanes(k, C) {
       for (const x of k) { if (x.t < t0) continue; const ds = bn.get(x.t) + (sp.get(x.t) || 0), dp = pf.get(x.t) || 0; cs += ds; S1.push({ t: x.t, v: cs }); if (pf.size) { cp += dp; P1.push({ t: x.t, v: cp }); } H.push({ t: x.t, v: ds + dp }); }
       out.push({ name: "CVD", zero: true, fmt: sU, hist: H, lines: [{ pts: S1, color: C.acc, label: "Spot" }, ...(P1.length ? [{ pts: P1, color: C.warn, label: "Perp" }] : [])] });
     }
+    if (id === "bcvd") { let c = 0; out.push({ name: "Spot CVD · Binance (BTC)", fmt: (v) => sgn(v, 0), lines: [{ pts: k.map((x) => ({ t: x.t, v: (c += 2 * x.tb - x.v) })), color: C.acc, label: "" }] }); }
     if (id === "delta") out.push({ name: "Buy − sell per candle (Binance spot, BTC)", fmt: (v) => sgn(v, 0), hist: k.map((x) => ({ t: x.t, v: 2 * x.tb - x.v })) });
     if (id === "oi") {
       if (P) { const m = new Map(); P.oi.forEach((r) => { const bt = B(r.t); if (idx.has(bt)) m.set(bt, oiU(r) * scale); }); out.push({ name: "Open interest · all venues (est.)", fmt: usd, lines: [{ pts: pts(m), color: C.warn, label: "" }] }); }
@@ -2384,7 +2394,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -2398,9 +2408,9 @@ function chartExtras(fromView) {
   if (PF && on(ST.prof)) { L.profile = { ...PF, poc: PF.vp.poc, vah: PF.vp.vah, val: PF.vp.val }; L.hlines.push({ p: PF.vp.poc, color: "#e8c547", w: 1.5, tag: "POC", prio: 70 }, { p: PF.vp.vah, color: C.fg2, dash: [5, 3], tag: "VAH", prio: 45 }, { p: PF.vp.val, color: C.fg2, dash: [5, 3], tag: "VAL", prio: 45 }); }
   if (PF && on(ST.tpo)) L.hlines.push({ p: PF.tp.poc, color: C.acc, dash: [2, 3], tag: "TPO POC", prio: 42 }, { p: PF.tp.vah, color: C.acc, dash: [2, 3], prio: 5 }, { p: PF.tp.val, color: C.acc, dash: [2, 3], prio: 5 });
   if (on(ST.zones) && a) a.Z.filter((z) => Math.abs(z.dist) <= 4 && z.w >= 2).forEach((z) => L.boxes.push({ lo: z.lo, hi: z.hi, color: z.c > a.px ? C.dn : C.up }));
-  if (on(ST.liq) && a && a.L) { const tops = [...a.L.shorts.slice(0, 4), ...a.L.longs.slice(0, 4)].filter((x) => Math.abs(x.dist) <= 8), mx = Math.max(...tops.map((x) => x.usd), 1);
-    L.liqBands = tops.map((x) => ({ p: x.p, h: a.L.step, w: x.usd / mx, color: x.dist > 0 ? C.up : C.dn, label: `${x.dist > 0 ? "Shorts" : "Longs"} ${usd(x.usd)}` }));
-    tops.forEach((x) => L.hlines.push({ p: x.p, color: x.dist > 0 ? C.up : C.dn, alpha: 0, tag: `Liq ${usd(x.usd).replace("$", "")}`, prio: 55 })); }
+  if (on(ST.liq) && a && a.L) [...a.L.shorts.slice(0, 3), ...a.L.longs.slice(0, 3)].forEach((x) => L.hlines.push({ p: x.p, color: x.dist > 0 ? C.up : C.dn, dash: [8, 4], w: 1.4, tag: `Liq ${usd(x.usd).replace("$", "")}`, prio: 55 }));
+  if (on(ST.liqb) && a && a.L) { const tops = [...a.L.shorts.slice(0, 4), ...a.L.longs.slice(0, 4)].filter((x) => Math.abs(x.dist) <= 8), mx = Math.max(...tops.map((x) => x.usd), 1);
+    L.liqBands = tops.map((x) => ({ p: x.p, h: a.L.step, w: x.usd / mx, color: x.dist > 0 ? C.up : C.dn, label: `${x.dist > 0 ? "Shorts" : "Longs"} ${usd(x.usd)}` })); }
   if (on(ST.liqev) && typeof LIQ !== "undefined") { const sec = TF_SEC[ST.tf], t0 = k[0].t, m = new Map();
     for (const e of LIQ.values()) { const t = e.t / 1000; if (t < t0) continue; const bt = Math.floor(t / sec) * sec, key = bt + e.side, o = m.get(key) || { t: bt, side: e.side, usd: 0, pv: 0 }; o.usd += e.usd; o.pv += e.px * e.usd; m.set(key, o); }
     L.liqEv = [...m.values()].map((o) => ({ ...o, p: o.pv / o.usd })); }
@@ -2416,9 +2426,9 @@ function chartExtras(fromView) {
   if (on(ST.pat) && k.length > 60) drawGeo(L, k, C);
   if (on(ST.cdl) && k.length > 30) drawCandles(L, k, C, a);
   if (ST.my && MYLV.list.length) MYLV.list.forEach((l) => L.hlines.push({ p: l.p, color: cssv("--my"), w: 1.6, tag: `${l.label.slice(0, 5)} ${kfmt(l.p)}`, prio: 90, left: l.label }));
-  L.subs = lowerPanes(k, C); const host = $("#cMain"); if (host) host.style.setProperty("--subx", `${L.subs.length ? 40 + 50 * L.subs.length : 0}px`);
+  L.subs = lowerPanes(k, C); const host = $("#cMain"); if (host) host.style.setProperty("--subx", `${L.subs.length > 1 ? 90 * (L.subs.length - 1) : 0}px`);
   const nb = CC.nSub(); CC.L = L; if (nb !== L.subs.length) CC.resize(); CC.dirty();
-  const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl"].filter((x) => ST[x]).length;
+  const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqb", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl"].filter((x) => ST[x]).length;
   const lb = $("#bLayers"); if (lb) lb.textContent = `Layers · ${ST.clean ? "clean" : n + " on"} ${ST.layersOpen ? "▴" : "▾"}`;
 }
 
@@ -2465,13 +2475,14 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("#bFull") && ST.layersOpen) { ST.layersOpen = false; $("#layers").hidden = true; CH.xKey = null; chartExtras(); }
   if (e.target.closest("#bLayers")) { ST.layersOpen = !ST.layersOpen; $("#layers").hidden = !ST.layersOpen; CH.xKey = null; chartExtras(); return; }
   if (e.target.closest("#bClean")) { ST.clean = !ST.clean; LS.set("clean", ST.clean); $("#bClean").setAttribute("aria-pressed", ST.clean); CH.xKey = null; chartExtras(); return; }
+  const lp = e.target.closest("[data-lps]"); if (lp) { ST.lpStyle = lp.dataset.lps; LS.set("lpStyle", ST.lpStyle); if (!ST.lowers.includes("pos")) { ST.lowers.push("pos"); while (ST.lowers.length > 3) ST.lowers.shift(); LS.set("lowers", ST.lowers); tick("pfc"); } syncLow(); CH.xKey = null; chartExtras(); return; }
   const lw = e.target.closest("[data-low]"); if (lw) { const id = lw.dataset.low, L2 = ST.lowers.filter((x) => x !== id); if (L2.length === ST.lowers.length) { L2.push(id); while (L2.length > 3) L2.shift(); } ST.lowers = L2; LS.set("lowers", L2); syncLow(); if (id === "pos" || id === "cvd" || id === "oi") tick("pfc"); CH.xKey = null; chartExtras(); return; }
   if (e.target.closest("#bMySave")) { const v = $("#myTxt").value; MYLV = { at: Date.now(), list: parseLevels(v, curPx()) }; LS.set("myLevels", MYLV); $("#myMsg").textContent = MYLV.list.length ? `Saved ${MYLV.list.length} levels. They're on the chart.` : "No prices found. Paste lines like “Support 79,750” or “R1 81.2k”."; drawMyLevels(); CH.xKey = null; chartExtras(); return; }
   if (e.target.closest("#bMyClear")) { MYLV = { at: 0, list: [] }; LS.set("myLevels", MYLV); $("#myTxt").value = ""; $("#myMsg").textContent = "Cleared."; drawMyLevels(); CH.xKey = null; chartExtras(); }
 });
 const _draw2 = drawStage2;
 drawStage2 = function (tab) { _draw2(tab); if (tab === "overview") { drawMood(); } };
-function syncLow() { document.querySelectorAll("[data-low]").forEach((b) => b.setAttribute("aria-pressed", ST.lowers.includes(b.dataset.low))); }
+function syncLow() { document.querySelectorAll("[data-low]").forEach((b) => b.setAttribute("aria-pressed", ST.lowers.includes(b.dataset.low))); document.querySelectorAll("[data-lps]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lps === ST.lpStyle)); }
 syncLow(); $("#tfSeg").addEventListener("click", () => setTimeout(() => { if (D.pfc && D.pfc.per !== PFC_PER[ST.tf]) tick("pfc"); }, 0));
 if ($("#bClean")) $("#bClean").setAttribute("aria-pressed", ST.clean);
 drawMyLevels(); initChart(); if (CC) { CC.subAdj = ST.subAdj; CC.onSplit = (v) => { ST.subAdj = v; LS.set("subAdj", v); }; } syncCtl(); render();
