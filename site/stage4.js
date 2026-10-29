@@ -236,7 +236,7 @@ document.addEventListener("click", (e) => { const b = e.target.closest("[data-pf
 ST.flowView = LS.get("flowView", "cols");
 const _drawFlowText = drawFlow;
 function flowData() {
-  const W = [["15m", 3, 900], ["1h", 12, 3600], ["4h", 48, 14400], ["24h", 287, 86400]];
+  const W = [["30m", 6, 1800], ["1h", 12, 3600], ["4h", 48, 14400], ["8h", 96, 28800], ["1d", 287, 86400]];
   return W.map(([lab, bars, sec]) => {
     const w = live("k5") ? win(D.k5.k, bars) : null, oi = live("okxOI") ? seriesChg(D.okxOI.s, sec) : null, ti = live("okxTk") ? takerImb(D.okxTk.s, sec) : null;
     let tag = "Price only", tc = "mut", why = "No OI data yet, so this is price alone.";
@@ -293,7 +293,7 @@ function flowQuad(F, C) {
   const pts = P.slice().reverse(); s += `<polyline fill="none" stroke="${C.fg3}" stroke-dasharray="3 3" points="${pts.map((r) => `${X(r.oi).toFixed(1)},${Y(r.p).toFixed(1)}`).join(" ")}"/>`;
   P.forEach((r) => { const rr = 6 + 8 * Math.sqrt(Math.abs(r.cvd || 0) / mc), col = (r.cvd || 0) >= 0 ? C.up : C.dn;
     s += `<circle cx="${X(r.oi).toFixed(1)}" cy="${Y(r.p).toFixed(1)}" r="${rr.toFixed(1)}" fill="${rgba(col, 0.28)}" stroke="${col}" stroke-width="1.5"/><text x="${X(r.oi).toFixed(1)}" y="${(Y(r.p) + 3.5).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="${C.fg}">${r.lab}</text>`; });
-  return s + `</svg><div class="src" style="text-align:center">Each dot is a time window: across = OI change, up = price change. Dot size = spot CVD, green = buyers, red = sellers. The dashed line runs 24h → 15m.</div>`;
+  return s + `</svg><div class="src" style="text-align:center">Each dot is a time window: across = OI change, up = price change. Dot size = spot CVD, green = buyers, red = sellers. The dashed line runs 1d → 30m.</div>`;
 }
 drawFlow = function () {
   const el = $("#flow"); if (!el) return; const C = chartColors(), v = ST.flowView;
