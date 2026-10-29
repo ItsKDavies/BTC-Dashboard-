@@ -150,7 +150,8 @@ document.addEventListener("click", (e) => { const b = e.target.closest("[data-po
 /* ---------- economic calendar (ForexFactory weekly feed) ---------- */
 PROXY["nfs.faireconomy.media"] = "/px/ff";
 def("cal", "Economic calendar (ForexFactory)", "US events this week", 1800000, async () => {
-  const j = await getJSONp("https://nfs.faireconomy.media/ff_calendar_thisweek.json");
+  // Try from your own connection first (ForexFactory rate-limits shared cloud IPs), then the site pass-through.
+  let j; try { j = await getJSON("https://nfs.faireconomy.media/ff_calendar_thisweek.json"); } catch (e) { j = await getJSONp("https://nfs.faireconomy.media/ff_calendar_thisweek.json"); }
   if (!Array.isArray(j)) throw new Error("no calendar");
   return { ev: j.filter((e) => e.country === "USD" && (e.impact === "High" || e.impact === "Medium")).map((e) => ({ t: Date.parse(e.date), title: e.title, impact: e.impact, f: e.forecast, p: e.previous, a: e.actual })).filter((e) => ok(e.t)).sort((a, b) => a.t - b.t) };
 });

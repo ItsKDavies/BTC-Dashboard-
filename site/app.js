@@ -34,6 +34,7 @@ async function getJSON(url, opt = {}) {
 }
 function why(e, optional) {
   if (e && e.blocked) return { txt: e.message, blocked: true };
+  if (e && e.ws) return { txt: e.message + " · reconnecting" }; // live socket dropped (common when the phone sleeps or switches apps)
   if (e && e.status) {
     if (e.status === 451 || e.status === 403) return { txt: `Refused in your region (HTTP ${e.status})`, blocked: true };
     if (e.status === 429) return { txt: "Rate limited (HTTP 429), backing off" };
@@ -448,7 +449,7 @@ function drawSources() {
   $("#srcTbl").innerHTML = `<thead><tr><th>Source</th><th class="l">Feeds</th><th>Every</th><th>Status</th><th>Last OK</th><th>Latency</th><th class="l">Detail</th><th></th></tr></thead><tbody>${rows}</tbody>`;
 }
 function report() {
-  const lines = [`BTC Dashboard v2.0 stage 2 status · ${new Date().toString()}`, `Browser: ${navigator.userAgent}`, `Page: ${location.href}`, ""];
+  const lines = [`BTC Dashboard v2.0 stage 4 status · ${new Date().toString()}`, `Browser: ${navigator.userAgent}`, `Page: ${location.href}`, ""];
   for (const s of Object.values(SRC)) lines.push(`${s.id.padEnd(8)} ${status(s.id).padEnd(8)} lastOK=${ago(s.st.okAt)} fails=${s.st.fails} ${s.st.err}`);
   return lines.join("\n");
 }

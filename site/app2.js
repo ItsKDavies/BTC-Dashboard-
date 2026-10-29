@@ -63,7 +63,7 @@ function wsDef(id, name, feeds, url, onOpen, onMsg, opt = {}) {
     if (W.sock && W.sock.readyState === 3) { // report the failure once, reconnect on the next try
       const err = W.err || "Disconnected"; W.sock = null;
       if (opt.optional && !W.since) throw blockedErr(err);
-      throw new Error(err);
+      const e = new Error(err); e.ws = true; throw e;
     }
     if (!W.sock) connect();
     const e = new Error("Connecting…"); e.soft = true; throw e;

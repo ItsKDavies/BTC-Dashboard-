@@ -14,7 +14,7 @@ const UP = {
   fng: "https://api.alternative.me",
   ff: "https://nfs.faireconomy.media",
 };
-// Seconds Cloudflare's edge may reuse a response (cuts repeat calls to the exchanges).
+// Seconds Cloudflare's edge may reuse a successful response (cuts repeat calls to the exchanges).
 const TTL = { fng: 3600, ff: 1800 };
 const DEFAULT_TTL = 15;
 
@@ -28,7 +28,7 @@ export async function onRequest({ request }) {
   const target = base + (m[2] || "/") + url.search, ttl = TTL[m[1]] ?? DEFAULT_TTL;
   const init = { method: request.method, headers: { accept: "application/json", "user-agent": "Mozilla/5.0 (compatible; BTC-Dashboard)" } };
   if (request.method === "POST") { init.body = await request.text(); init.headers["content-type"] = request.headers.get("content-type") || "application/json"; }
-  else init.cf = { cacheTtl: ttl, cacheEverything: true };
+  else init.cf = { cacheEverything: true, cacheTtlByStatus: { "200-299": ttl, "300-599": 0 } }; // never cache errors such as 429
   let r;
   try { r = await fetch(target, init); } catch (e) { return new Response(JSON.stringify({ error: "upstream unreachable" }), { status: 502, headers: { "content-type": "application/json" } }); }
   const h = new Headers(r.headers);
