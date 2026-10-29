@@ -1,0 +1,23 @@
+const { chromium } = require('playwright'); const fs = require('fs'); const mock = require('./mock.js');
+const PX = { okx:'https://www.okx.com', kraken:'https://futures.kraken.com', mexc:'https://contract.mexc.com', bingx:'https://open-api.bingx.com', bybit:'https://api.bybit.com', bnf:'https://fapi.binance.com', krakens:'https://api.kraken.com', bitstamp:'https://www.bitstamp.net', gemini:'https://api.gemini.com', mexcs:'https://api.mexc.com' };
+(async () => {
+  const b = await chromium.launch(); const ctx = await b.newContext({ viewport:{width:390,height:844}, colorScheme:'dark', hasTouch:true, isMobile:true });
+  const p = await ctx.newPage(); p.setDefaultTimeout(8000); const errs=[];
+  p.on('pageerror', e=>errs.push(e.message));
+  await p.addInitScript(() => { try { localStorage.setItem('v2.tab', '"liq"'); } catch (e) {} });
+  await p.route('**/*', async r => { const u=r.request().url();
+    if (u.includes('lightweight-charts')) return r.fulfill({ body: fs.readFileSync('lwstub.js'), contentType:'text/javascript' });
+    if (u==='http://dash.test/') return r.fulfill({ body: fs.readFileSync('../site/index.html'), contentType:'text/html' });
+    const sf = u.match(/^http:\/\/dash\.test\/(\w+\.js)$/); if (sf) return r.fulfill({ body: fs.readFileSync('../site/'+sf[1]), contentType:'text/javascript' });
+    let target=u; const m=u.match(/^http:\/\/dash\.test\/px\/(\w+)(\/.*)$/); if (m) target = PX[m[1]] + m[2];
+    const res = mock(target); if (res && !res.__status) return r.fulfill({ body: JSON.stringify(res), contentType:'application/json', headers:{'access-control-allow-origin':'*'} });
+    return r.abort(); });
+  await p.goto('http://dash.test/'); await p.waitForTimeout(3500);
+  await p.locator('#liqMap rect[data-i="8"]').last().tap(); await p.waitForTimeout(200);
+  console.log('tip1:', await p.innerText('#liqTip'));
+  await p.tap('[data-lrng="3"]'); await p.tap('[data-lside="short"]'); await p.waitForTimeout(400);
+  await p.locator('#liqMap rect[data-i="2"]').last().tap(); await p.waitForTimeout(6000);
+  console.log('tip2 after rerender:', await p.innerText('#liqTip'), '| hl y:', await p.getAttribute('#liqHl','y1'));
+  await p.screenshot({ path: 's2/liqi.png', fullPage: true }); console.log('errors:', errs.join(' | ') || 'none');
+  await b.close(); process.exit(0);
+})();

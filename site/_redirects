@@ -1,0 +1,14 @@
+# Same-origin pass-through for exchanges that don't allow direct browser requests (CORS).
+# Netlify forwards the query string automatically.
+/px/okx/*      https://www.okx.com/:splat          200
+/px/kraken/*   https://futures.kraken.com/:splat   200
+/px/mexc/*     https://contract.mexc.com/:splat    200
+/px/bingx/*    https://open-api.bingx.com/:splat   200
+/px/bybit/*    https://api.bybit.com/:splat        200
+/px/bnf/*      https://fapi.binance.com/:splat     200
+/px/krakens/*  https://api.kraken.com/:splat       200
+/px/bitstamp/* https://www.bitstamp.net/:splat     200
+/px/gemini/*   https://api.gemini.com/:splat       200
+/px/mexcs/*    https://api.mexc.com/:splat         200
+/px/fng/*      https://api.alternative.me/:splat   200
+/px/ff/*       https://nfs.faireconomy.media/:splat 200

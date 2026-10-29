@@ -1,0 +1,41 @@
+id,name,feeds,refresh,requests_per_refresh,requests_per_min,via_netlify_proxy,optional,blocked_in_US,free,defined_in,endpoints
+spot,Binance spot ticker,"Header price, 24h stats",5s,1,12.0,no,no,no,yes,app.js:70,https://data-api.binance.vision/api/v3/ticker/24hr?symbol=BTCUSDT
+kl,Binance spot candles,"Main chart, CVD pane",5s,1,12.0,no,no,no,yes,app.js:75,https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval={tf}&limit=1000|3
+k5,Binance spot 5m,"Flow read, CVD KPIs",30s,1,2.0,no,no,no,yes,app.js:84,https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=5m&limit=288
+kd,Binance spot daily,"Levels (PDH/PDL, opens)",300s,1,0.2,no,no,no,yes,app.js:88,https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=40
+cb,Coinbase spot,Coinbase premium,10s,1,6.0,no,no,no,yes,app.js:92,https://api.exchange.coinbase.com/products/BTC-USD/ticker
+okx,OKX perp,"Venue: price, funding, OI",30s,3,6.0,no,no,no,yes,app.js:96,https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT-SWAP ; https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP ; https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=BTC-USDT-SWAP
+okxOI,OKX OI history,"OI pane, OI change",60s,1,1.0,yes,no,no,yes,app.js:104,https://www.okx.com/api/v5/rubik/stat/contracts/open-interest-volume?ccy=BTC&period=5m
+okxTk,OKX taker volume,Perp taker flow,60s,1,1.0,yes,no,no,yes,app.js:109,https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=BTC&instType=CONTRACTS&period=5m
+okxLS,OKX long/short ratio,Long/short accounts,60s,1,1.0,yes,no,no,yes,app.js:114,https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BTC&period=5m
+hl,Hyperliquid,"Venue: price, funding, OI",30s,1,2.0,no,no,no,yes,app.js:119,https://api.hyperliquid.xyz/info
+bitget,Bitget perp,"Venue: price, funding, OI",30s,1,2.0,no,no,no,yes,app.js:124,https://api.bitget.com/api/v2/mix/market/ticker?symbol=BTCUSDT&productType=usdt-futures
+deribit,Deribit perp,"Venue: price, funding, OI",30s,1,2.0,no,no,no,yes,app.js:129,https://www.deribit.com/api/v2/public/ticker?instrument_name=BTC-PERPETUAL
+kraken,Kraken Futures,"Venue: price, funding, OI",30s,1,2.0,yes,no,no,yes,app.js:134,https://futures.kraken.com/derivatives/api/v3/tickers/PF_XBTUSD
+mexc,MEXC perp,"Venue: price, funding, OI",60s,1,1.0,yes,no,no,yes,app.js:141,https://contract.mexc.com/api/v1/contract/ticker?symbol=BTC_USDT
+bingx,BingX perp,"Venue: price, funding",60s,1,1.0,yes,no,no,yes,app.js:146,https://open-api.bingx.com/openApi/swap/v2/quote/premiumIndex?symbol=BTC-USDT
+bybit,Bybit perp,"Venue: price, funding, OI",30s,1,2.0,yes,yes,likely,yes,app.js:151,https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT
+bnf,Binance futures,"Venue: price, funding, OI",30s,2,4.0,yes,yes,likely,yes,app.js:156,https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT ; https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT
+taK,Binance spot 15m–1D,"TA, patterns, setups, liquidation model",60s,5,5.0,no,no,no,yes,app2.js:14,https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval={tf}&limit={n}
+okxOI1h,OKX OI hourly,Liquidation map model,300s,1,0.2,yes,no,no,yes,app2.js:19,https://www.okx.com/api/v5/rubik/stat/contracts/open-interest-volume?ccy=BTC&period=1H
+okxSpTk,OKX spot taker volume,CVD by exchange,60s,1,1.0,yes,no,no,yes,app2.js:24,https://www.okx.com/api/v5/rubik/stat/taker-volume?ccy=BTC&instType=SPOT&period=5m
+okxLiq,OKX liquidations,Liquidations feed (recent history),60s,2,2.0,yes,no,no,yes,app2.js:45,https://www.okx.com/api/v5/public/liquidation-orders?instType=SWAP&instFamily=BTC-USDT|BTC-USD&state=filled&limit=100
+wsOkxLiq,OKX live liquidations,Liquidations feed (live),WebSocket (live),0,0,no,no,no,yes,app2.js:73,wss://ws.okx.com:8443/ws/v5/public
+wsBnLiq,Binance live liquidations,Liquidations feed (live),WebSocket (live),0,0,no,yes,likely,yes,app2.js:76,wss://fstream.binance.com/ws/btcusdt@forceOrder
+wsByLiq,Bybit live liquidations,Liquidations feed (live),WebSocket (live),0,0,no,yes,likely,yes,app2.js:78,wss://stream.bybit.com/v5/public/linear
+cbTr,Coinbase trades,CVD by exchange (Coinbase),60s,1,1.0,no,no,no,yes,app2.js:91,https://api.exchange.coinbase.com/products/BTC-USD/trades?limit=1000
+wsCb,Coinbase live trades,"CVD by exchange (Coinbase, live)",WebSocket (live),0,0,no,no,no,yes,app2.js:97,wss://ws-feed.exchange.coinbase.com
+cbS,Coinbase spot,"Markets: spot price, 24h",30s,1,2.0,no,no,no,yes,app2.js:104,https://api.exchange.coinbase.com/products/BTC-USD/stats
+krS,Kraken spot,"Markets: spot price, 24h",30s,1,2.0,yes,no,no,yes,app2.js:105,https://api.kraken.com/0/public/Ticker?pair=XBTUSD
+bsS,Bitstamp spot,"Markets: spot price, 24h",30s,1,2.0,yes,no,no,yes,app2.js:106,https://www.bitstamp.net/api/v2/ticker/btcusd/
+okS,OKX spot,"Markets: spot price, 24h",30s,1,2.0,no,no,no,yes,app2.js:107,https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT
+bgS,Bitget spot,"Markets: spot price, 24h",30s,1,2.0,no,no,no,yes,app2.js:108,https://api.bitget.com/api/v2/spot/market/tickers?symbol=BTCUSDT
+gmS,Gemini spot,"Markets: spot price, 24h",30s,1,2.0,yes,no,no,yes,app2.js:109,https://api.gemini.com/v1/pubticker/btcusd
+mxS,MEXC spot,"Markets: spot price, 24h",30s,1,2.0,yes,no,no,yes,app2.js:110,https://api.mexc.com/api/v3/ticker/24hr?symbol=BTCUSDT
+dbFut,Deribit futures,Basis term structure,60s,1,1.0,no,no,no,yes,app2.js:115,https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=future
+dbOpt,Deribit options,"Put/call, max pain, OI by strike",300s,1,0.2,no,no,no,yes,app2.js:119,https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=option
+wsBnT,Binance spot trades,Big-trade bubbles,WebSocket (live),0,0,no,no,no,yes,chart2.js:232,wss://data-stream.binance.vision/ws/btcusdt@aggTrade
+wsOkT,OKX perp trades,Big-trade bubbles,WebSocket (live),0,0,no,no,no,yes,chart2.js:234,wss://ws.okx.com:8443/ws/v5/public
+fng,Fear & Greed (alternative.me),Mood gauges,600s,1,0.1,yes,no,no,yes,chart2.js:239,https://api.alternative.me/fng/?limit=30
+pos,OKX OI + long/short history,Positioning charts,60s,2,2.0,yes,no,no,yes,stage4.js:98,https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BTC&period={5m|1H|1D} ; https://www.okx.com/api/v5/rubik/stat/contracts/open-interest-volume?ccy=BTC&period={5m|1H|1D}
+cal,Economic calendar (ForexFactory),US events this week,1800s,1,0.03,yes,no,no,yes,stage4.js:152,https://nfs.faireconomy.media/ff_calendar_thisweek.json

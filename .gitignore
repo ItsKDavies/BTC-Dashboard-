@@ -1,0 +1,4 @@
+node_modules/
+tests/s2/
+tests/s3/
+*.png

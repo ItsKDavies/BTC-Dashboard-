@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BTC Market Dashboard v2</title>
+<meta name="theme-color" content="#0d1015">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky price header + tab row, panels on a wrapping grid; each panel owns one data source */
+:root{
+  --bg:#f5f7fa;--panel:#ffffff;--fg:#131820;--fg2:#465060;--fg3:#768194;
+  --line:#c4ccd7;--weak:#e3e7ee;--acc:#2563d4;--up:#0f8a5a;--dn:#d23744;--warn:#b8741a;--purple:#7a4fd0;--my:#c026d3;
+  --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0d1015;--panel:#12161d;--fg:#e7eaf0;--fg2:#a2acba;--fg3:#6e7a8b;
+  --line:#2e3744;--weak:#1d232c;--acc:#5c9dff;--up:#2fc37f;--dn:#ff5d68;--warn:#f2b230;--purple:#b08cff;--my:#f472d0;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 var(--font);font-feature-settings:"tnum" 1;-webkit-text-size-adjust:100%}
+.wrap{max-width:1400px;margin:0 auto;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* header */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--weak);padding-top:env(safe-area-inset-top)}
+.hd{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-block:10px 8px}
+.px{font-size:30px;font-weight:700;letter-spacing:-.5px;line-height:1}
+.chg{font-weight:600;padding:3px 8px;border-radius:7px;font-size:14px}
+.chg.up{color:var(--up);background:color-mix(in srgb,var(--up) 13%,transparent)}
+.chg.dn{color:var(--dn);background:color-mix(in srgb,var(--dn) 13%,transparent)}
+.mini{font-size:12.5px;color:var(--fg3);display:flex;gap:12px;flex-wrap:wrap}
+.mini b{color:var(--fg2);font-weight:500}
+.hright{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--fg3);flex:none}
+.dot.live{background:var(--up);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:5px 11px;font-size:13px;min-height:32px}
+.btn[aria-pressed="true"]{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--panel))}
+.tabs{display:flex;gap:4px;padding-bottom:8px;overflow-x:auto}
+.tab{border:none;background:none;padding:7px 14px;border-radius:8px;font-weight:600;font-size:14px;color:var(--fg3);white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--fg);background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+/* layout */
+main{padding-block:14px 40px;display:grid;gap:14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.panel{background:var(--panel);border:1px solid var(--weak);border-radius:12px;padding:12px 14px;min-width:0}
+.ph{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pt{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--fg3);font-weight:600}
+.st{margin-left:auto;font-size:11px;padding:1px 7px;border-radius:6px;white-space:nowrap;font-weight:600}
+.st.ok{color:var(--up);background:color-mix(in srgb,var(--up) 12%,transparent)}
+.st.stale{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.st.down,.st.blocked{color:var(--dn);background:color-mix(in srgb,var(--dn) 12%,transparent)}
+.st.wait,.st.off{color:var(--fg3);background:var(--weak)}
+.big{font-size:22px;font-weight:650;line-height:1.2}
+.sub{font-size:12.5px;color:var(--fg2);margin-top:2px}
+.src{font-size:11.5px;color:var(--fg3);margin-top:6px}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--fg3)}.wn{color:var(--warn)}
+.kpi-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.spark{flex:none}
+.unavail{color:var(--fg3);font-size:13px;padding:6px 0}
+/* chart */
+.ctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:none;padding:4px 10px;font-size:13px;min-height:30px;color:var(--fg2)}
+.seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--fg);font-weight:600}
+.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:12.5px;min-height:30px;color:var(--fg2)}
+.chip[aria-pressed="true"]{border-color:var(--acc);color:var(--acc)}
+#cMain{height:clamp(300px,52vh,560px);position:relative}
+.ov{position:absolute;left:0;top:0;pointer-events:none;z-index:3}
+canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:crosshair}
+.panel.full canvas.cc{touch-action:none}
+.layers{display:grid;gap:6px;margin:2px 0 8px;padding:8px 10px;border:1px solid var(--weak);border-radius:10px;background:var(--bg)}
+.lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lgt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3);font-weight:600;width:84px}
+.moodg{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.moodg .panel{background:var(--bg)}
+.moodl{display:grid;gap:10px}
+.mrow{display:grid;grid-template-columns:minmax(120px,1.1fr) 2fr 84px;gap:12px;align-items:center}
+.mlab{display:flex;flex-direction:column;line-height:1.25;font-size:13.5px}.mlab span{color:var(--fg3);font-size:12px}
+.mbar{position:relative;height:10px;border-radius:5px;overflow:visible;display:block}
+.mbar i{position:absolute;top:0;bottom:0;opacity:.8}.mbar i:first-child{border-radius:5px 0 0 5px}.mbar i:nth-last-child(2),.mbar i:last-child{border-radius:0 5px 5px 0}
+.mpin{position:absolute;top:-5px;width:4px;height:20px;margin-left:-2px;border-radius:2px;background:var(--fg);box-shadow:0 0 0 2px var(--panel)}
+.mval{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.nextev{margin-top:4px;padding-top:10px;border-top:1px solid var(--weak);font-size:13.5px}
+.imp{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}.imp.hi{background:var(--dn)}.imp.md{background:var(--warn)}
+.calday{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3);font-weight:600;margin:10px 0 4px}
+.calrow{display:grid;grid-template-columns:16px 74px 1fr auto;gap:6px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--weak);font-size:13.5px}
+.calrow.past{opacity:.5}.caln{min-width:0}.calc{font-weight:600;white-space:nowrap;font-size:12.5px}
+.psums{display:grid;gap:6px}.psum{display:grid;grid-template-columns:44px 1fr;gap:8px;font-size:13.5px}
+.pgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr))}
+.pcard{display:grid;gap:4px}.pname{font-size:16px;font-weight:700}.tfb{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;background:var(--weak);color:var(--fg2)}
+.pstat{font-size:13px;font-weight:600}.pplan{font-size:13px;line-height:1.6;margin-top:4px;padding-top:6px;border-top:1px dashed var(--weak)}
+@media (max-width:520px){.mrow{grid-template-columns:1fr 70px}.mrow .mbar{grid-column:1/-1;order:3}}
+details summary{list-style:revert}
+.chartbox{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hint{font-size:11.5px;color:var(--fg3);margin-top:4px}
+.panel.full{position:fixed;inset:0;z-index:60;border-radius:0;border:none;display:flex;flex-direction:column;overscroll-behavior:contain;
+  padding:calc(8px + env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+.panel.full #cMain{flex:1 1 auto;height:auto;min-height:0}
+.panel.full .subc{flex:0 0 auto;height:min(110px,14vh)}
+.panel.full .hint{display:none}
+body.locked{position:fixed;left:0;right:0;overflow:hidden}
+.subc{height:110px;margin-top:4px;position:relative}
+.subc .lab{position:absolute;left:6px;top:4px;z-index:3;font-size:11.5px;color:var(--fg3);pointer-events:none}
+.ohlc{font-size:12.5px;color:var(--fg2);min-height:18px;margin:2px 0 4px;font-family:var(--mono)}
+.chart-msg{padding:40px 10px;text-align:center;color:var(--fg3)}
+/* flow read */
+.flow{display:grid;gap:8px}
+.frow{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start;padding:8px 0;border-top:1px solid var(--weak)}
+.frow:first-child{border-top:none}
+.fwin{font-weight:700;font-size:13px;color:var(--fg2);padding-top:2px}
+.ftag{display:inline-block;font-weight:650;font-size:13.5px;padding:2px 8px;border-radius:7px;margin-right:6px}
+.fnote{font-size:13px;color:var(--fg2);margin-top:4px}
+/* tables */
+.tw{overflow-x:auto;margin:0 -2px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3);font-weight:600;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--weak);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td.l,th.l{text-align:left}
+td.wrap{white-space:normal;min-width:220px;color:var(--fg2);font-size:12.5px;text-align:left}
+tr:last-child td{border-bottom:none}
+.rt td{white-space:normal}.rt td:first-child{color:var(--fg2);width:42%}
+.bar{position:relative;height:8px;background:var(--weak);border-radius:4px;min-width:70px}
+.bar i{position:absolute;top:0;bottom:0;border-radius:4px}
+.fbar{display:grid;grid-template-columns:110px 1fr 74px;gap:10px;align-items:center;font-size:13px;padding:4px 0}
+.fbar .track{position:relative;height:10px;background:var(--weak);border-radius:5px}
+.fbar .track i{position:absolute;top:0;bottom:0;border-radius:5px}
+.fbar .track b{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--fg3)}
+.two{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.note{font-size:13px;color:var(--fg2);line-height:1.5}
+footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
+[hidden]{display:none!important}
+@media (max-width:520px){
+  .px{font-size:26px}.big{font-size:19px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .panel{padding:10px 11px}
+  .fbar{grid-template-columns:84px 1fr 64px}
+  .hright{margin-left:0}
+  header{position:relative}
+  .kpi-row{flex-wrap:wrap}
+  .hd{gap:6px 12px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="hd">
+      <div>
+        <div class="mini" style="margin-bottom:4px"><span>BTC / USDT</span><span id="hSrc">Binance spot</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><span class="px" id="hPx">–</span><span class="chg" id="hChg">–</span></div>
+      </div>
+      <div class="mini" id="hStats"></div>
+      <div id="hLean" style="display:flex;align-items:center;gap:6px"></div>
+      <div class="hright">
+        <span class="pill" id="hLive"><span class="dot"></span><span>Starting…</span></span>
+        <button class="btn" id="bAuto" aria-pressed="true" title="Pause or resume automatic updates">Auto-refresh</button>
+        <button class="btn" id="bNow" title="Fetch everything now">↻ Refresh</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+      <button class="tab" role="tab" data-tab="overview">Overview</button>
+      <button class="tab" role="tab" data-tab="ta">TA</button>
+      <button class="tab" role="tab" data-tab="pat">Patterns</button>
+      <button class="tab" role="tab" data-tab="setups">Setups</button>
+      <button class="tab" role="tab" data-tab="flow">CVD</button>
+      <button class="tab" role="tab" data-tab="liq">Liquidations</button>
+      <button class="tab" role="tab" data-tab="mkts">Markets</button>
+      <button class="tab" role="tab" data-tab="derivs">Derivatives</button>
+      <button class="tab" role="tab" data-tab="sources">Sources</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+<main>
+  <!-- OVERVIEW -->
+  <section data-view="overview" class="view" style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
+    <div class="grid" id="kpis"></div>
+    <div class="panel">
+      <div class="ph"><span class="pt">Assessment</span></div>
+      <div id="ovAssess"></div>
+      <div class="src">Multi-timeframe technicals (15m–1D) weighted 70%, live flow 30%. Full breakdown in the TA tab, entries in Setups. Not advice.</div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">Flow read</span><span class="st" id="flowSt"></span></div>
+      <div class="flow" id="flow"></div>
+      <div class="src">Price and spot CVD from Binance spot 5m · OI, taker flow from OKX 5m stats · rules only, not advice</div>
+    </div>
+    <div class="panel" id="chartPanel">
+      <div class="ph"><span class="pt">BTC / USDT · Binance spot</span><span class="st" id="chartSt"></span></div>
+      <div class="ctl">
+        <span class="seg" id="tfSeg"></span>
+        <span class="seg" aria-label="Zoom">
+          <button id="bZin" title="Zoom in" aria-label="Zoom in" style="font-size:17px;min-width:36px">+</button><button id="bZout" title="Zoom out" aria-label="Zoom out" style="font-size:17px;min-width:36px">−</button><button id="bRst" title="Latest bars, auto price scale">Reset</button>
+        </span>
+        <button class="btn" id="bFull" aria-pressed="false" title="Full-screen chart: drag in any direction, pinch to zoom">⤢ Expand</button>
+        <button class="btn" id="bLayers" aria-expanded="false">Layers ▾</button>
+        <button class="btn" id="bClean" aria-pressed="false" title="Hide every overlay except your own levels">Clean</button>
+      </div>
+      <div id="layers" hidden class="layers">
+        <div class="lg"><span class="lgt">Candles</span><button class="chip" data-tog="mono">Mono</button><button class="chip" data-tog="sess">Sessions</button></div>
+        <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
+        <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button></div>
+        <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
+        <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="bub">Big trades</button></div>
+        <div class="lg"><span class="lgt">Lower pane</span><span class="seg"><button data-lower="off">Off</button><button data-lower="cvd">CVD</button><button data-lower="delta">Delta</button><button data-lower="oi">OI</button></span></div>
+        <div class="ctl" id="fibSel" hidden></div>
+      </div>
+      <div class="ohlc" id="ohlc"></div>
+      <div id="cMain" class="chartbox"></div>
+      <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">My levels · CoinWise</span></div>
+      <p class="note" style="margin:0 0 8px">Paste CoinWise's daily levels (or anyone's). Each price is picked up with the words before it as its label, then drawn on the chart in pink.</p>
+      <textarea id="myTxt" rows="4" placeholder="Daily VAH 81,240&#10;POC 80,610&#10;Support 79,750 / 79.2k" style="width:100%;font:13px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px"></textarea>
+      <div class="ctl" style="margin-top:6px"><button class="btn" id="bMySave">Save levels</button><button class="btn" id="bMyClear">Clear</button><span class="mut" id="myMsg" style="font-size:13px"></span></div>
+      <div id="myList"></div>
+  </section>
+
+  <!-- TA -->
+  <section data-view="ta" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Assessment</span></div><div id="taAssess"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">Technicals by timeframe</span></div><div class="tw"><table id="taTbl"></table></div><div class="src">Binance spot candles. Score is the average of the signal votes (−100 to +100); 30 or more counts as a clear lean.</div></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Moving averages</span></div><div class="tw"><table id="maTbl"></table></div><div class="src">▲ price above · ▼ price below</div></div>
+      <div class="panel"><div class="ph"><span class="pt">Key zones</span></div><div class="tw"><table id="zoneTbl"></table></div><div class="src">Swing highs/lows (30m, 4h), PDH/PDL, opens, VWAP and liquidation clusters merged when within 0.12%.</div></div>
+    </div>
+  </section>
+
+  <!-- PATTERNS -->
+  <section data-view="pat" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Right now</span></div><div id="patSum" class="psums"></div></div>
+    <div class="ph" style="margin:4px 2px -4px"><span class="pt">Chart patterns · 30m, 1h, 4h</span></div>
+    <div id="patGeo" class="pgrid"></div>
+    <div class="ph" style="margin:4px 2px -4px"><span class="pt">Candle patterns · last few 30m and 4h candles</span></div>
+    <div id="patCdl" class="pgrid"></div>
+    <div class="panel"><div class="ph"><span class="pt">Divergences and double tops/bottoms</span></div><div id="chartPats"></div></div>
+  </section>
+
+  <!-- SETUPS -->
+  <section data-view="setups" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel">
+      <div class="ph"><span class="pt">Your position size</span></div>
+      <div class="ctl"><span class="mut" style="font-size:13px">Leverage</span><span class="seg" id="levSeg"></span>
+        <label class="mut" style="font-size:13px;display:inline-flex;align-items:center;gap:6px">Margin $<input id="marginIn" type="number" min="1" step="1" inputmode="decimal" style="width:90px;font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--fg)"></label></div>
+      <div id="setBias"></div>
+    </div>
+    <div class="two"><div style="display:grid;gap:12px;align-content:start" id="setL"></div><div style="display:grid;gap:12px;align-content:start" id="setS"></div></div>
+  </section>
+
+  <!-- CVD -->
+  <section data-view="flow" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Price vs spot and perp CVD · 24h</span></div><div id="cvdMain"></div><div class="src">Cumulative taker buys minus sells. Colored second line is a 20-period EMA of the CVD.</div></div>
+    <div class="panel"><div class="ph"><span class="pt">CVD by exchange</span></div><div class="ctl" id="cvdSel"></div><div id="cvdEx"></div><div class="src">Binance from 5m candles · OKX from 5m taker stats · Coinbase from its trade feed, so it starts when you open the page and fills in while it stays open.</div></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Hourly spot buys vs sells · Binance</span></div><div id="deltaBars"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">CVD divergence check</span></div><div id="cvdDiv"></div></div>
+    </div>
+  </section>
+
+  <!-- LIQUIDATIONS -->
+  <section data-view="liq" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel">
+      <div class="ph"><span class="pt">Live maps on Coinglass and CoinAnk</span></div>
+      <div class="ctl">
+        <a class="btn" href="https://www.coinglass.com/pro/futures/LiquidationHeatMap?coin=BTC" target="_blank" rel="noopener" style="text-decoration:none">Coinglass heatmap ↗</a>
+        <a class="btn" href="https://www.coinglass.com/pro/futures/LiquidationMap" target="_blank" rel="noopener" style="text-decoration:none">Coinglass liquidation map ↗</a>
+        <a class="btn" href="https://coinank.com/liqHeatMapChart" target="_blank" rel="noopener" style="text-decoration:none">CoinAnk heatmap ↗</a>
+        <a class="btn" href="https://coinank.com/liqMapChart" target="_blank" rel="noopener" style="text-decoration:none">CoinAnk liquidation map ↗</a>
+        <a class="btn" href="https://coinmarketcap.com/charts/liquidation-heatmap/" target="_blank" rel="noopener" style="text-decoration:none">CoinMarketCap heatmap ↗</a>
+      </div>
+      <div class="src">Opens their full interactive charts in a new tab: zoom, timeframes, exchange filters.</div>
+    </div>
+    <div class="grid" id="liqK"></div>
+    <div class="panel"><div class="ph"><span class="pt">Liquidations over time · 15m buckets</span></div><div id="liqBars"></div></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Liquidation map · estimated</span></div><div class="ctl" id="liqCtl"></div><div id="liqTip" class="note" hidden style="border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin-bottom:6px;font-size:13px"></div><div id="liqMap"></div><div class="src">Model: new open interest each hour is spread over 5×–100× leverage; levels price has already crossed are removed. OKX hourly OI scaled to all venues. An estimate, like Coinglass's.</div></div>
+      <div class="panel"><div class="ph"><span class="pt">Biggest liquidations · 24h</span></div><div id="liqList"></div></div>
+    </div>
+  </section>
+
+  <!-- MARKETS -->
+  <section data-view="mkts" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">US economic calendar · this week</span></div><div id="calList"></div><div class="src">ForexFactory's weekly feed, high (red) and medium (amber) impact USD events. Times in your time zone. Next week's list appears over the weekend.</div></div>
+    <div class="panel"><div class="ph"><span class="pt">BTC spot across exchanges</span></div><div class="tw"><table id="mktTbl"></table></div></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Spot summary and volume share</span></div><div id="mktSum"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Futures basis · Deribit</span></div><div class="tw"><table id="basisTbl"></table></div><div class="src">Premium of dated futures over spot; annualized = basis × 365 / days left.</div></div>
+    </div>
+    <div class="panel"><div class="ph"><span class="pt">Options · Deribit</span></div><div id="optPanel"></div></div>
+  </section>
+
+  <!-- DERIVATIVES -->
+  <section data-view="derivs" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel">
+      <div class="ph"><span class="pt">Open interest · longs vs shorts</span><span class="seg" id="posSeg" style="margin-left:auto"></span></div>
+      <div id="posRead" class="sub" style="margin:2px 0 8px;line-height:1.6"></div>
+      <div id="posChart"></div>
+      <div class="src">OKX BTC contracts. Longs and shorts are OI split by OKX's long/short account ratio (an estimate). Bars are green/red when longs/shorts grew that bar, grey when they shrank. Tap or hover for values.</div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">Perp venues</span><span class="st" id="venSt"></span></div>
+      <div class="tw"><table id="venTbl"></table></div>
+      <div class="src">Each venue is fetched on its own timer. Funding shown per 8h (hourly venues ×8). APR = 8h rate × 3 × 365.</div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Funding by venue · per 8h</span></div><div id="fBars"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">OI share</span></div><div id="oiBars"></div></div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">OKX open interest · 24h</span><span class="st" id="oiSt"></span></div><div id="oiChart"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">OKX long/short account ratio</span><span class="st" id="lsSt"></span></div><div id="lsChart"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">OKX perp taker buy vs sell</span><span class="st" id="tkSt"></span></div><div id="tkChart"></div></div>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <section data-view="sources" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel">
+      <div class="ph"><span class="pt">Data sources</span></div>
+      <p class="note" style="margin:2px 0 10px">Every source runs on its own timer, straight from your browser. A failed source backs off and retries; sources refused in your region retry every 30 minutes. If something stays down, tap <b>Copy status report</b> and paste it to Claude.</p>
+      <div class="ctl"><button class="btn" id="bCopy">Copy status report</button><span class="mut" id="copyMsg" style="font-size:13px"></span></div>
+      <div class="tw"><table id="srcTbl"></table></div>
+      <textarea id="copyBox" hidden readonly style="width:100%;height:160px;margin-top:10px;font:12px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px"></textarea>
+    </div>
+  </section>
+</main>
+<footer>BTC Market Dashboard v2.0 · stage 4 · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
+</div>
+
+<script src="ta.js"></script>
+<script src="app.js"></script>
+<script src="app2.js"></script>
+<script src="chart2.js"></script>
+<script src="stage4.js"></script>
+</body>
+</html>

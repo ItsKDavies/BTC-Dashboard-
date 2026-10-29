@@ -1,0 +1,66 @@
+<title>BTC Market Dashboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one-screen app shell — inner scroller plus a bottom tab bar, tokens mirror the dashboard's theme hook */
+:root {
+  --bg: #f5f7fa; --surface: #ffffff; --fg: #131820; --fg2: #465060; --fg3: #768194;
+  --line: #c4ccd7; --line-weak: #dfe3ea; --accent: #2563d4;
+  --up: #0f8a5a; --dn: #d23744; --warn: #b8741a;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d1015; --surface: #12161d; --fg: #e7eaf0; --fg2: #a2acba; --fg3: #6e7a8b;
+  --line: #2e3744; --line-weak: #1f2630; --accent: #5c9dff;
+  --up: #2fc37f; --dn: #ff5d68; --warn: #f2b230; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0d1015; --surface: #12161d; --fg: #e7eaf0; --fg2: #a2acba; --fg3: #6e7a8b;
+  --line: #2e3744; --line-weak: #1f2630; --accent: #5c9dff;
+  --up: #2fc37f; --dn: #ff5d68; --warn: #f2b230; color-scheme: dark }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 8px 0; overflow: hidden; }
+#app { max-width: 1440px; margin: 0 auto; }
+.gc-page { min-width: 0; }
+.gc-section { margin: 20px 0 8px; min-width: 0; }
+.gc-h { font-size: 17px; font-weight: 650; margin: 0 0 4px; text-wrap: balance; }
+.gc-cap { font-size: 13px; color: var(--fg3); margin-bottom: 8px; }
+.gc-text { margin: 6px 0; color: var(--fg2); line-height: 1.5; max-width: 80ch; }
+.gc-tablewrap { overflow-x: auto; max-width: 100%; border: 1px solid var(--line-weak); border-radius: 10px; margin: 6px 0; }
+.gc-table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.gc-table th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg3); font-weight: 600;
+  padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; background: color-mix(in srgb, var(--line-weak) 40%, transparent); }
+.gc-table td { padding: 7px 10px; border-bottom: 1px solid var(--line-weak); vertical-align: top; }
+.gc-table tr:last-child td { border-bottom: none; }
+.gc-table tbody tr:hover td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.gc-t-success { color: var(--up); font-weight: 600; }
+.gc-t-danger { color: var(--dn); font-weight: 600; }
+.gc-t-warning { color: var(--warn); font-weight: 600; }
+.gc-callout { border: 1px solid var(--line-weak); border-left: 3px solid var(--accent); border-radius: 10px; padding: 10px 14px; margin: 8px 0;
+  background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.gc-c-warning { border-left-color: var(--warn); background: color-mix(in srgb, var(--warn) 8%, transparent); }
+.gc-c-danger { border-left-color: var(--dn); background: color-mix(in srgb, var(--dn) 7%, transparent); }
+.gc-c-success { border-left-color: var(--up); background: color-mix(in srgb, var(--up) 7%, transparent); }
+.gc-lead { font-weight: 650; margin-bottom: 2px; }
+.gc-cbody { color: var(--fg2); line-height: 1.5; }
+.gc-ul { margin: 6px 0; padding-left: 20px; line-height: 1.5; color: var(--fg2); }
+.gc-ul li { margin: 3px 0; }
+.gc-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.gc-seg button { font: inherit; border: none; background: transparent; color: var(--fg2); padding: 4px 10px; }
+.gc-seg button[aria-selected="true"] { background: var(--accent); color: var(--bg); }
+code, pre, kbd { font-family: var(--font-data); }
+a { color: var(--accent); }
+[data-mplan] svg { max-width: 640px; }
+.boot { color: var(--fg3); padding: 40px 0; text-align: center; font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+</style>
+<div id="app"><div class="boot">Loading BTC Market Dashboard…</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>
+/*BUNDLE*/
+</script>

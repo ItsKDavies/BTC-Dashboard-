@@ -1,0 +1,52 @@
+const { chromium } = require('playwright'); const fs = require('fs'); const mock = require('./mock.js');
+const PX = { okx:'https://www.okx.com', kraken:'https://futures.kraken.com', mexc:'https://contract.mexc.com', bingx:'https://open-api.bingx.com', bybit:'https://api.bybit.com', bnf:'https://fapi.binance.com', krakens:'https://api.kraken.com', bitstamp:'https://www.bitstamp.net', gemini:'https://api.gemini.com', mexcs:'https://api.mexc.com', fng:'https://api.alternative.me' };
+(async () => {
+  const [w,h,scheme,out,touch] = [+process.argv[2], +process.argv[3], process.argv[4], process.argv[5], process.argv[6]==='touch'];
+  const b = await chromium.launch(); const ctx = await b.newContext({ viewport:{width:w,height:h}, colorScheme:scheme, hasTouch:touch, isMobile:touch });
+  const p = await ctx.newPage(); p.setDefaultTimeout(8000); const errs=[];
+  p.on('pageerror', e=>errs.push('PAGEERR '+e.message)); p.on('console', m=>{ if(m.type()==='error' && !/Failed to load resource|WebSocket connection/.test(m.text())) errs.push('CONSOLE '+m.text().slice(0,200)); });
+  await p.addInitScript(() => { try { localStorage.setItem('v2.tab','"overview"'); } catch(e){} });
+  await p.routeWebSocket(/okx\.com/, ws => { ws.onMessage(m => { const s=String(m); if (s.includes('"trades"')) { const iv=setInterval(()=>{ try{ ws.send(JSON.stringify({arg:{channel:'trades',instId:'BTC-USDT-SWAP'},data:[{px:String(80200+Math.random()*200),sz:String(Math.random()<0.1?9000:20),side:Math.random()>0.5?'buy':'sell',ts:String(Date.now())}]})); }catch(e){clearInterval(iv);} }, 120); } }); });
+  await p.routeWebSocket(/binance\.vision/, ws => { const iv=setInterval(()=>{ try{ ws.send(JSON.stringify({e:'aggTrade',p:String(80150+Math.random()*300),q:String(Math.random()<0.08?6:0.1),T:Date.now(),m:Math.random()>0.5})); }catch(e){clearInterval(iv);} }, 100); });
+  await p.routeWebSocket(/coinbase\.com|binance\.com|bybit\.com/, ws => { ws.close(); });
+  await p.route('**/*', async r => { const u=r.request().url();
+    if (u==='http://dash.test/') return r.fulfill({ body: fs.readFileSync('../site/index.html'), contentType:'text/html' });
+    const sf = u.match(/^http:\/\/dash\.test\/(\w+\.js)$/); if (sf) return r.fulfill({ body: fs.readFileSync('../site/'+sf[1]), contentType:'text/javascript' });
+    let target=u; const m=u.match(/^http:\/\/dash\.test\/px\/(\w+)(\/.*)$/); if (m) target = PX[m[1]] + m[2];
+    if (target.includes('alternative.me')) return r.fulfill({ body: JSON.stringify({data:[{value:'38',value_classification:'Fear'},{value:'44',value_classification:'Fear'}]}), contentType:'application/json' });
+    const res = mock(target); if (res && res.__status) return r.fulfill({ status: res.__status, body:'{}' });
+    if (res) return r.fulfill({ body: JSON.stringify(res), contentType:'application/json', headers:{'access-control-allow-origin':'*'} });
+    return r.abort(); });
+  await p.goto('http://dash.test/'); await p.waitForTimeout(4500);
+  const st = () => p.evaluate(() => ({ x0: +CC.x0.toFixed(1), bars: +CC.bars.toFixed(1), auto: CC.auto, n: CC.k.length, lines: CC.L.lines.length, hl: CC.L.hlines.length, heat: !!CC.L.heat, bub: (CC.L.bubbles||[]).length, sess: (CC.L.sessions||[]).length, sub: CC.L.sub && CC.L.sub.name }));
+  console.log('start', JSON.stringify(await st()));
+  await p.click('#bLayers'); for (const t of ['fib','prof','tpo','avwap','zones','liq','ema']) await p.click(`#layers [data-tog="${t}"]`);
+  await p.waitForTimeout(800); console.log('layers on', JSON.stringify(await st()));
+  await p.locator('canvas.cc').scrollIntoViewIfNeeded(); await p.waitForTimeout(300); const box = await p.locator('canvas.cc').boundingBox(); const cx = box.x + box.width*0.5, cy = box.y + box.height*0.4;
+  if (touch) {
+    const cdp = await ctx.newCDPSession(p);
+    const tp = (pts) => pts.map((q,i)=>({x:q[0],y:q[1],id:i}));
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:tp([[cx,cy]])});
+    for (let i=1;i<=10;i++) await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:tp([[cx+i*15,cy+i*1]])});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]}); await p.waitForTimeout(700);
+    console.log('after drag right', JSON.stringify(await st()));
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:tp([[cx-40,cy],[cx+40,cy]])});
+    for (let i=1;i<=10;i++) await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:tp([[cx-40-i*8,cy],[cx+40+i*8,cy]])});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]}); await p.waitForTimeout(400);
+    console.log('after pinch out', JSON.stringify(await st()));
+    await p.touchscreen.tap(cx, cy); await p.waitForTimeout(300); console.log('ohlc after tap:', await p.innerText('#ohlc'));
+  } else {
+    await p.mouse.move(cx, cy); await p.mouse.down(); await p.mouse.move(cx+150, cy, {steps:8}); await p.mouse.up(); await p.waitForTimeout(800);
+    console.log('after drag', JSON.stringify(await st()));
+    await p.mouse.wheel(0, -400); await p.waitForTimeout(300); console.log('after wheel zoom in', JSON.stringify(await st()));
+    await p.mouse.move(box.x+box.width-30, cy); await p.mouse.down(); await p.mouse.move(box.x+box.width-30, cy+60, {steps:5}); await p.mouse.up(); await p.waitForTimeout(200);
+    console.log('after axis drag', JSON.stringify(await st()));
+    await p.mouse.move(cx-100, cy+20); await p.waitForTimeout(200); console.log('ohlc hover:', await p.innerText('#ohlc'));
+  }
+  await p.screenshot({ path: out });
+  await p.click('#bFull'); await p.waitForTimeout(500); await p.screenshot({ path: out.replace('.png','-full.png') }); await p.click('#bFull');
+  await p.fill('#myTxt', 'Daily VAH 81,240\nPOC 80,610\nSupport 79,750 / 79.2k'); await p.click('#bMySave'); await p.waitForTimeout(300); console.log('my:', await p.innerText('#myMsg'));
+  await p.evaluate(() => window.scrollTo(0,0)); await p.screenshot({ path: out.replace('.png','-page.png'), fullPage: true });
+  console.log('errors:', errs.join(' | ') || 'none', 'sw', await p.evaluate(()=>document.documentElement.scrollWidth));
+  await b.close(); process.exit(0);
+})().catch(e=>{ console.log('FAIL', e.message.slice(0,500)); process.exit(1); });
