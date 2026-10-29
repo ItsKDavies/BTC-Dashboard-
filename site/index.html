@@ -68,7 +68,9 @@ main{padding-block:14px 40px;display:grid;gap:14px}
 .seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--fg);font-weight:600}
 .chip{border:1px solid var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:12.5px;min-height:30px;color:var(--fg2)}
 .chip[aria-pressed="true"]{border-color:var(--acc);color:var(--acc)}
-#cMain{height:clamp(300px,52vh,560px);position:relative}
+#cMain{height:calc(clamp(300px,52vh,560px) + var(--subx,0px));position:relative}
+.cgrip{position:absolute;left:0;height:12px;cursor:row-resize;touch-action:none;z-index:4;display:flex;align-items:center;justify-content:center}
+.cgrip[hidden]{display:none}.cgrip i{width:44px;height:5px;border-radius:3px;background:var(--fg3);opacity:.55;box-shadow:0 0 0 3px var(--panel)}.cgrip:hover i,.cgrip.on i{opacity:1;background:var(--acc)}
 .ov{position:absolute;left:0;top:0;pointer-events:none;z-index:3}
 canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:crosshair}
 .panel.full canvas.cc{touch-action:none}
@@ -214,7 +216,7 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
         <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><button class="chip" data-tog="cdl">Candle patterns</button></div>
         <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
         <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
-        <div class="lg"><span class="lgt">Lower pane</span><span class="seg"><button data-lower="off">Off</button><button data-lower="cvd">CVD</button><button data-lower="delta">Delta</button><button data-lower="oi">OI</button></span></div>
+        <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="pos">Longs / shorts</button><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 3. Drag the bar above the panes to resize, double-tap it to reset.</span></div>
         <div class="ctl" id="fibSel" hidden></div>
       </div>
       <div class="ohlc" id="ohlc"></div>
