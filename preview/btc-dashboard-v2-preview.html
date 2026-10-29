@@ -66,7 +66,8 @@ main{padding-block:14px 40px;display:grid;gap:14px}
 .seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--fg);font-weight:600}
 .chip{border:1px solid var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:12.5px;min-height:30px;color:var(--fg2)}
 .chip[aria-pressed="true"]{border-color:var(--acc);color:var(--acc)}
-#cMain{height:calc(clamp(300px,52vh,560px) + var(--subx,0px));position:relative}
+#cMain{height:calc(clamp(420px,72vh,900px) + var(--subx,0px));position:relative}
+@media (max-width:520px){#chartPanel{padding-left:4px;padding-right:4px;border-radius:10px}#chartPanel>.ph,#chartPanel>.ctl,#chartPanel>.ohlc,#chartPanel>#myAdd,#chartPanel>.hint{padding-left:8px;padding-right:8px}}
 .cgrip{position:absolute;left:0;height:12px;cursor:row-resize;touch-action:none;z-index:4;display:flex;align-items:center;justify-content:center}
 .cgrip[hidden]{display:none}.cgrip i{width:44px;height:5px;border-radius:3px;background:var(--fg3);opacity:.55;box-shadow:0 0 0 3px var(--panel)}.cgrip:hover i,.cgrip.on i{opacity:1;background:var(--acc)}
 .ov{position:absolute;left:0;top:0;pointer-events:none;z-index:3}
@@ -342,12 +343,12 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       <div id="layers" hidden class="layers">
         <div class="lg"><span class="lgt">Candles</span><button class="chip" data-tog="mono">Mono</button><button class="chip" data-tog="sess">Sessions</button></div>
         <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
-        <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button></div>
+        <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button><button class="chip" data-tog="lineLbl">Labels on lines</button></div>
         <div class="ctl" id="fibSel" hidden style="padding-left:90px;margin:-2px 0 2px"></div>
         <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><span class="seg"><button data-tln="few">Few</button><button data-tln="more">More</button><button data-tln="max">Max</button></span><button class="chip" data-tog="cdl">Candle patterns</button></div>
         <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
         <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqb">Liq bands</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
-        <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 3. Drag the bar above the panes to resize, double-tap it to reset.</span></div>
+        <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><button class="chip" data-low="cvdc">CVD candles</button><button class="chip" data-low="oic">OI candles</button><button class="chip" data-low="liq">Liquidations</button><button class="chip" data-low="vol">Buy / sell volume</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 4. Drag the bar above the panes to resize, double-tap it to reset. <button class="chip" data-lpre="cw" style="min-height:26px;font-size:12px">CoinWise-style stack</button> <button class="chip" data-lpre="simple" style="min-height:26px;font-size:12px">Simple</button></span></div>
       </div>
       <div class="ohlc" id="ohlc"></div>
       <div class="ctl" id="myAdd" style="margin:-2px 0 6px;min-height:0"></div>
@@ -2004,7 +2005,7 @@ syncCtl(); setTab(ST.tab);
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
 Object.assign(ST, {
   heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), tlN: LS.get("tlN", "more"), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
-  lowers: LS.get("lowers", ["bcvd"]), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false,
+  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false,
 });
 
 /* ---------- engine ---------- */
@@ -2171,9 +2172,15 @@ class CChart {
       }
     }
     // horizontal levels
+    // CoinWise-style: level names written at the right end of each line instead of boxes on the price axis
+    const lbl = new Map();
+    if (Ls.lineLbl) { const used = []; g.font = "600 11px IBM Plex Sans, system-ui, sans-serif";
+      (Ls.hlines || []).filter((h) => h.tag && ok(h.p)).sort((x, y) => (y.prio || 10) - (x.prio || 10)).forEach((h) => { const y = this.Y(h.p); if (y < 8 || y > L.mainH - 8 || used.some((u) => Math.abs(u - y) < 12)) return; used.push(y); lbl.set(h, { y, w: g.measureText(h.tag).width }); });
+      g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
     for (const h of Ls.hlines || []) {
-      if (!ok(h.p)) continue; const y = Math.round(this.Y(h.p)) + 0.5; if (y < 0 || y > L.mainH) continue;
-      g.strokeStyle = h.color; g.lineWidth = h.w || 1; g.setLineDash(h.dash || []); g.globalAlpha = h.alpha || 0.9; g.beginPath(); g.moveTo(h.x0 ? Math.max(0, this.X(this.ti(h.x0))) : 0, y); g.lineTo(L.r, y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+      if (!ok(h.p)) continue; const y = Math.round(this.Y(h.p)) + 0.5; if (y < 0 || y > L.mainH) continue; const lb = lbl.get(h), xe = lb ? L.r - lb.w - 12 : L.r;
+      g.strokeStyle = h.color; g.lineWidth = h.w || 1; g.setLineDash(h.dash || []); g.globalAlpha = h.alpha || 0.9; g.beginPath(); g.moveTo(h.x0 ? Math.max(0, this.X(this.ti(h.x0))) : 0, y); g.lineTo(xe, y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+      if (lb) { g.font = "600 11px IBM Plex Sans, system-ui, sans-serif"; g.fillStyle = h.color; g.textAlign = "right"; g.fillText(h.tag, L.r - 5, y); g.textAlign = "left"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
       if (h.left) { g.fillStyle = h.color; g.font = "10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(h.left, 4, y - 6); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
     }
     // real liquidations (summed per candle and side)
@@ -2219,20 +2226,20 @@ class CChart {
           const V = S.bars.filter(inV);
           if (V.length) { let lo = Math.min(...V.map((x) => x.l)), hi = Math.max(...V.map((x) => x.h)); const pd = (hi - lo) * 0.08 || 1; lo -= pd; hi += pd; const Yo = (v) => y0 + (1 - (v - lo) / (hi - lo)) * hh;
             if (lo < 0 && hi > 0) { g.strokeStyle = rgba(C.fg3, 0.5); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(0, Yo(0)); g.lineTo(L.r, Yo(0)); g.stroke(); g.setLineDash([]); }
-            for (const x of V) { const X = Math.round(this.X(this.ti(x.t))) + 0.5, upb = x.c >= x.o, col = upb ? S.color : rgba(C.fg3, 0.9), t1 = Math.min(Yo(x.o), Yo(x.c)), hb = Math.max(1, Math.abs(Yo(x.c) - Yo(x.o)));
+            for (const x of V) { const X = Math.round(this.X(this.ti(x.t))) + 0.5, upb = x.c >= x.o, col = upb ? S.color : S.dnColor || rgba(C.fg3, 0.9), t1 = Math.min(Yo(x.o), Yo(x.c)), hb = Math.max(1, Math.abs(Yo(x.c) - Yo(x.o)));
               g.strokeStyle = col; g.beginPath(); g.moveTo(X, Yo(x.h)); g.lineTo(X, Yo(x.l)); g.stroke(); g.fillStyle = col; g.fillRect(X - cwid / 2, t1, cwid, hb); }
-            const lv = V[V.length - 1]; tags.push([Yo(lv.c), S.fmt(lv.c), lv.c >= lv.o ? S.color : C.fg3]); }
+            const lv = V[V.length - 1]; tags.push([Yo(lv.c), S.fmt(lv.c), lv.c >= lv.o ? S.color : S.dnColor || C.fg3]); }
           g.restore();
           if (!S._m) S._m = new Map(S.bars.map((x) => [x.t, x])); const cb = S._m.get(ct);
-          S.read = cb ? [[S.fmt(cb.c), S.color], [`${cb.c >= cb.o ? "▲" : "▼"} ${usd(Math.abs(cb.c - cb.o))}`, cb.c >= cb.o ? S.color : C.fg3]] : [];
+          S.read = cb ? [[S.fmt(cb.c), S.color], [`${cb.c >= cb.o ? "▲" : "▼"} ${usd(Math.abs(cb.c - cb.o))}`, cb.c >= cb.o ? S.color : S.dnColor || C.fg3]] : [];
         } else if (S.kind === "mirror") {
           const U = S.up.filter(inV), Dn = S.dn.filter(inV), m = Math.max(1, ...U.map((p) => p.v), ...Dn.map((p) => p.v)), mid = y0 + hh / 2, sc = (hh / 2 - 2) / m;
           g.strokeStyle = rgba(C.fg3, 0.5); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(0, Math.round(mid) + 0.5); g.lineTo(L.r, Math.round(mid) + 0.5); g.stroke(); g.setLineDash([]);
           for (const p of U) { const X = this.X(this.ti(p.t)), hgt = p.v * sc; if (hgt < 0.4) continue; g.fillStyle = S.color; g.fillRect(X - cwid / 2, mid - hgt, cwid, hgt); }
-          for (const p of Dn) { const X = this.X(this.ti(p.t)), hgt = p.v * sc; if (hgt < 0.4) continue; g.fillStyle = rgba(C.fg3, 0.75); g.fillRect(X - cwid / 2, mid, cwid, hgt); }
-          g.restore(); font(400, 10.5); g.fillStyle = S.color; g.fillText(`+${S.fmt(m)}`, L.r + 6, y0 + 6); g.fillStyle = C.fg3; g.fillText(`−${S.fmt(m)}`, L.r + 6, y0 + hh - 4);
+          for (const p of Dn) { const X = this.X(this.ti(p.t)), hgt = p.v * sc; if (hgt < 0.4) continue; g.fillStyle = S.dnColor || rgba(C.fg3, 0.75); g.fillRect(X - cwid / 2, mid, cwid, hgt); }
+          g.restore(); font(400, 10.5); g.fillStyle = S.color; g.fillText(`+${S.fmt(m)}`, L.r + 6, y0 + 6); g.fillStyle = S.dnColor || C.fg3; g.fillText(`−${S.fmt(m)}`, L.r + 6, y0 + hh - 4);
           const u = at(S.up, ct), d = at(S.dn, ct);
-          S.read = [[`▲ ${ok(u) ? S.fmt(u) : "–"}`, S.color], [`▼ ${ok(d) ? S.fmt(d) : "–"}`, C.fg3]];
+          S.read = [[`${S.upL || "▲"} ${ok(u) ? S.fmt(u) : "–"}`, S.color], [`${S.dnL || "▼"} ${ok(d) ? S.fmt(d) : "–"}`, S.dnColor || C.fg3]];
         } else {
           const lines = (S.lines || []).map((q) => ({ ...q, v: q.pts.filter(inV) })).filter((q) => q.v.length > 1), H2 = S.hist ? S.hist.filter(inV) : [];
           if (H2.length) { const m = Math.max(1, ...H2.map((p) => Math.abs(p.v))), solo = !lines.length, mid = solo ? null : y0 + hh / 2;
@@ -2266,7 +2273,7 @@ class CChart {
     // price axis: tags first (priority, no overlaps), then tick labels in the gaps
     g.fillStyle = C.bg; g.fillRect(L.r, 0, L.axW, L.mainH); g.strokeStyle = C.line; g.beginPath(); g.moveTo(L.r + 0.5, 0); g.lineTo(L.r + 0.5, this.H); g.stroke();
     const tags = [{ p: last.c, text: n0(last.c), color: lc, prio: 1000, solid: true }];
-    for (const h of Ls.hlines || []) if (h.tag && ok(h.p)) tags.push({ p: h.p, text: h.tag, color: h.color, prio: h.prio || 10 });
+    if (!Ls.lineLbl) for (const h of Ls.hlines || []) if (h.tag && ok(h.p)) tags.push({ p: h.p, text: h.tag, color: h.color, prio: h.prio || 10 });
     if (this.cross && this.cross.y < L.mainH) tags.push({ p: this.P(this.cross.y), text: n0(this.P(this.cross.y)), color: C.fg, prio: 2000, solid: true, cross: true });
     const placed = [];
     tags.sort((x, y) => y.prio - x.prio).forEach((t) => { const y = this.Y(t.p); if (y < 7 || y > L.mainH - 7) return; if (placed.some((q) => Math.abs(q.y - y) < 15)) return; placed.push({ ...t, y }); });
@@ -2454,6 +2461,20 @@ function lowerPanes(k, C) {
       for (const x of k) { if (x.t < t0) continue; const ds = bn.get(x.t) + (sp.get(x.t) || 0), dp = pf.get(x.t) || 0; cs += ds; S1.push({ t: x.t, v: cs }); if (pf.size) { cp += dp; P1.push({ t: x.t, v: cp }); } H.push({ t: x.t, v: ds + dp }); }
       out.push({ name: "CVD", zero: true, fmt: sU, hist: H, lines: [{ pts: S1, color: C.acc, label: "Spot" }, ...(P1.length ? [{ pts: P1, color: C.warn, label: "Perp" }] : [])] });
     }
+    if (id === "cvdc") { // CVD as candles: Binance spot + OKX spot + OKX perp (USD), body = that candle's net taker flow
+      const sp = P ? delta(P.sp) : new Map(), pf = P ? delta(P.pf) : new Map(), t0 = P && pf.size ? Math.min(...pf.keys()) : k[0].t; let v = 0; const bars = [];
+      for (const x of k) { if (x.t < t0) continue; const d = (2 * x.tb - x.v) * x.c + (sp.get(x.t) || 0) + (pf.get(x.t) || 0), o = v; v += d; bars.push({ t: x.t, o, c: v, h: Math.max(o, v), l: Math.min(o, v) }); }
+      out.push({ name: P && pf.size ? "CVD · aggregated (Binance + OKX)" : "CVD · Binance spot", kind: "ohlc", bars, color: C.up, dnColor: C.dn, fmt: sU });
+    }
+    if (id === "oic") {
+      if (!P) { out.push(wait("Open interest")); continue; }
+      const m = new Map(); for (const r of P.oi) { const bt = B(r.t); if (!idx.has(bt)) continue; const v = oiU(r) * scale, o = m.get(bt); if (!o) m.set(bt, { t: bt, o: v, h: v, l: v, c: v }); else { o.c = v; o.h = Math.max(o.h, v); o.l = Math.min(o.l, v); } }
+      const bars = [...m.values()].sort((x, y) => x.t - y.t); for (let i = 1; i < bars.length; i++) { bars[i].o = bars[i - 1].c; bars[i].h = Math.max(bars[i].h, bars[i].o); bars[i].l = Math.min(bars[i].l, bars[i].o); }
+      out.push({ name: "Open interest · all venues (est.)", kind: "ohlc", bars, color: C.up, dnColor: C.dn, fmt: usd });
+    }
+    if (id === "liq") { const L1 = new Map(), S1 = new Map(); if (typeof LIQ !== "undefined") for (const e of LIQ.values()) { const bt = B(e.t / 1000); if (!idx.has(bt)) continue; const m = e.side === "long" ? L1 : S1; m.set(bt, (m.get(bt) || 0) + e.usd); }
+      out.push({ name: "Liquidations", kind: "mirror", up: pts(S1), dn: pts(L1), color: C.up, dnColor: C.dn, upL: "Shorts", dnL: "Longs", fmt: usd }); }
+    if (id === "vol") out.push({ name: "Buy / sell volume · Binance spot", kind: "mirror", up: k.map((x) => ({ t: x.t, v: x.tb * x.c })), dn: k.map((x) => ({ t: x.t, v: (x.v - x.tb) * x.c })), color: C.up, dnColor: C.dn, upL: "Buy", dnL: "Sell", fmt: usd });
     if (id === "bcvd") { let c = 0; out.push({ name: "Spot CVD · Binance (BTC)", fmt: (v) => sgn(v, 0), lines: [{ pts: k.map((x) => ({ t: x.t, v: (c += 2 * x.tb - x.v) })), color: C.acc, label: "" }] }); }
     if (id === "delta") out.push({ name: "Buy − sell per candle (Binance spot, BTC)", fmt: (v) => sgn(v, 0), hist: k.map((x) => ({ t: x.t, v: 2 * x.tb - x.v })) });
     if (id === "oi") {
@@ -2465,9 +2486,9 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
-  const on = (x) => x && !ST.clean, L = { mono: ST.mono, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
+  const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
   if (on(ST.sma)) { L.lines.push({ pts: T(TA.sma(c, 50)), color: C.up, dash: [6, 3] }, { pts: T(TA.sma(c, 200)), color: C.dn, w: 1.6, dash: [6, 3] }); }
   if (on(ST.vwap) && intra) L.lines.push({ pts: T(TA.vwapDaily(k)), color: C.fg2, dash: [4, 3] });
@@ -2575,8 +2596,9 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("#bLayers")) { ST.layersOpen = !ST.layersOpen; $("#layers").hidden = !ST.layersOpen; CH.xKey = null; chartExtras(); return; }
   if (e.target.closest("#bClean")) { ST.clean = !ST.clean; LS.set("clean", ST.clean); $("#bClean").setAttribute("aria-pressed", ST.clean); CH.xKey = null; chartExtras(); return; }
   const tl = e.target.closest("[data-tln]"); if (tl) { ST.tlN = tl.dataset.tln; LS.set("tlN", ST.tlN); if (!ST.trend) { ST.trend = true; LS.set("trend", true); syncCtl(); } syncLow(); CH.xKey = null; chartExtras(); return; }
-  const lp = e.target.closest("[data-lps]"); if (lp) { ST.lpStyle = lp.dataset.lps; LS.set("lpStyle", ST.lpStyle); if (!ST.lowers.includes("pos")) { ST.lowers.push("pos"); while (ST.lowers.length > 3) ST.lowers.shift(); LS.set("lowers", ST.lowers); tick("pfc"); } syncLow(); CH.xKey = null; chartExtras(); return; }
-  const lw = e.target.closest("[data-low]"); if (lw) { const id = lw.dataset.low, L2 = ST.lowers.filter((x) => x !== id); if (L2.length === ST.lowers.length) { L2.push(id); while (L2.length > 3) L2.shift(); } ST.lowers = L2; LS.set("lowers", L2); syncLow(); if (id === "pos" || id === "cvd" || id === "oi") tick("pfc"); CH.xKey = null; chartExtras(); return; }
+  const lp = e.target.closest("[data-lps]"); if (lp) { ST.lpStyle = lp.dataset.lps; LS.set("lpStyle", ST.lpStyle); if (!ST.lowers.includes("pos")) { ST.lowers.push("pos"); while (ST.lowers.length > 4) ST.lowers.shift(); LS.set("lowers", ST.lowers); tick("pfc"); } syncLow(); CH.xKey = null; chartExtras(); return; }
+  const pr = e.target.closest("[data-lpre]"); if (pr) { ST.lowers = pr.dataset.lpre === "cw" ? ["cvdc", "oic", "liq", "vol"] : ["bcvd"]; LS.set("lowers", ST.lowers); syncLow(); tick("pfc"); CH.xKey = null; chartExtras(); return; }
+  const lw = e.target.closest("[data-low]"); if (lw) { const id = lw.dataset.low, L2 = ST.lowers.filter((x) => x !== id); if (L2.length === ST.lowers.length) { L2.push(id); while (L2.length > 4) L2.shift(); } ST.lowers = L2; LS.set("lowers", L2); syncLow(); if (id === "pos" || id === "cvd" || id === "oi") tick("pfc"); CH.xKey = null; chartExtras(); return; }
   if (e.target.closest("#bAddLv") && MYADD) { MYLV = { at: Date.now(), list: [...MYLV.list, { p: MYADD, label: "Mine", man: true }].sort((a, b) => b.p - a.p) }; LS.set("myLevels", MYLV); MYADD = null; drawMyLevels(); CH.xKey = null; chartExtras(); return; }
   const rm = e.target.closest("[data-rmlv]"); if (rm) { MYLV = { at: MYLV.at, list: MYLV.list.filter((_, i) => i !== +rm.dataset.rmlv) }; LS.set("myLevels", MYLV); drawMyLevels(); CH.xKey = null; chartExtras(); return; }
   if (e.target.closest("#bMySave")) { const v = $("#myTxt").value; MYLV = { at: Date.now(), list: [...MYLV.list.filter((l) => l.man), ...parseLevels(v, curPx())].sort((a, b) => b.p - a.p) }; LS.set("myLevels", MYLV); $("#myMsg").textContent = MYLV.list.length ? `Saved ${MYLV.list.length} levels. They're on the chart.` : "No prices found. Paste lines like “Support 79,750” or “R1 81.2k”."; drawMyLevels(); CH.xKey = null; chartExtras(); return; }
