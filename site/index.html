@@ -98,7 +98,7 @@ canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:
 .pfsum b{display:block;font-size:14px;color:var(--fg);margin:2px 0}.pfsum b span{display:block;white-space:nowrap}.pfsum i{font-style:normal;display:block;color:var(--fg3);font-size:11px}
 .pcard{display:grid;gap:4px}.pname{font-size:16px;font-weight:700}.tfb{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;background:var(--weak);color:var(--fg2)}
 .pstat{font-size:13px;font-weight:600}.pplan{font-size:13px;line-height:1.6;margin-top:4px;padding-top:6px;border-top:1px dashed var(--weak)}
-@media (max-width:520px){.mrow{grid-template-columns:1fr 70px}.mrow .mbar{grid-column:1/-1;order:3}}
+@media (max-width:520px){#fibSel{padding-left:0!important}.mrow{grid-template-columns:1fr 70px}.mrow .mbar{grid-column:1/-1;order:3}}
 details summary{list-style:revert}
 .chartbox{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .hint{font-size:11.5px;color:var(--fg3);margin-top:4px}
@@ -235,11 +235,11 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <div class="lg"><span class="lgt">Candles</span><button class="chip" data-tog="mono">Mono</button><button class="chip" data-tog="sess">Sessions</button></div>
         <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
         <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button></div>
+        <div class="ctl" id="fibSel" hidden style="padding-left:90px;margin:-2px 0 2px"></div>
         <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><button class="chip" data-tog="cdl">Candle patterns</button></div>
         <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
         <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqb">Liq bands</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
         <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 3. Drag the bar above the panes to resize, double-tap it to reset.</span></div>
-        <div class="ctl" id="fibSel" hidden></div>
       </div>
       <div class="ohlc" id="ohlc"></div>
       <div id="cMain" class="chartbox"></div>

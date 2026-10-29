@@ -96,7 +96,7 @@ canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:
 .pfsum b{display:block;font-size:14px;color:var(--fg);margin:2px 0}.pfsum b span{display:block;white-space:nowrap}.pfsum i{font-style:normal;display:block;color:var(--fg3);font-size:11px}
 .pcard{display:grid;gap:4px}.pname{font-size:16px;font-weight:700}.tfb{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;background:var(--weak);color:var(--fg2)}
 .pstat{font-size:13px;font-weight:600}.pplan{font-size:13px;line-height:1.6;margin-top:4px;padding-top:6px;border-top:1px dashed var(--weak)}
-@media (max-width:520px){.mrow{grid-template-columns:1fr 70px}.mrow .mbar{grid-column:1/-1;order:3}}
+@media (max-width:520px){#fibSel{padding-left:0!important}.mrow{grid-template-columns:1fr 70px}.mrow .mbar{grid-column:1/-1;order:3}}
 details summary{list-style:revert}
 .chartbox{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .hint{font-size:11.5px;color:var(--fg3);margin-top:4px}
@@ -334,11 +334,11 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <div class="lg"><span class="lgt">Candles</span><button class="chip" data-tog="mono">Mono</button><button class="chip" data-tog="sess">Sessions</button></div>
         <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
         <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button></div>
+        <div class="ctl" id="fibSel" hidden style="padding-left:90px;margin:-2px 0 2px"></div>
         <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><button class="chip" data-tog="cdl">Candle patterns</button></div>
         <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
         <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqb">Liq bands</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
         <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 3. Drag the bar above the panes to resize, double-tap it to reset.</span></div>
-        <div class="ctl" id="fibSel" hidden></div>
       </div>
       <div class="ohlc" id="ohlc"></div>
       <div id="cMain" class="chartbox"></div>
@@ -1390,7 +1390,7 @@ Object.assign(ST, {
   mono: LS.get("mono", true), fib: LS.get("fib", false), prof: LS.get("prof", true), avwap: LS.get("avwap", false), sma: LS.get("sma", false),
   zones: LS.get("zones", false), liq: LS.get("liq", false), lev: LS.get("lev", 25), margin: LS.get("margin", 100),
   liqRange: LS.get("liqRange", 6), liqSide: LS.get("liqSide", "both"),
-  tpo: LS.get("tpo", true), fibOff: LS.get("fibOff", {}), cvdOff: LS.get("cvdOff", {}),
+  tpo: LS.get("tpo", true), fibOff: LS.get("fibOff", {}), fibOpen: LS.get("fibOpen", true), cvdOff: LS.get("cvdOff", {}),
 });
 const lastOf = (a) => a[a.length - 1];
 const ATFS = ["15m", "30m", "1h", "4h", "1d"];
@@ -1960,7 +1960,7 @@ function drawStage2(tab) {
       need("#ovAssess", (x) => ($("#ovAssess").innerHTML = assessHTML(x, false)));
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
       if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
-        fs.innerHTML = `<span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="${!!ST.fibOpen}" style="${sm}">Pick ${ST.fibOpen ? "▴" : "▾"}</button></span>` +
+        fs.innerHTML = `<span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="false" style="${sm}">${ST.fibOpen ? "Hide levels ▴" : "Show levels ▾"}</button></span>` +
           (ST.fibOpen ? `<div style="display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%">` + FIBS.map((r) => `<button class="chip" data-fib="${r}" aria-pressed="${!ST.fibOff[r]}" style="${sm};${!ST.fibOff[r] ? `border-color:${fibColor(r)};color:${fibColor(r)}` : ""}">${r}</button>`).join("") + `</div>` : ""); }
     }
     if (tab === "ta") need("#taAssess", drawTA);
@@ -1976,7 +1976,7 @@ document.addEventListener("click", (e) => {
   const f = e.target.closest("[data-fib]");
   if (f) {
     const v = f.dataset.fib;
-    if (v === "edit") { ST.fibOpen = !ST.fibOpen; render(); return; }
+    if (v === "edit") { ST.fibOpen = !ST.fibOpen; LS.set("fibOpen", ST.fibOpen); render(); return; }
     if (v === "all") ST.fibOff = {}; else if (v === "key") { ST.fibOff = {}; FIBS.forEach((r) => { if (![0, 0.382, 0.5, 0.618, 0.786, 1].includes(r)) ST.fibOff[r] = true; }); }
     else { const r = +v; if (ST.fibOff[r]) delete ST.fibOff[r]; else ST.fibOff[r] = true; }
     LS.set("fibOff", ST.fibOff); render(); return;
