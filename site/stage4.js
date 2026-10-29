@@ -239,10 +239,19 @@ function flowData() {
   const W = [["15m", 3, 900], ["1h", 12, 3600], ["4h", 48, 14400], ["24h", 287, 86400]];
   return W.map(([lab, bars, sec]) => {
     const w = live("k5") ? win(D.k5.k, bars) : null, oi = live("okxOI") ? seriesChg(D.okxOI.s, sec) : null, ti = live("okxTk") ? takerImb(D.okxTk.s, sec) : null;
-    let tag = "Price only", tc = "mut";
-    if (w && ok(oi)) { const pu = w.pChg >= 0, ou = oi >= 0; if (Math.abs(oi) < 0.15) tag = "OI flat"; else if (pu && ou) { tag = "Longs opening"; tc = "up"; } else if (!pu && ou) { tag = "Shorts opening"; tc = "dn"; } else if (pu) { tag = "Shorts closing"; tc = "wn"; } else { tag = "Longs closing"; tc = "wn"; } }
+    let tag = "Price only", tc = "mut", why = "No OI data yet, so this is price alone.";
+    if (w && ok(oi)) { const pu = w.pChg >= 0, ou = oi >= 0;
+      if (Math.abs(oi) < 0.15) { tag = "OI flat"; why = "Positioning barely changed; the move is mostly spot or opens and closes in balance."; }
+      else if (pu && ou) { tag = "Longs opening"; tc = "up"; why = "Price up with OI up: new longs are driving it."; }
+      else if (!pu && ou) { tag = "Shorts opening"; tc = "dn"; why = "Price down with OI up: new shorts are pressing."; }
+      else if (pu) { tag = "Shorts closing"; tc = "wn"; why = "Price up with OI down: short covering, often weaker follow-through."; }
+      else { tag = "Longs closing"; tc = "wn"; why = "Price down with OI down: longs exiting or getting liquidated."; } }
     let div = 0; if (w && w.pChg > 0.15 && w.cvd < 0) div = -1; if (w && w.pChg < -0.15 && w.cvd > 0) div = 1;
-    return { lab, p: w ? w.pChg : null, oi, cvd: w ? w.cvd : null, tk: ti, tag, tc, div };
+    const notes = [];
+    if (div > 0) notes.push(`<span class="up">Bullish CVD divergence</span>: price down but spot buyers absorb.`);
+    if (div < 0) notes.push(`<span class="dn">Bearish CVD divergence</span>: price up but spot sellers dominate.`);
+    if (ok(ti) && Math.abs(ti) > 8) notes.push(`Perp takers lean <b class="${cls(ti)}">${ti > 0 ? "buy" : "sell"} ${pct(ti, 1)}</b>.`);
+    return { lab, p: w ? w.pChg : null, oi, cvd: w ? w.cvd : null, tk: ti, tag, tc, div, why, notes };
   });
 }
 const FLOW_M = [["p", "Price", (v) => pct(v)], ["oi", "OI", (v) => pct(v)], ["cvd", "Spot CVD", (v) => `${sgn(v, 0)}`], ["tk", "Perp takers", (v) => pct(v, 1)]];
@@ -259,7 +268,7 @@ function flowCols(F, C) {
       else svg += `<text x="${x + cw / 2}" y="${mid + 4}" text-anchor="middle" font-size="10" fill="${C.fg3}">–</text>`;
       svg += `<text x="${x + cw / 2}" y="${H + 18}" text-anchor="middle" font-size="9.5" fill="${C.fg3}">${name.replace("Perp takers", "Takers").replace("Spot CVD", "CVD")}</text>`; });
     svg += `</svg>`;
-    return `<div class="fcol"><div class="fch"><b>${r.lab}</b><span class="ftag ${r.tc}">${r.tag}</span></div>${svg}${r.div ? `<div class="fdiv ${r.div > 0 ? "up" : "dn"}">${r.div > 0 ? "Bullish" : "Bearish"} CVD divergence</div>` : ""}</div>`;
+    return `<div class="fcol"><div class="fch"><b>${r.lab}</b><span class="ftag ${r.tc}">${r.tag}</span></div>${svg}<div class="fwhy">${r.why}${r.notes.length ? `<div>${r.notes.join(" ")}</div>` : ""}</div></div>`;
   }).join("")}</div>`;
 }
 function flowGrid(F, C) {
