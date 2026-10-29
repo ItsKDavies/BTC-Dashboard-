@@ -56,7 +56,20 @@ async function getJSONp(url, opt) {
   }
   return getJSON(url, opt);
 }
-const okxR = async (path) => { const j = await getJSONp("https://www.okx.com" + path); if (j.code !== "0") throw new Error("OKX " + j.code + " " + (j.msg || "")); return j.data; };
+const okxR0 = async (path) => { const j = await getJSONp("https://www.okx.com" + path); if (j.code !== "0") throw new Error("OKX " + j.code + " " + (j.msg || "")); return j.data; };
+// OKX's stats endpoints (rubik) allow ~5 calls per 2s. Several panels ask for the same series, so: share identical
+// requests, reuse answers for 50s, space calls 450ms apart, and retry once after a pause if OKX says 429.
+const RUB = { last: 0, chain: Promise.resolve(), memo: new Map() };
+const okxR = (path) => {
+  if (!path.includes("/rubik/")) return okxR0(path);
+  const hit = RUB.memo.get(path); if (hit && (hit.p || Date.now() - hit.at < 50000)) return hit.p || Promise.resolve(hit.v);
+  const run = async () => { const wait = Math.max(0, RUB.last + 450 - Date.now()); RUB.last = Date.now() + wait; if (wait) await new Promise((r) => setTimeout(r, wait)); return okxR0(path); };
+  const go = async () => { try { return await run(); } catch (e) { if (e.status !== 429) throw e; await new Promise((r) => setTimeout(r, 2500 + Math.random() * 1500)); return run(); } };
+  const p = (RUB.chain = RUB.chain.catch(() => {}).then(go));
+  RUB.memo.set(path, { p });
+  p.then((v) => RUB.memo.set(path, { v, at: Date.now() }), () => RUB.memo.delete(path));
+  return p;
+};
 const okx = async (path) => { const j = await getJSON("https://www.okx.com" + path); if (j.code !== "0") throw new Error("OKX " + j.code + " " + (j.msg || "")); return j.data; };
 
 /* ---------- data sources: each one independent ---------- */

@@ -25,7 +25,7 @@ export async function onRequest({ request }) {
   if (!base) return new Response("Unknown route", { status: 404 });
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type", "access-control-allow-methods": "GET, POST, OPTIONS" } });
   if (request.method !== "GET" && request.method !== "POST") return new Response("Method not allowed", { status: 405 });
-  const target = base + (m[2] || "/") + url.search, ttl = TTL[m[1]] ?? DEFAULT_TTL;
+  const target = base + (m[2] || "/") + url.search, ttl = m[1] === "okx" && (m[2] || "").includes("/rubik/") ? 60 : TTL[m[1]] ?? DEFAULT_TTL; // OKX stats only change every 5 min
   const init = { method: request.method, headers: { accept: "application/json", "user-agent": "Mozilla/5.0 (compatible; BTC-Dashboard)" } };
   if (request.method === "POST") { init.body = await request.text(); init.headers["content-type"] = request.headers.get("content-type") || "application/json"; }
   else init.cf = { cacheEverything: true, cacheTtlByStatus: { "200-299": ttl, "300-599": 0 } }; // never cache errors such as 429
