@@ -81,8 +81,8 @@ canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:
 .mrow{display:grid;grid-template-columns:minmax(120px,1.1fr) 2fr 84px;gap:12px;align-items:center}
 .mlab{display:flex;flex-direction:column;line-height:1.25;font-size:13.5px}.mlab span{color:var(--fg3);font-size:12px}
 .mbar{position:relative;height:10px;border-radius:5px;overflow:visible;display:block}
-.mbar i{position:absolute;top:0;bottom:0;opacity:.8}.mbar i:first-child{border-radius:5px 0 0 5px}.mbar i:nth-last-child(2),.mbar i:last-child{border-radius:0 5px 5px 0}
-.mpin{position:absolute;top:-5px;width:4px;height:20px;margin-left:-2px;border-radius:2px;background:var(--fg);box-shadow:0 0 0 2px var(--panel)}
+.mbar i{position:absolute;top:0;bottom:0;opacity:.85}.mbar i:first-child{border-radius:5px 0 0 5px}.mbar i:nth-last-child(2),.mbar i:last-child{border-radius:0 5px 5px 0}
+.mpin{position:absolute;top:-4px;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:var(--panel);border:3px solid var(--fg);box-shadow:0 0 0 3px color-mix(in srgb,var(--fg) 12%,transparent),0 2px 8px rgba(0,0,0,.35)}
 .mval{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
 .nextev{margin-top:4px;padding-top:10px;border-top:1px solid var(--weak);font-size:13.5px}
 .imp{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}.imp.hi{background:var(--dn)}.imp.md{background:var(--warn)}
@@ -148,6 +148,28 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
   .hd{gap:6px 12px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== polish: gradient layer (one block, safe to remove) ===== */
+:root{--g1:color-mix(in srgb,var(--acc) 9%,transparent);--g2:color-mix(in srgb,var(--purple) 8%,transparent);--edge:color-mix(in srgb,var(--fg) 7%,transparent);--shadow:0 1px 2px rgba(15,23,42,.05),0 6px 20px -8px rgba(15,23,42,.12)}
+@media (prefers-color-scheme:dark){:root{--g1:color-mix(in srgb,var(--acc) 12%,transparent);--g2:color-mix(in srgb,var(--purple) 10%,transparent);--edge:rgba(255,255,255,.06);--shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -12px rgba(0,0,0,.6)}}
+body{background:radial-gradient(1100px 520px at 0% -8%,var(--g1),transparent 60%),radial-gradient(900px 480px at 100% -4%,var(--g2),transparent 60%),var(--bg);background-attachment:fixed}
+header{background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 88%,transparent),color-mix(in srgb,var(--bg) 82%,transparent));border-bottom:none}
+header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--acc) 55%,transparent) 25%,color-mix(in srgb,var(--purple) 55%,transparent) 60%,color-mix(in srgb,var(--up) 45%,transparent) 85%,transparent)}
+.px{background:linear-gradient(180deg,var(--fg),color-mix(in srgb,var(--fg) 70%,var(--fg3)));-webkit-background-clip:text;background-clip:text;color:transparent}
+.chg.up{background:linear-gradient(135deg,color-mix(in srgb,var(--up) 22%,transparent),color-mix(in srgb,var(--up) 8%,transparent))}
+.chg.dn{background:linear-gradient(135deg,color-mix(in srgb,var(--dn) 22%,transparent),color-mix(in srgb,var(--dn) 8%,transparent))}
+.panel{background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 100%,var(--fg) 2.5%),var(--panel) 46%);border-color:var(--edge);box-shadow:var(--shadow);position:relative}
+.panel::before{content:"";position:absolute;inset:0 18% auto;height:1px;border-radius:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--acc) 40%,transparent),transparent);pointer-events:none;opacity:.7}
+.moodg .panel,.pfsum div{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 100%,var(--fg) 2%),var(--bg));box-shadow:none}
+.panel.full{background:var(--panel);box-shadow:none}.panel.full::before{display:none}
+.tab[aria-selected="true"]{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 22%,var(--panel)),color-mix(in srgb,var(--purple) 16%,var(--panel)));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc) 35%,var(--line)),0 4px 14px -6px color-mix(in srgb,var(--acc) 50%,transparent)}
+.seg{border-color:var(--edge);background:color-mix(in srgb,var(--bg) 60%,transparent)}
+.seg button[aria-pressed="true"]{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 30%,transparent),color-mix(in srgb,var(--purple) 20%,transparent))}
+.chip[aria-pressed="true"]{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 16%,transparent),color-mix(in srgb,var(--purple) 10%,transparent));border-color:color-mix(in srgb,var(--acc) 70%,transparent)}
+.btn{background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 100%,var(--fg) 3%),var(--panel));border-color:var(--edge)}
+.btn[aria-pressed="true"]{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 18%,var(--panel)),color-mix(in srgb,var(--purple) 12%,var(--panel)))}
+.pill{background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 100%,var(--fg) 3%),var(--panel));border-color:var(--edge)}
+.st.ok{background:linear-gradient(135deg,color-mix(in srgb,var(--up) 18%,transparent),color-mix(in srgb,var(--up) 6%,transparent))}
 </style>
 <div style="background:color-mix(in srgb,var(--warn) 18%,var(--bg));color:var(--fg);font-size:13px;padding:7px max(14px,env(safe-area-inset-left));border-bottom:1px solid var(--line)"><b>Preview with sample data.</b> Prices and flows here are made up so you can try the layout, chart and layers. Real data runs on your live Cloudflare site.</div>
 <script>
@@ -2044,6 +2066,7 @@ class CChart {
     g.fillStyle = C.bg || "#111"; g.fillRect(0, 0, this.W, this.H); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; g.textBaseline = "middle";
     if (!this.k.length) { g.fillStyle = C.fg3; g.fillText("Loading candles…", 12, 24); return; }
     const L = this.layout(); this.yRange(); const [a, b] = this.vis(), bw = this.bw();
+    { const gr = g.createLinearGradient(0, 0, 0, L.mainH); gr.addColorStop(0, rgba(C.acc, 0.05)); gr.addColorStop(0.55, rgba(C.acc, 0)); gr.addColorStop(1, rgba(C.purple || C.acc, 0.05)); g.fillStyle = gr; g.fillRect(0, 0, L.r, L.mainH); }
     // grid
     const ys = niceStep(this.yHi - this.yLo, Math.max(3, Math.round(L.mainH / 70))), yt = [];
     g.strokeStyle = C.grid; g.lineWidth = 1; g.beginPath();
@@ -2184,6 +2207,8 @@ class CChart {
             const all = lines.flatMap((q) => q.v.map((p) => p.v)); let lo = Math.min(...all), hi = Math.max(...all); const pd = (hi - lo) * 0.08 || 1; lo -= pd; hi += pd;
             const Yl = (v) => y0 + (1 - (v - lo) / (hi - lo)) * hh;
             if (S.zero && lo < 0 && hi > 0) { g.strokeStyle = rgba(C.fg3, 0.5); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(0, Yl(0)); g.lineTo(L.r, Yl(0)); g.stroke(); g.setLineDash([]); }
+            if (lines.length === 1) { const q = lines[0], gf = g.createLinearGradient(0, y0, 0, y0 + hh); gf.addColorStop(0, rgba(q.color, 0.28)); gf.addColorStop(1, rgba(q.color, 0)); g.fillStyle = gf; g.beginPath();
+              q.v.forEach((p, i) => { const X = this.X(this.ti(p.t)), Yv = Yl(p.v); if (i) g.lineTo(X, Yv); else g.moveTo(X, Yv); }); g.lineTo(this.X(this.ti(q.v[q.v.length - 1].t)), y0 + hh); g.lineTo(this.X(this.ti(q.v[0].t)), y0 + hh); g.closePath(); g.fill(); }
             for (const q of lines) { g.strokeStyle = q.color; g.lineWidth = q.w || 1.7; g.beginPath(); q.v.forEach((p, i) => { const X = this.X(this.ti(p.t)), Yv = Yl(p.v); if (i) g.lineTo(X, Yv); else g.moveTo(X, Yv); }); g.stroke();
               const lv = q.v[q.v.length - 1].v; tags.push([Yl(lv), S.fmt(lv), q.color]); }
             g.lineWidth = 1;
@@ -2565,7 +2590,7 @@ function drawPatterns(a) {
 /* ---------- market mood: color bars instead of dials ---------- */
 function moodRow(title, v, min, max, cols, txt, sub) {
   const C = chartColors(), p = ok(v) ? Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)) : null, cc = { r: C.dn, y: C.warn, g: C.up };
-  const segs = cols.map((c, i) => `<i style="left:${(i * 100) / cols.length}%;width:${100 / cols.length}%;background:${cc[c]}"></i>`).join("");
+  const stops = cols.map((c, i) => `${cc[c]} ${(((i + 0.5) * 100) / cols.length).toFixed(1)}%`).join(","), segs = `<i style="left:0;width:100%;border-radius:5px;background:linear-gradient(90deg,${stops})"></i>`;
   const at = p === null ? null : cols[Math.min(cols.length - 1, Math.floor((p / 100) * cols.length))];
   return `<div class="mrow"><div class="mlab"><b>${title}</b><span>${sub}</span></div>
     <div class="mbar">${segs}${p === null ? "" : `<b class="mpin" style="left:${p}%"></b>`}</div>

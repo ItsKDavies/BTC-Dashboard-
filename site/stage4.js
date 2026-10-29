@@ -73,7 +73,7 @@ function drawPatterns(a) {
 /* ---------- market mood: color bars instead of dials ---------- */
 function moodRow(title, v, min, max, cols, txt, sub) {
   const C = chartColors(), p = ok(v) ? Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)) : null, cc = { r: C.dn, y: C.warn, g: C.up };
-  const segs = cols.map((c, i) => `<i style="left:${(i * 100) / cols.length}%;width:${100 / cols.length}%;background:${cc[c]}"></i>`).join("");
+  const stops = cols.map((c, i) => `${cc[c]} ${(((i + 0.5) * 100) / cols.length).toFixed(1)}%`).join(","), segs = `<i style="left:0;width:100%;border-radius:5px;background:linear-gradient(90deg,${stops})"></i>`;
   const at = p === null ? null : cols[Math.min(cols.length - 1, Math.floor((p / 100) * cols.length))];
   return `<div class="mrow"><div class="mlab"><b>${title}</b><span>${sub}</span></div>
     <div class="mbar">${segs}${p === null ? "" : `<b class="mpin" style="left:${p}%"></b>`}</div>

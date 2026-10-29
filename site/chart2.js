@@ -102,6 +102,7 @@ class CChart {
     g.fillStyle = C.bg || "#111"; g.fillRect(0, 0, this.W, this.H); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; g.textBaseline = "middle";
     if (!this.k.length) { g.fillStyle = C.fg3; g.fillText("Loading candles…", 12, 24); return; }
     const L = this.layout(); this.yRange(); const [a, b] = this.vis(), bw = this.bw();
+    { const gr = g.createLinearGradient(0, 0, 0, L.mainH); gr.addColorStop(0, rgba(C.acc, 0.05)); gr.addColorStop(0.55, rgba(C.acc, 0)); gr.addColorStop(1, rgba(C.purple || C.acc, 0.05)); g.fillStyle = gr; g.fillRect(0, 0, L.r, L.mainH); }
     // grid
     const ys = niceStep(this.yHi - this.yLo, Math.max(3, Math.round(L.mainH / 70))), yt = [];
     g.strokeStyle = C.grid; g.lineWidth = 1; g.beginPath();
@@ -242,6 +243,8 @@ class CChart {
             const all = lines.flatMap((q) => q.v.map((p) => p.v)); let lo = Math.min(...all), hi = Math.max(...all); const pd = (hi - lo) * 0.08 || 1; lo -= pd; hi += pd;
             const Yl = (v) => y0 + (1 - (v - lo) / (hi - lo)) * hh;
             if (S.zero && lo < 0 && hi > 0) { g.strokeStyle = rgba(C.fg3, 0.5); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(0, Yl(0)); g.lineTo(L.r, Yl(0)); g.stroke(); g.setLineDash([]); }
+            if (lines.length === 1) { const q = lines[0], gf = g.createLinearGradient(0, y0, 0, y0 + hh); gf.addColorStop(0, rgba(q.color, 0.28)); gf.addColorStop(1, rgba(q.color, 0)); g.fillStyle = gf; g.beginPath();
+              q.v.forEach((p, i) => { const X = this.X(this.ti(p.t)), Yv = Yl(p.v); if (i) g.lineTo(X, Yv); else g.moveTo(X, Yv); }); g.lineTo(this.X(this.ti(q.v[q.v.length - 1].t)), y0 + hh); g.lineTo(this.X(this.ti(q.v[0].t)), y0 + hh); g.closePath(); g.fill(); }
             for (const q of lines) { g.strokeStyle = q.color; g.lineWidth = q.w || 1.7; g.beginPath(); q.v.forEach((p, i) => { const X = this.X(this.ti(p.t)), Yv = Yl(p.v); if (i) g.lineTo(X, Yv); else g.moveTo(X, Yv); }); g.stroke();
               const lv = q.v[q.v.length - 1].v; tags.push([Yl(lv), S.fmt(lv), q.color]); }
             g.lineWidth = 1;
