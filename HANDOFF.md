@@ -387,7 +387,8 @@ Any static web host. No server runtime, database, environment variables or API k
 
 ### 9.3 Other hosts
 
-- **Cloudflare Pages + a Worker (recommended for cost):** serve `site/` as static files. Implement `/px/<name>/*` in a Worker (or Pages Function) that maps `<name>` to the same upstream hosts as `_redirects`, forwards method/body/query, adds `Access-Control-Allow-Origin` and short edge caching. Keep an allow-list of hosts so it can't be used as an open proxy.
+- **Cloudflare Pages (now set up in this repo):** `functions/px/[[path]].js` implements the `/px/<name>/*` pass-through as a Pages Function with an allow-list and short edge caching. Build output directory `site`, no build command, repo root as project root. See README.
+- **Cloudflare Pages + a Worker (alternative):** serve `site/` as static files. Implement `/px/<name>/*` in a Worker (or Pages Function) that maps `<name>` to the same upstream hosts as `_redirects`, forwards method/body/query, adds `Access-Control-Allow-Origin` and short edge caching. Keep an allow-list of hosts so it can't be used as an open proxy.
 - **GitHub Pages / any static host:** works for everything except the `/px` sources unless a separate proxy (such as the Worker above) is added. Then change the `PROXY` map in `app.js` (and the additions in `chart2.js`/`stage4.js`) to the proxy's absolute URL.
 - **Local:** `npx netlify-cli dev` in `site/` honors `_redirects` locally. A plain static server (`python3 -m http.server`) runs the app but the `/px` routes 404 and fall back to direct requests, which those exchanges block (CORS).
 

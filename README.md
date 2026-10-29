@@ -9,3 +9,14 @@ A static, client-only BTC futures dashboard. Live exchange data is fetched direc
 - **Inventory:** `docs/sources.csv` (every data source), `docs/functions.md` (every function, plus overrides between files).
 
 Folder map: `site/` app · `preview/` sample-data build · `tests/` harness · `docs/` generated inventories · `legacy/` the earlier Grok-built version and its port.
+
+## Hosting on Cloudflare Pages (free, auto-updates from this repo)
+
+Connect this repository in Cloudflare (**Workers & Pages → Create → Pages → Connect to Git**) with:
+
+- **Framework preset:** None
+- **Build command:** leave empty (or `exit 0` if a value is required)
+- **Build output directory:** `site`
+- **Root directory:** leave as the repo root (so the `functions/` folder is found)
+
+`functions/px/[[path]].js` provides the `/px/<name>/…` pass-through on Cloudflare (Netlify uses `site/_redirects` instead). Every push to `main` redeploys automatically.
