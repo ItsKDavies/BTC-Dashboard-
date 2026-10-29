@@ -349,6 +349,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 3. Drag the bar above the panes to resize, double-tap it to reset.</span></div>
       </div>
       <div class="ohlc" id="ohlc"></div>
+      <div class="ctl" id="myAdd" style="margin:-2px 0 6px;min-height:0"></div>
       <div id="cMain" class="chartbox"></div>
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
     </div>
@@ -1369,7 +1370,7 @@ function syncCtl() {
   document.querySelectorAll("[data-tog]").forEach((b) => b.setAttribute("aria-pressed", !!ST[b.dataset.tog]));
 }
 $("#tfSeg").addEventListener("click", (e) => { const b = e.target.closest("[data-tf]"); if (!b || b.dataset.tf === ST.tf) return; ST.tf = b.dataset.tf; LS.set("tf", ST.tf); syncCtl(); CH.sig = null; tick("kl"); });
-document.querySelectorAll("[data-tog]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.tog; ST[k] = !ST[k]; LS.set(k, ST[k]); syncCtl(); render(); }));
+document.querySelectorAll("[data-tog]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.tog; ST[k] = !ST[k]; LS.set(k, ST[k]); syncCtl(); render(); if (k === "my" && typeof myAddBar === "function") myAddBar(); }));
 $("#bZin").addEventListener("click", () => zoom(0.6));
 $("#bZout").addEventListener("click", () => zoom(1.6));
 $("#bRst").addEventListener("click", () => resetView());
@@ -2352,9 +2353,18 @@ function parseLevels(txt, ref) {
   }
   return out.filter((x, i) => out.findIndex((y) => Math.abs(y.p - x.p) < 1) === i).sort((a, b) => b.p - a.p);
 }
-function drawMyLevels() {
+// quick-add: tap the chart, then "+ Add level" saves the crosshair price as one of your levels
+let MYADD = null;
+function myAddBar() {
+  const el = $("#myAdd"); if (!el) return;
+  if (!ST.my) { el.innerHTML = ""; return; }
+  const n = MYLV.list.length;
+  el.innerHTML = MYADD ? `<button class="chip" id="bAddLv" style="border-color:var(--my);color:var(--my)">+ Add level ${n0(MYADD)}</button>${n ? `<span class="mut" style="font-size:12px">${n} on chart</span>` : ""}`
+    : `<span class="mut" style="font-size:12px">${n ? `${n} of your levels on the chart (pink). ` : ""}Tap the chart where you want a level, then tap “+ Add level”. Or paste CoinWise levels in the My levels box below.</span>`;
+}
+function drawMyLevels() { myAddBar();
   const box = $("#myList"); if (!box) return;
-  box.innerHTML = MYLV.list.length ? `<div class="mut" style="font-size:12px;margin:6px 0">${MYLV.list.length} levels saved ${MYLV.at ? `on ${new Date(MYLV.at).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}` : ""}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${MYLV.list.map((l) => `<span class="chip" style="border-color:var(--my);color:var(--my)">${esc(l.label)} <b>${n0(l.p)}</b></span>`).join("")}</div>` : `<div class="mut" style="font-size:12.5px;margin-top:6px">No levels saved yet.</div>`;
+  box.innerHTML = MYLV.list.length ? `<div class="mut" style="font-size:12px;margin:6px 0">${MYLV.list.length} levels saved ${MYLV.at ? `on ${new Date(MYLV.at).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}` : ""}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${MYLV.list.map((l, i) => `<span class="chip" style="border-color:var(--my);color:var(--my);display:inline-flex;align-items:center;gap:6px">${esc(l.label)} <b>${n0(l.p)}</b><button data-rmlv="${i}" aria-label="Remove level" style="border:none;background:none;color:inherit;padding:0 2px;font-size:15px;line-height:1">×</button></span>`).join("")}</div>` : `<div class="mut" style="font-size:12.5px;margin-top:6px">No levels saved yet.</div>`;
 }
 
 /* ---------- mood gauges ---------- */
@@ -2389,7 +2399,7 @@ let CC = null;
 function initChart() {
   const host = $("#cMain"); if (!host || CC) return;
   CC = new CChart(host); CC.colors = chartColors; CC.onView = () => { CH.xKey = null; chartExtras(true); };
-  CC.onCross = (b) => showOhlc(b ? { o: b.o, h: b.h, l: b.l, c: b.c } : null);
+  CC.onCross = (b) => { showOhlc(b ? { o: b.o, h: b.h, l: b.l, c: b.c } : null); if (b && CC.cross && CC.cross.y < CC.layout().mainH) { MYADD = Math.round(CC.P(CC.cross.y)); } myAddBar(); };
   CH.ready = true;
 }
 function resetView() { if (CC) CC.reset(); }
@@ -2566,7 +2576,9 @@ document.addEventListener("click", (e) => {
   const tl = e.target.closest("[data-tln]"); if (tl) { ST.tlN = tl.dataset.tln; LS.set("tlN", ST.tlN); if (!ST.trend) { ST.trend = true; LS.set("trend", true); syncCtl(); } syncLow(); CH.xKey = null; chartExtras(); return; }
   const lp = e.target.closest("[data-lps]"); if (lp) { ST.lpStyle = lp.dataset.lps; LS.set("lpStyle", ST.lpStyle); if (!ST.lowers.includes("pos")) { ST.lowers.push("pos"); while (ST.lowers.length > 3) ST.lowers.shift(); LS.set("lowers", ST.lowers); tick("pfc"); } syncLow(); CH.xKey = null; chartExtras(); return; }
   const lw = e.target.closest("[data-low]"); if (lw) { const id = lw.dataset.low, L2 = ST.lowers.filter((x) => x !== id); if (L2.length === ST.lowers.length) { L2.push(id); while (L2.length > 3) L2.shift(); } ST.lowers = L2; LS.set("lowers", L2); syncLow(); if (id === "pos" || id === "cvd" || id === "oi") tick("pfc"); CH.xKey = null; chartExtras(); return; }
-  if (e.target.closest("#bMySave")) { const v = $("#myTxt").value; MYLV = { at: Date.now(), list: parseLevels(v, curPx()) }; LS.set("myLevels", MYLV); $("#myMsg").textContent = MYLV.list.length ? `Saved ${MYLV.list.length} levels. They're on the chart.` : "No prices found. Paste lines like “Support 79,750” or “R1 81.2k”."; drawMyLevels(); CH.xKey = null; chartExtras(); return; }
+  if (e.target.closest("#bAddLv") && MYADD) { MYLV = { at: Date.now(), list: [...MYLV.list, { p: MYADD, label: "Mine", man: true }].sort((a, b) => b.p - a.p) }; LS.set("myLevels", MYLV); MYADD = null; drawMyLevels(); CH.xKey = null; chartExtras(); return; }
+  const rm = e.target.closest("[data-rmlv]"); if (rm) { MYLV = { at: MYLV.at, list: MYLV.list.filter((_, i) => i !== +rm.dataset.rmlv) }; LS.set("myLevels", MYLV); drawMyLevels(); CH.xKey = null; chartExtras(); return; }
+  if (e.target.closest("#bMySave")) { const v = $("#myTxt").value; MYLV = { at: Date.now(), list: [...MYLV.list.filter((l) => l.man), ...parseLevels(v, curPx())].sort((a, b) => b.p - a.p) }; LS.set("myLevels", MYLV); $("#myMsg").textContent = MYLV.list.length ? `Saved ${MYLV.list.length} levels. They're on the chart.` : "No prices found. Paste lines like “Support 79,750” or “R1 81.2k”."; drawMyLevels(); CH.xKey = null; chartExtras(); return; }
   if (e.target.closest("#bMyClear")) { MYLV = { at: 0, list: [] }; LS.set("myLevels", MYLV); $("#myTxt").value = ""; $("#myMsg").textContent = "Cleared."; drawMyLevels(); CH.xKey = null; chartExtras(); }
 });
 const _draw2 = drawStage2;

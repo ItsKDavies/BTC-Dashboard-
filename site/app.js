@@ -492,7 +492,7 @@ function syncCtl() {
   document.querySelectorAll("[data-tog]").forEach((b) => b.setAttribute("aria-pressed", !!ST[b.dataset.tog]));
 }
 $("#tfSeg").addEventListener("click", (e) => { const b = e.target.closest("[data-tf]"); if (!b || b.dataset.tf === ST.tf) return; ST.tf = b.dataset.tf; LS.set("tf", ST.tf); syncCtl(); CH.sig = null; tick("kl"); });
-document.querySelectorAll("[data-tog]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.tog; ST[k] = !ST[k]; LS.set(k, ST[k]); syncCtl(); render(); }));
+document.querySelectorAll("[data-tog]").forEach((b) => b.addEventListener("click", () => { const k = b.dataset.tog; ST[k] = !ST[k]; LS.set(k, ST[k]); syncCtl(); render(); if (k === "my" && typeof myAddBar === "function") myAddBar(); }));
 $("#bZin").addEventListener("click", () => zoom(0.6));
 $("#bZout").addEventListener("click", () => zoom(1.6));
 $("#bRst").addEventListener("click", () => resetView());
