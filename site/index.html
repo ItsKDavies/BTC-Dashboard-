@@ -91,6 +91,9 @@ canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:
 .calrow.past{opacity:.5}.caln{min-width:0}.calc{font-weight:600;white-space:nowrap;font-size:12.5px}
 .psums{display:grid;gap:6px}.psum{display:grid;grid-template-columns:44px 1fr;gap:8px;font-size:13.5px}
 .pgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr))}
+.pfsum{display:grid;gap:6px;grid-template-columns:repeat(3,1fr);margin:4px 0}
+.pfsum div{background:var(--bg);border:1px solid var(--weak);border-radius:10px;padding:7px 8px;font-size:11.5px;color:var(--fg2);line-height:1.35}
+.pfsum b{display:block;font-size:14px;color:var(--fg);margin:2px 0}.pfsum b span{display:block;white-space:nowrap}.pfsum i{font-style:normal;display:block;color:var(--fg3);font-size:11px}
 .pcard{display:grid;gap:4px}.pname{font-size:16px;font-weight:700}.tfb{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;background:var(--weak);color:var(--fg2)}
 .pstat{font-size:13px;font-weight:600}.pplan{font-size:13px;line-height:1.6;margin-top:4px;padding-top:6px;border-top:1px dashed var(--weak)}
 @media (max-width:520px){.mrow{grid-template-columns:1fr 70px}.mrow .mbar{grid-column:1/-1;order:3}}
@@ -208,8 +211,9 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
         <div class="lg"><span class="lgt">Candles</span><button class="chip" data-tog="mono">Mono</button><button class="chip" data-tog="sess">Sessions</button></div>
         <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
         <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button></div>
+        <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><button class="chip" data-tog="cdl">Candle patterns</button></div>
         <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
-        <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="bub">Big trades</button></div>
+        <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
         <div class="lg"><span class="lgt">Lower pane</span><span class="seg"><button data-lower="off">Off</button><button data-lower="cvd">CVD</button><button data-lower="delta">Delta</button><button data-lower="oi">OI</button></span></div>
         <div class="ctl" id="fibSel" hidden></div>
       </div>
@@ -230,7 +234,7 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
     <div class="panel"><div class="ph"><span class="pt">Assessment</span></div><div id="taAssess"></div></div>
     <div class="panel"><div class="ph"><span class="pt">Technicals by timeframe</span></div><div class="tw"><table id="taTbl"></table></div><div class="src">Binance spot candles. Score is the average of the signal votes (−100 to +100); 30 or more counts as a clear lean.</div></div>
     <div class="two">
-      <div class="panel"><div class="ph"><span class="pt">Moving averages</span></div><div class="tw"><table id="maTbl"></table></div><div class="src">▲ price above · ▼ price below</div></div>
+      <div class="panel"><div class="ph"><span class="pt">Moving averages</span></div><div class="tw"><table id="maTbl"></table></div><div class="src">How far price is above (▲) or below (▼) each key average. Trend = Up when price is above 3 or 4 of them.</div><details style="margin-top:8px"><summary class="mut" style="cursor:pointer;font-size:13px">Show all averages</summary><div class="tw"><table id="maAll"></table></div></details></div>
       <div class="panel"><div class="ph"><span class="pt">Key zones</span></div><div class="tw"><table id="zoneTbl"></table></div><div class="src">Swing highs/lows (30m, 4h), PDH/PDL, opens, VWAP and liquidation clusters merged when within 0.12%.</div></div>
     </div>
   </section>
@@ -258,6 +262,13 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
 
   <!-- CVD -->
   <section data-view="flow" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel">
+      <div class="ph"><span class="pt">Positions opening and closing · all venues</span><span class="seg" id="pfSeg" style="margin-left:auto"></span></div>
+      <div id="pfSum" class="pfsum"></div>
+      <div id="pfRead" class="sub" style="margin:6px 0 8px;line-height:1.6"></div>
+      <div id="pfChart"></div>
+      <div class="src">Each bar's change in open interest is split by who was aggressive: OI up with taker buying = longs opening, with taker selling = shorts opening; OI down with taker selling = longs closing, with taker buying = shorts closing. OKX OI and taker flow, scaled to all venues' combined OI. An estimate. Tap or hover for values.</div>
+    </div>
     <div class="panel"><div class="ph"><span class="pt">Price vs spot and perp CVD · 24h</span></div><div id="cvdMain"></div><div class="src">Cumulative taker buys minus sells. Colored second line is a 20-period EMA of the CVD.</div></div>
     <div class="panel"><div class="ph"><span class="pt">CVD by exchange</span></div><div class="ctl" id="cvdSel"></div><div id="cvdEx"></div><div class="src">Binance from 5m candles · OKX from 5m taker stats · Coinbase from its trade feed, so it starts when you open the page and fills in while it stays open.</div></div>
     <div class="two">

@@ -254,7 +254,7 @@ const stPill = (id) => { const s = status(id); return `<span class="st ${s}">${S
 const CH = { ready: false };
 const TFS = ["5m", "15m", "30m", "1h", "4h", "1d"];
 function rgba(hex, a) { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return hex; const n = parseInt(m[1], 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
-function chartColors() { return { bg: cssv("--panel"), fg: cssv("--fg2"), grid: cssv("--weak"), line: cssv("--line"), up: cssv("--up"), dn: cssv("--dn"), acc: cssv("--acc"), warn: cssv("--warn"), purple: cssv("--purple"), fg3: cssv("--fg3") }; }
+function chartColors() { return { bg: cssv("--panel"), fg: cssv("--fg2"), fg2: cssv("--fg2"), grid: cssv("--weak"), line: cssv("--line"), up: cssv("--up"), dn: cssv("--dn"), acc: cssv("--acc"), warn: cssv("--warn"), purple: cssv("--purple"), fg3: cssv("--fg3") }; }
 function baseOpts(c, h) {
   return {
     autoSize: true, height: h,

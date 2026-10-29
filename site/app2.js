@@ -278,10 +278,14 @@ function drawTA(a) {
     ${row("EMA 50/200 cross", (t) => cell(t.cross ? `${t.cross.dir > 0 ? "Golden" : "Death"} cross ${t.cross.ago} bars ago` : "none recent", t.cross ? t.cross.dir : 0))}
   </tbody>`;
   const px = a.px, ma = (v) => (ok(v) ? `<td class="${px >= v ? "up" : "dn"}">${n0(v)} ${px >= v ? "▲" : "▼"}</td>` : "<td>–</td>");
-  $("#maTbl").innerHTML = `<thead><tr><th>Average</th>${tfs.map((t) => `<th>${t}</th>`).join("")}</tr></thead><tbody>
+  const KEY = [["EMA 21", "ema", 21], ["EMA 50", "ema", 50], ["EMA 200", "ema", 200], ["SMA 200", "sma", 200]];
+  const dcell = (v) => (ok(v) ? `<td class="${px >= v ? "up" : "dn"}">${px >= v ? "▲" : "▼"} ${pct(((px - v) / v) * 100, 1)}</td>` : "<td>–</td>");
+  $("#maTbl").innerHTML = `<thead><tr><th>Price vs</th>${tfs.map((t) => `<th>${t}</th>`).join("")}</tr></thead><tbody>
+    ${KEY.map(([n, k, p]) => `<tr><td>${n}</td>${tfs.map((tf) => dcell(T[tf][k][p])).join("")}</tr>`).join("")}
+    <tr><td><b>Trend</b></td>${tfs.map((tf) => { const v = KEY.map(([, k, p]) => T[tf][k][p]).filter(ok), up = v.filter((x) => px >= x).length; return `<td class="${up >= 3 ? "up" : up <= 1 ? "dn" : "mut"}"><b>${up >= 3 ? "Up" : up <= 1 ? "Down" : "Mixed"}</b></td>`; }).join("")}</tr></tbody>`;
+  if ($("#maAll")) $("#maAll").innerHTML = `<thead><tr><th>Average</th>${tfs.map((t) => `<th>${t}</th>`).join("")}</tr></thead><tbody>
     ${TA.MA_E.map((p) => `<tr><td>EMA ${p}</td>${tfs.map((tf) => ma(T[tf].ema[p])).join("")}</tr>`).join("")}
-    ${TA.MA_S.map((p) => `<tr><td>SMA ${p}</td>${tfs.map((tf) => ma(T[tf].sma[p])).join("")}</tr>`).join("")}
-    <tr><td><b>Above / total</b></td>${tfs.map((tf) => { const all = [...TA.MA_E.map((p) => T[tf].ema[p]), ...TA.MA_S.map((p) => T[tf].sma[p])].filter(ok), up = all.filter((v) => px >= v).length; return `<td class="${up / all.length > 0.6 ? "up" : up / all.length < 0.4 ? "dn" : "mut"}"><b>${up}/${all.length}</b></td>`; }).join("")}</tr></tbody>`;
+    ${TA.MA_S.map((p) => `<tr><td>SMA ${p}</td>${tfs.map((tf) => ma(T[tf].sma[p])).join("")}</tr>`).join("")}</tbody>`;
   $("#zoneTbl").innerHTML = `<thead><tr><th>Zone</th><th>Dist</th><th>Strength</th><th class="l">Made of</th></tr></thead><tbody>${a.Z.slice().sort((x, y) => Math.abs(x.dist) - Math.abs(y.dist)).slice(0, 14).sort((x, y) => y.c - x.c).map((z) => `<tr><td class="${z.c > px ? "dn" : "up"}">${z.lo === z.hi ? n0(z.c) : `${n0(z.lo)}–${n0(z.hi)}`}</td><td>${pct(z.dist)}</td><td>${"●".repeat(Math.min(5, Math.round(z.w)))}</td><td class="wrap">${esc(z.names.join(", "))}</td></tr>`).join("")}</tbody>`;
 }
 

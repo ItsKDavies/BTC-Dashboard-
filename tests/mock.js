@@ -22,7 +22,7 @@ module.exports = function(url, method){
     if (u.pathname.includes('funding-rate')) return {code:'0',data:[{fundingRate:'0.0000361'}]};
     if (u.pathname.includes('public/open-interest')) return {code:'0',data:[{oiCcy:'25000.5'}]};
     if (u.pathname.includes('open-interest-volume')) return q.period==='1H' ? {code:'0',data:rub(200,i=>[String(2.0e9 - i*3e6 + Math.sin(i/5)*2e7), '1e9'],3600)} : {code:'0',data:rub(288,i=>[String(2.0e9+ i*1e6), '1e9'])};
-    if (u.pathname.includes('taker-volume')) return {code:'0',data:rub(288,i=>[String(100+Math.random()*50), String(100+Math.random()*50)])};
+    if (u.pathname.includes('taker-volume')) return q.period==='1H' ? {code:'0',data:rub(200,i=>[String(100+Math.random()*50), String(100+Math.random()*50)],3600)} : {code:'0',data:rub(288,i=>[String(100+Math.random()*50), String(100+Math.random()*50)])};
     if (u.pathname.includes('long-short')) return {code:'0',data:rub(288,i=>[String(1.6+Math.sin(i/20)*0.2)])};
   }
   if (u.host==='api.hyperliquid.xyz') return [{universe:[{name:'BTC'},{name:'ETH'}]},[{markPx:'80281',funding:'0.0000125',openInterest:'31000'},{markPx:'3000',funding:'0',openInterest:'1'}]];

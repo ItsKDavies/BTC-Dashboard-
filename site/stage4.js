@@ -167,6 +167,70 @@ function drawCal() {
   el.innerHTML = [...by.entries()].map(([d, es]) => `<div class="calday">${d}</div>${es.map((e) => { const past = e.t < Date.now(); return `<div class="calrow${past ? " past" : ""}"><span class="imp ${e.impact === "High" ? "hi" : "md"}" title="${e.impact} impact"></span><span class="calt">${new Date(e.t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span><span class="caln"><b>${esc(e.title)}</b><span class="mut">${e.f ? ` · forecast ${esc(e.f)}` : ""}${e.p ? ` · prev ${esc(e.p)}` : ""}${e.a ? ` · actual <b>${esc(e.a)}</b>` : ""}</span></span><span class="calc">${past ? "done" : untilTxt(e.t - Date.now())}</span></div>`; }).join("")}`).join("") || `<div class="unavail">No high or medium impact US events listed this week.</div>`;
 }
 
+/* ---------- positions opening / closing (CVD tab) ---------- */
+ST.pfTf = LS.get("pfTf", "5m");
+def("pf", "OKX OI + taker flow history", "Positions opening/closing", 60000, async () => {
+  const per = ST.pfTf;
+  const [oi, tk] = await Promise.all([okxR(`/api/v5/rubik/stat/contracts/open-interest-volume?ccy=BTC&period=${per}`), okxR(`/api/v5/rubik/stat/taker-volume?ccy=BTC&instType=CONTRACTS&period=${per}`)]);
+  const T = new Map(tk.map((r) => [Math.floor(+r[0] / 1000), { sell: +r[1], buy: +r[2] }]));
+  const rows = oi.map((r) => ({ t: Math.floor(+r[0] / 1000), oi: +r[1] })).filter((x) => ok(x.oi) && T.has(x.t)).sort((a, b) => a.t - b.t).map((x) => ({ ...x, ...T.get(x.t) }));
+  if (rows.length < 5) throw new Error("not enough OI/taker history"); return { per, rows };
+});
+let PFI = null, PFN = 0, PFW = 1;
+function pfRows() {
+  const A = aggr(), scale = A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 1, R = D.pf.rows, out = [];
+  for (let i = 1; i < R.length; i++) {
+    const d = (R[i].oi - R[i - 1].oi) * scale, tot = R[i].buy + R[i].sell, b = tot ? R[i].buy / tot : 0.5;
+    out.push({ t: R[i].t, oi: R[i].oi * scale, lo: d > 0 ? d * b : 0, so: d > 0 ? d * (1 - b) : 0, lc: d < 0 ? -d * (1 - b) : 0, sc: d < 0 ? -d * b : 0, b });
+  }
+  return { rows: out, scale };
+}
+function drawPf() {
+  const box = $("#pfChart"); if (!box) return; const C = chartColors();
+  $("#pfSeg").innerHTML = [["5m", "5m · 1d"], ["1H", "1h · 4d"], ["1D", "1d · 3mo"]].map(([v, l]) => `<button data-pftf="${v}" aria-pressed="${ST.pfTf === v}">${l}</button>`).join("");
+  if (!live("pf") || D.pf.per !== ST.pfTf) { box.innerHTML = unavail("pf", "Loading positioning…"); $("#pfSum").innerHTML = ""; $("#pfRead").textContent = ""; return; }
+  const { rows: all } = pfRows(), rows = all.slice(-(ST.pfTf === "5m" ? 288 : ST.pfTf === "1H" ? 96 : 90)), n = rows.length; if (n < 3) return;
+  const pm = priceAt(ST.pfTf); rows.forEach((r) => (r.px = pm.get(r.t)));
+  // window totals
+  const sum = (k, from) => rows.slice(from).reduce((s, r) => s + r[k], 0), win = ST.pfTf === "5m" ? [["1h", n - 12], ["4h", n - 48], ["24h", 0]] : ST.pfTf === "1H" ? [["4h", n - 4], ["24h", n - 24], ["4d", 0]] : [["7d", n - 7], ["30d", n - 30], ["3mo", 0]];
+  $("#pfSum").innerHTML = win.map(([lab, f]) => { const lo = sum("lo", Math.max(0, f)), lc = sum("lc", Math.max(0, f)), so = sum("so", Math.max(0, f)), sc = sum("sc", Math.max(0, f)), nl = lo - lc, ns = so - sc;
+    const read = nl > 0 && ns <= 0 ? "Longs building" : ns > 0 && nl <= 0 ? "Shorts building" : nl > 0 && ns > 0 ? "Both sides adding" : "Both sides cutting";
+    return `<div><b style="font-size:12px;color:var(--fg2)">${lab}</b><i>${read}</i><b><span class="up">L ${nl >= 0 ? "+" : "−"}${usd(Math.abs(nl))}</span><span class="dn">S ${ns >= 0 ? "+" : "−"}${usd(Math.abs(ns))}</span></b><i>In +${usd(lo + so)}</i><i>Out −${usd(lc + sc)}</i></div>`; }).join("");
+  const W = cw("#pfChart"), pr = 70, pw = W - pr, bw = pw / n, X = (i) => (i + 0.5) * bw, gap = 10;
+  const panes = [["Price", 90], ["Longs: opening ▲ green · closing ▼ grey", 110], ["Shorts: opening ▲ red · closing ▼ grey", 110], ["Net change, cumulative", 90]];
+  let y = 4, s = `<svg id="pfSvg" width="100%" viewBox="0 0 ${W} ${panes.reduce((t, p) => t + p[1] + gap, 0) + 18}" style="display:block;touch-action:pan-y;cursor:crosshair" role="img" aria-label="Longs and shorts opening and closing">`;
+  const frame = (h, name) => (s += `<rect x="0" y="${y}" width="${pw}" height="${h}" fill="none" stroke="${C.grid}"/><text x="6" y="${y + 14}" font-size="11.5" font-weight="600" fill="${C.fg2}">${name}</text>`);
+  // price
+  { const [name, h] = panes[0], v = rows.map((r) => r.px).filter(ok); frame(h, name); if (v.length > 1) { const lo = Math.min(...v), hi = Math.max(...v), Y = (x) => y + 18 + (1 - (x - lo) / (hi - lo || 1)) * (h - 24);
+    s += `<polyline fill="none" stroke="${C.fg}" stroke-width="1.6" points="${rows.map((r, i) => (ok(r.px) ? `${X(i).toFixed(1)},${Y(r.px).toFixed(1)}` : "")).filter(Boolean).join(" ")}"/><text x="${pw + 6}" y="${Y(v[v.length - 1]) + 4}" font-size="12" font-weight="700" fill="${C.fg}">${n0(v[v.length - 1])}</text>`; } y += h + gap; }
+  // longs / shorts mirrored bars
+  for (const [pi, up, dn, col] of [[1, "lo", "lc", C.up], [2, "so", "sc", C.dn]]) {
+    const [name, h] = panes[pi], mx = Math.max(...rows.map((r) => Math.max(r[up], r[dn])), 1), mid = y + 18 + (h - 22) / 2, half = (h - 26) / 2; frame(h, name);
+    s += `<line x1="0" x2="${pw}" y1="${mid}" y2="${mid}" stroke="${C.fg3}" stroke-dasharray="2 3"/>`;
+    rows.forEach((r, i) => { const hu = (r[up] / mx) * half, hd = (r[dn] / mx) * half, x = X(i) - bw * 0.4, w = Math.max(1, bw * 0.8);
+      if (hu > 0.3) s += `<rect x="${x.toFixed(1)}" y="${(mid - hu).toFixed(1)}" width="${w.toFixed(1)}" height="${hu.toFixed(1)}" fill="${col}"/>`;
+      if (hd > 0.3) s += `<rect x="${x.toFixed(1)}" y="${mid}" width="${w.toFixed(1)}" height="${hd.toFixed(1)}" fill="${rgba(C.fg3, 0.7)}"/>`; });
+    s += `<text x="${pw + 6}" y="${y + 24}" font-size="11" fill="${col}">+${usd(mx)}</text><text x="${pw + 6}" y="${y + h - 4}" font-size="11" fill="${C.fg3}">−${usd(mx)}</text>`; y += h + gap;
+  }
+  // cumulative net
+  { const [name, h] = panes[3]; frame(h, name); let cl = 0, cs = 0; const L1 = rows.map((r) => (cl += r.lo - r.lc)), S1 = rows.map((r) => (cs += r.so - r.sc)), v = [...L1, ...S1, 0], lo = Math.min(...v), hi = Math.max(...v), Y = (x) => y + 18 + (1 - (x - lo) / (hi - lo || 1)) * (h - 24);
+    s += `<line x1="0" x2="${pw}" y1="${Y(0)}" y2="${Y(0)}" stroke="${C.fg3}" stroke-dasharray="2 3"/>`;
+    s += `<polyline fill="none" stroke="${C.up}" stroke-width="2" points="${L1.map((v2, i) => `${X(i).toFixed(1)},${Y(v2).toFixed(1)}`).join(" ")}"/><polyline fill="none" stroke="${C.dn}" stroke-width="2" points="${S1.map((v2, i) => `${X(i).toFixed(1)},${Y(v2).toFixed(1)}`).join(" ")}"/>`;
+    s += `<text x="${pw + 6}" y="${Y(L1[n - 1]) + 4}" font-size="11.5" font-weight="700" fill="${C.up}">L ${usd(L1[n - 1])}</text><text x="${pw + 6}" y="${Y(S1[n - 1]) + 16}" font-size="11.5" font-weight="700" fill="${C.dn}">S ${usd(S1[n - 1])}</text>`; y += h + gap; }
+  const fx = (t) => fmtT(t, ST.pfTf === "1D" ? { month: "short", day: "numeric" } : ST.pfTf === "1H" ? { weekday: "short", hour: "numeric" } : { hour: "numeric", minute: "2-digit" });
+  s += `<text x="2" y="${y + 8}" font-size="11" fill="${C.fg3}">${fx(rows[0].t)}</text><text x="${pw}" y="${y + 8}" font-size="11" fill="${C.fg3}" text-anchor="end">${fx(rows[n - 1].t)}</text>`;
+  const ci = PFI === null ? n - 1 : Math.min(n - 1, PFI); if (PFI !== null) s += `<line x1="${X(ci)}" x2="${X(ci)}" y1="2" y2="${y - gap}" stroke="${C.fg2}" stroke-dasharray="3 3"/>`;
+  box.innerHTML = s + "</svg>"; PFN = n; PFW = pw;
+  const r = rows[ci];
+  $("#pfRead").innerHTML = `<b>${fmtT(r.t, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</b> · Price <b>${n0(r.px)}</b> · OI <b>${usd(r.oi)}</b> · <span class="up">Longs +${usd(r.lo)} / −${usd(r.lc)}</span> · <span class="dn">Shorts +${usd(r.so)} / −${usd(r.sc)}</span> · takers ${(r.b * 100).toFixed(0)}% buy`;
+}
+["pointermove", "click"].forEach((ev) => document.addEventListener(ev, (e) => {
+  const svg = e.target.closest && e.target.closest("#pfSvg"); if (!svg) return; if (ev === "pointermove" && e.pointerType !== "mouse") return;
+  const r = svg.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * svg.viewBox.baseVal.width; if (x > PFW) return;
+  PFI = Math.max(0, Math.min(PFN - 1, Math.floor((x / PFW) * PFN))); drawPf();
+}));
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-pftf]"); if (!b) return; ST.pfTf = b.dataset.pftf; LS.set("pfTf", ST.pfTf); PFI = null; tick("pf"); drawPf(); });
+
 /* ---------- wiring ---------- */
 const _d3 = drawStage2;
 drawStage2 = function (tab) {
@@ -174,7 +238,8 @@ drawStage2 = function (tab) {
   try {
     if (tab === "pat") { const a = analysis(); if (a) drawPatterns(a); else $("#patGeo").innerHTML = `<div class="unavail">Loading candles…</div>`; }
     if (tab === "derivs") drawPos();
+    if (tab === "flow") drawPf();
     if (tab === "mkts") drawCal();
   } catch (e) { console.error(e); }
 };
-render(); ["pos", "cal"].forEach((id) => tick(id));
+render(); ["pos", "cal", "pf"].forEach((id) => tick(id));

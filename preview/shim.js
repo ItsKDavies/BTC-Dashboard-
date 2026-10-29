@@ -44,7 +44,7 @@
       if (path.includes("funding-rate")) return { code: "0", data: [{ fundingRate: "0.0000361" }] };
       if (path.includes("public/open-interest")) return { code: "0", data: [{ oiCcy: "25000.5" }] };
       if (path.includes("open-interest-volume")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => [String(2.05e9 - i * (sec / 1500) * 1e3 + Math.sin(i / 7) * 2.5e7 + Math.sin(i / 2.3) * 4e6), "1e9"], sec) }; }
-      if (path.includes("taker-volume")) return { code: "0", data: rub(288, () => [String(90 + rnd() * 60), String(90 + rnd() * 60)]) };
+      if (path.includes("taker-volume")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => { const tilt = Math.sin(i / 9) * 25; return [String(100 - tilt + rnd() * 40), String(100 + tilt + rnd() * 40)]; }, sec) }; }
       if (path.includes("long-short")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => [String(1.6 + Math.sin(i / 40) * 0.2 + Math.sin(i / 3) * 0.03)], sec) }; }
     }
     if (h === "api.hyperliquid.xyz") return [{ universe: [{ name: "BTC" }] }, [{ markPx: P(-2), funding: "0.0000125", openInterest: "31000" }]];

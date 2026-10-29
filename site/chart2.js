@@ -2,7 +2,7 @@
 /* ===================== Stage 3: own canvas chart engine + new visuals ===================== */
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
 Object.assign(ST, {
-  heat: LS.get("heat", true), bub: LS.get("bub", true), sess: LS.get("sess", true), my: LS.get("my", true),
+  heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", true), pat: LS.get("pat", true), trend: LS.get("trend", true), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
   lower: LS.get("lower", "cvd"), clean: LS.get("clean", false), layersOpen: false,
 });
 
@@ -107,15 +107,21 @@ class CChart {
     // liquidation heatmap
     const H = Ls.heat;
     if (H && H.max > 0) {
-      const ca = Math.max(0, Math.floor(this.ti(t0) * this.sec / H.dt + (this.k[0].t - H.t0) / H.dt) - 1);
-      for (let c = ca; c < H.cols; c++) {
-        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5), xb = this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.r) break; if (xb < 0) continue;
-        for (let r = 0; r < H.rows; r++) {
-          const v = H.grid[c * H.rows + r]; if (v < H.max * 0.06) continue; const pa = H.lo + r * H.step, y1 = this.Y(pa + H.step), y2 = this.Y(pa); if (y2 < 0 || y1 > L.mainH) continue;
-          const t = Math.pow(v / H.max, 0.75); g.fillStyle = heatColor(t); g.fillRect(xa, y1, Math.max(1, xb - xa + 0.5), Math.max(1, y2 - y1 + 0.5));
+      // scale colors to what's on screen (97th percentile), so one huge cluster doesn't wash everything else out
+      const ca = Math.max(0, Math.floor((t0 - H.t0) / H.dt) - 1), rLo = Math.max(0, Math.floor((this.yLo - H.lo) / H.step)), rHi = Math.min(H.rows - 1, Math.ceil((this.yHi - H.lo) / H.step)), vals = [];
+      for (let c = ca; c < H.cols; c++) { if (this.X(this.ti(H.t0 + c * H.dt) - 0.5) > L.r) break; for (let r = rLo; r <= rHi; r++) { const v = H.grid[c * H.rows + r]; if (v > 0) vals.push(v); } }
+      vals.sort((x, y) => x - y); const vmax = vals.length ? vals[Math.floor(vals.length * 0.97)] || vals[vals.length - 1] : 0;
+      if (vmax > 0) for (let c = ca; c < H.cols; c++) {
+        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5); let xb = this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.r) break; if (xb < 0) continue;
+        if (c === H.cols - 1) xb = L.r; // carry the latest map into the empty space right of the last candle
+        for (let r = rLo; r <= rHi; r++) {
+          const v = H.grid[c * H.rows + r]; if (v < vmax * 0.12) continue; const pa = H.lo + r * H.step, y1 = this.Y(pa + H.step), y2 = this.Y(pa);
+          g.fillStyle = heatColor(Math.min(1, Math.pow(v / vmax, 0.85))); g.fillRect(xa, y1, Math.max(1, xb - xa + 0.5), Math.max(1, y2 - y1 + 0.5));
         }
       }
     }
+    // liquidation cluster bands (estimated)
+    for (const z of Ls.liqBands || []) { const y1 = this.Y(z.p + z.h / 2), y2 = this.Y(z.p - z.h / 2), hgt = Math.max(5, y2 - y1); g.fillStyle = rgba(z.color, 0.12 + 0.28 * z.w); g.fillRect(0, y1, L.r, hgt); g.fillStyle = z.color; g.font = "700 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(z.label, 6, y1 + hgt / 2); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
     // zone boxes
     for (const z of Ls.boxes || []) { const y1 = this.Y(z.hi), y2 = this.Y(z.lo); g.fillStyle = rgba(z.color, 0.13); g.fillRect(0, Math.min(y1, y2) - 2, L.r, Math.max(4, Math.abs(y2 - y1) + 4)); }
     // value area shading
@@ -125,13 +131,19 @@ class CChart {
     const cwid = Math.max(1, Math.min(bw * 0.72, bw - 1)), vH = L.mainH * 0.16;
     for (let i = a; i <= b; i++) { const x = this.k[i], h = mv ? (x.v / mv) * vH : 0, X = this.X(i); g.fillStyle = rgba(x.c >= x.o ? (Ls.mono ? C.fg3 : C.up) : (Ls.mono ? C.fg3 : C.dn), 0.28); g.fillRect(X - cwid / 2, L.mainH - h, cwid, h); }
     // candles
+    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null;
+    if (HL) for (let i = a; i <= b; i++) { const hc = HL.get(i); if (!hc) continue; const x = this.k[i], X = this.X(i), y1 = this.Y(x.h) - 6, y2 = this.Y(x.l) + 6;
+      g.fillStyle = rgba(hc, 0.13); g.fillRect(X - bw / 2, y1, bw, y2 - y1); }
     for (let i = a; i <= b; i++) {
-      const x = this.k[i], X = Math.round(this.X(i)) + 0.5, up = x.c >= x.o, col = Ls.mono ? C.fg : up ? C.up : C.dn;
+      const x = this.k[i], X = Math.round(this.X(i)) + 0.5, up = x.c >= x.o, hc = HL && HL.get(i), mono = Ls.mono && !hc, col = mono ? C.fg : up ? C.up : C.dn;
       const yo = this.Y(x.o), yc = this.Y(x.c), top = Math.min(yo, yc), hb = Math.max(1, Math.abs(yc - yo));
-      g.strokeStyle = col; g.lineWidth = 1; g.beginPath(); g.moveTo(X, this.Y(x.h)); g.lineTo(X, this.Y(x.l)); g.stroke();
-      if (cwid < 2.5) continue;
-      if (Ls.mono && up) { g.fillStyle = C.bg; g.fillRect(X - cwid / 2, top, cwid, hb); g.strokeRect(X - cwid / 2 + 0.5, top + 0.5, cwid - 1, Math.max(0, hb - 1)); }
-      else { g.fillStyle = col; g.fillRect(X - cwid / 2, top, cwid, hb); }
+      if (hc) { g.save(); g.shadowColor = col; g.shadowBlur = 7; }
+      g.strokeStyle = col; g.lineWidth = hc ? 1.4 : 1; g.beginPath(); g.moveTo(X, this.Y(x.h)); g.lineTo(X, this.Y(x.l)); g.stroke();
+      if (cwid >= 2.5) {
+        if (mono && up) { g.fillStyle = C.bg; g.fillRect(X - cwid / 2, top, cwid, hb); g.strokeRect(X - cwid / 2 + 0.5, top + 0.5, cwid - 1, Math.max(0, hb - 1)); }
+        else { g.fillStyle = col; g.fillRect(X - cwid / 2, top, cwid, hb); }
+      }
+      if (hc) g.restore();
     }
     // indicator lines
     for (const s of Ls.lines || []) {
@@ -139,11 +151,30 @@ class CChart {
       for (const p of s.pts) { const i = this.ti(p.t); if (i < a - 2 || i > b + 2) continue; const X = this.X(i), Yv = this.Y(p.v); if (!on) { g.moveTo(X, Yv); on = true; } else g.lineTo(X, Yv); }
       g.stroke(); g.setLineDash([]);
     }
+    // drawings: pattern shapes, trendlines, swing labels, pattern tags
+    for (const d of Ls.draw || []) {
+      if (d.type === "poly") { g.beginPath(); d.pts.forEach(([i, p], j) => (j ? g.lineTo(this.X(i), this.Y(p)) : g.moveTo(this.X(i), this.Y(p)))); g.closePath(); g.fillStyle = rgba(d.color, d.alpha || 0.09); g.fill(); }
+      else if (d.type === "seg") { g.save(); g.strokeStyle = d.color; g.lineWidth = d.w || 2; g.lineCap = "round"; g.setLineDash(d.dash || []); if (d.glow) { g.shadowColor = d.color; g.shadowBlur = 8; } g.beginPath(); g.moveTo(this.X(d.i0), this.Y(d.p0)); g.lineTo(this.X(d.i1), this.Y(d.p1)); g.stroke(); g.restore(); }
+      else if (d.type === "dot") { g.beginPath(); g.arc(this.X(d.i), this.Y(d.p), d.r || 3.5, 0, Math.PI * 2); g.fillStyle = C.bg; g.fill(); g.strokeStyle = d.color; g.lineWidth = 1.6; g.stroke(); }
+      else if (d.type === "pill" || d.type === "text") {
+        const X = this.X(d.i), Yv = this.Y(d.p) + (d.dy || 0); g.font = `${d.bold === false ? 600 : 700} ${d.size || 10.5}px IBM Plex Sans, system-ui, sans-serif`; const w = g.measureText(d.text).width;
+        if (d.type === "text") { g.fillStyle = d.color; g.textAlign = "center"; g.fillText(d.text, X, Yv); g.textAlign = "left"; }
+        else { const x0 = Math.min(L.r - w - 12, Math.max(2, d.anchor === "right" ? X - w - 12 : X - w / 2 - 6)); g.fillStyle = rgba(d.color, 0.92); g.beginPath(); if (g.roundRect) g.roundRect(x0, Yv - 9, w + 12, 18, 9); else g.rect(x0, Yv - 9, w + 12, 18); g.fill(); g.fillStyle = "#fff"; g.fillText(d.text, x0 + 6, Yv + 0.5); }
+        g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
+      }
+    }
     // horizontal levels
     for (const h of Ls.hlines || []) {
       if (!ok(h.p)) continue; const y = Math.round(this.Y(h.p)) + 0.5; if (y < 0 || y > L.mainH) continue;
       g.strokeStyle = h.color; g.lineWidth = h.w || 1; g.setLineDash(h.dash || []); g.globalAlpha = h.alpha || 0.9; g.beginPath(); g.moveTo(h.x0 ? Math.max(0, this.X(this.ti(h.x0))) : 0, y); g.lineTo(L.r, y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
       if (h.left) { g.fillStyle = h.color; g.font = "10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(h.left, 4, y - 6); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
+    }
+    // real liquidations (summed per candle and side)
+    for (const e of Ls.liqEv || []) {
+      const i = this.ti(e.t); if (i < a - 1 || i > b + 1) continue; const X = this.X(Math.round(i)), Yv = this.Y(e.p), s = Math.max(4, Math.min(16, Math.sqrt(e.usd / 2e4) * 3)), col = e.side === "long" ? C.dn : C.up;
+      g.beginPath(); if (e.side === "long") { g.moveTo(X - s, Yv - s * 0.2); g.lineTo(X + s, Yv - s * 0.2); g.lineTo(X, Yv + s); } else { g.moveTo(X - s, Yv + s * 0.2); g.lineTo(X + s, Yv + s * 0.2); g.lineTo(X, Yv - s); } g.closePath();
+      g.fillStyle = rgba(col, 0.75); g.fill(); g.strokeStyle = C.bg; g.lineWidth = 1; g.stroke();
+      if (e.usd >= 250000) { g.fillStyle = col; g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.textAlign = "center"; g.fillText(usd(e.usd).replace("$", ""), X, e.side === "long" ? Yv + s + 9 : Yv - s - 7); g.textAlign = "left"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
     }
     // big-trade bubbles
     for (const e of Ls.bubbles || []) {
@@ -213,7 +244,7 @@ const HEAT_STOPS = [[0, [40, 11, 84]], [0.25, [59, 82, 139]], [0.5, [33, 145, 14
 function heatColor(t) {
   let i = 1; while (i < HEAT_STOPS.length - 1 && HEAT_STOPS[i][0] < t) i++;
   const [ta, ca] = HEAT_STOPS[i - 1], [tb, cb] = HEAT_STOPS[i], f = Math.max(0, Math.min(1, (t - ta) / (tb - ta)));
-  const c = ca.map((v, j) => Math.round(v + (cb[j] - v) * f)); return `rgba(${c[0]},${c[1]},${c[2]},${(0.08 + 0.55 * t).toFixed(2)})`;
+  const c = ca.map((v, j) => Math.round(v + (cb[j] - v) * f)); return `rgba(${c[0]},${c[1]},${c[2]},${(0.06 + 0.56 * t).toFixed(2)})`;
 }
 
 /* ---------- big trades: Binance spot, OKX perp, Coinbase ---------- */
@@ -332,7 +363,7 @@ function heatData() {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.mono, ST.heat, ST.bub, ST.sess, ST.my, ST.lower, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lower, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -346,7 +377,12 @@ function chartExtras(fromView) {
   if (PF && on(ST.prof)) { L.profile = { ...PF, poc: PF.vp.poc, vah: PF.vp.vah, val: PF.vp.val }; L.hlines.push({ p: PF.vp.poc, color: "#e8c547", w: 1.5, tag: "POC", prio: 70 }, { p: PF.vp.vah, color: C.fg2, dash: [5, 3], tag: "VAH", prio: 45 }, { p: PF.vp.val, color: C.fg2, dash: [5, 3], tag: "VAL", prio: 45 }); }
   if (PF && on(ST.tpo)) L.hlines.push({ p: PF.tp.poc, color: C.acc, dash: [2, 3], tag: "TPO POC", prio: 42 }, { p: PF.tp.vah, color: C.acc, dash: [2, 3], prio: 5 }, { p: PF.tp.val, color: C.acc, dash: [2, 3], prio: 5 });
   if (on(ST.zones) && a) a.Z.filter((z) => Math.abs(z.dist) <= 4 && z.w >= 2).forEach((z) => L.boxes.push({ lo: z.lo, hi: z.hi, color: z.c > a.px ? C.dn : C.up }));
-  if (on(ST.liq) && a && a.L) [...a.L.shorts.slice(0, 3), ...a.L.longs.slice(0, 3)].forEach((x) => L.hlines.push({ p: x.p, color: x.dist > 0 ? C.up : C.dn, dash: [8, 4], w: 1.4, tag: `Liq ${usd(x.usd).replace("$", "")}`, prio: 55 }));
+  if (on(ST.liq) && a && a.L) { const tops = [...a.L.shorts.slice(0, 4), ...a.L.longs.slice(0, 4)].filter((x) => Math.abs(x.dist) <= 8), mx = Math.max(...tops.map((x) => x.usd), 1);
+    L.liqBands = tops.map((x) => ({ p: x.p, h: a.L.step, w: x.usd / mx, color: x.dist > 0 ? C.up : C.dn, label: `${x.dist > 0 ? "Shorts" : "Longs"} ${usd(x.usd)}` }));
+    tops.forEach((x) => L.hlines.push({ p: x.p, color: x.dist > 0 ? C.up : C.dn, alpha: 0, tag: `Liq ${usd(x.usd).replace("$", "")}`, prio: 55 })); }
+  if (on(ST.liqev) && typeof LIQ !== "undefined") { const sec = TF_SEC[ST.tf], t0 = k[0].t, m = new Map();
+    for (const e of LIQ.values()) { const t = e.t / 1000; if (t < t0) continue; const bt = Math.floor(t / sec) * sec, key = bt + e.side, o = m.get(key) || { t: bt, side: e.side, usd: 0, pv: 0 }; o.usd += e.usd; o.pv += e.px * e.usd; m.set(key, o); }
+    L.liqEv = [...m.values()].map((o) => ({ ...o, p: o.pv / o.usd })); }
   if (on(ST.heat)) L.heat = heatData();
   if (on(ST.bub)) { const t0 = k[0].t; L.bubbles = [...BIG.values()].filter((e) => e.t >= t0); }
   if (on(ST.sess) && intra) {
@@ -354,14 +390,56 @@ function chartExtras(fromView) {
     const done = {}; L.sessions.slice().sort((x, y) => y.t0 - x.t0).forEach((s) => { if (done[s.name] || s.t0 > Date.now() / 1000) return; const bars = k.filter((x) => x.t >= s.t0 && x.t < s.t1); if (!bars.length) return; done[s.name] = 1;
       const ab = s.name === "New York" ? "NY" : s.name === "London" ? "LDN" : "Asia"; L.hlines.push({ p: Math.max(...bars.map((x) => x.h)), color: s.color, dash: [3, 3], tag: `${ab} H`, prio: 35, x0: s.t0, alpha: 0.75 }, { p: Math.min(...bars.map((x) => x.l)), color: s.color, dash: [3, 3], tag: `${ab} L`, prio: 35, x0: s.t0, alpha: 0.75 }); });
   }
+  L.draw = []; L.hl = new Map();
+  if (on(ST.trend) && k.length > 40) drawStructure(L, k, C);
+  if (on(ST.pat) && k.length > 60) drawGeo(L, k, C);
+  if (on(ST.cdl) && k.length > 30) drawCandles(L, k, C, a);
   if (ST.my && MYLV.list.length) MYLV.list.forEach((l) => L.hlines.push({ p: l.p, color: cssv("--my"), w: 1.6, tag: `${l.label.slice(0, 5)} ${kfmt(l.p)}`, prio: 90, left: l.label }));
   // lower pane
   if (ST.lower === "cvd") { let s = 0; L.sub = { name: "Spot CVD · Binance (BTC)", color: C.acc, pts: k.map((x) => ({ t: x.t, v: (s += 2 * x.tb - x.v) })), fmt: (v) => sgn(v, 0) }; }
   else if (ST.lower === "delta") L.sub = { name: "Buy − sell volume per candle (BTC)", kind: "hist", pts: k.map((x) => ({ t: x.t, v: 2 * x.tb - x.v })), fmt: (v) => sgn(v, 0) };
   else if (ST.lower === "oi" && live("okxOI")) { const px = curPx() || 1; L.sub = { name: "Open interest · OKX (BTC, 5m)", color: C.warn, pts: D.okxOI.s.map((x) => ({ t: x.t, v: x.v > 1e7 ? x.v / px : x.v })), fmt: (v) => kfmt(v) }; }
   CC.L = L; CC.dirty();
-  const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "heat", "bub", "sess", "my"].filter((x) => ST[x]).length;
+  const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl"].filter((x) => ST[x]).length;
   const lb = $("#bLayers"); if (lb) lb.textContent = `Layers · ${ST.clean ? "clean" : n + " on"} ${ST.layersOpen ? "▴" : "▾"}`;
+}
+
+/* ---------- chart drawings: structure, trendlines, chart patterns, candle patterns ---------- */
+let GEOC = { key: "", v: [] };
+function drawStructure(L, k, C) {
+  const n = k.length, W0 = Math.max(0, n - 160), { hi, lo } = TA.pivots(k.slice(W0, -1), 4, 4); hi.forEach((q) => (q.i += W0)); lo.forEach((q) => (q.i += W0));
+  const lab = (arr, isHi) => arr.slice(-6).forEach((q, j, s) => { if (!j && arr.length < 7) return; const prev = j ? s[j - 1] : arr[arr.length - 7]; const t = isHi ? (q.p > prev.p ? "HH" : "LH") : q.p > prev.p ? "HL" : "LL", good = t === "HH" || t === "HL";
+    L.draw.push({ type: "text", i: q.i, p: q.p, dy: isHi ? -12 : 16, text: t, color: good ? C.up : C.dn, size: 10.5 }); });
+  lab(hi, true); lab(lo, false);
+  const line = (arr, color, name) => { if (arr.length < 2) return; const [p1, p2] = arr.slice(-2), m = (p2.p - p1.p) / (p2.i - p1.i || 1), i1 = n + 8;
+    L.draw.push({ type: "seg", i0: p1.i, p0: p1.p, i1, p1: p2.p + m * (i1 - p2.i), color, w: 1.6, dash: [7, 5], glow: true }, { type: "dot", i: p1.i, p: p1.p, color }, { type: "dot", i: p2.i, p: p2.p, color });
+    L.hlines.push({ p: p2.p + m * (n - 1 - p2.i), color, alpha: 0, tag: name, prio: 52 }); };
+  line(hi, C.dn, "Res line"); line(lo, C.up, "Sup line");
+}
+function drawGeo(L, k, C) {
+  const key = ST.tf + ":" + k.length + ":" + k[k.length - 2].t; if (GEOC.key !== key) GEOC = { key, v: TA.geoPatterns(k, ST.tf) };
+  const col = (c) => C[c] || c, n = k.length;
+  for (const p of GEOC.v) {
+    const c = p.dir > 0 ? C.up : p.dir < 0 ? C.dn : C.warn, ls = p.lines;
+    if (ls.length >= 2 && p.kind !== "hs") { const [u, d] = ls; L.draw.push({ type: "poly", pts: [[u.i0, u.p0], [u.i1, u.p1], [d.i1, d.p1], [d.i0, d.p0]], color: c, alpha: 0.1 }); }
+    ls.forEach((s) => L.draw.push({ type: "seg", i0: s.i0, p0: s.p0, i1: s.i1, p1: s.p1, color: col(s.color), w: s.w || 2.2, glow: true }));
+    (p.touches || []).forEach((q) => L.draw.push({ type: "dot", i: q.i, p: q.p, color: c }));
+    const tch = (p.touches || []).map((q) => q.i), iEnd = Math.min(n - 1, tch.length ? Math.max(...tch) + 1 : Math.min(...ls.map((s) => s.i1)));
+    for (let i = Math.max(0, p.i0); i <= iEnd; i++) if (!L.hl.has(i)) L.hl.set(i, c);
+    const top = Math.max(...ls.map((s) => Math.max(s.p0, s.p1)));
+    L.draw.push({ type: "pill", i: Math.min(n - 1, ls[0].i1 - 2), p: top, dy: -16, text: `${p.name}${p.brk ? (p.brk > 0 ? " ↑ broke out" : " ↓ broke down") : ""}`, color: c, anchor: "right" });
+    if (ok(p.breakUp) && p.brk >= 0) L.hlines.push({ p: p.breakUp, color: C.up, dash: [3, 3], alpha: 0.6, x0: k[Math.max(0, p.i0)].t, tag: "Break ↑", prio: 58 });
+    if (ok(p.breakDn) && p.brk <= 0) L.hlines.push({ p: p.breakDn, color: C.dn, dash: [3, 3], alpha: 0.6, x0: k[Math.max(0, p.i0)].t, tag: "Break ↓", prio: 58 });
+    if (ok(p.tgtUp) && p.brk >= 0 && p.dir >= 0) L.hlines.push({ p: p.tgtUp, color: C.up, dash: [1, 4], alpha: 0.8, x0: k[n - 1].t, tag: "Target ↑", prio: 57 });
+    if (ok(p.tgtDn) && p.brk <= 0 && p.dir <= 0) L.hlines.push({ p: p.tgtDn, color: C.dn, dash: [1, 4], alpha: 0.8, x0: k[n - 1].t, tag: "Target ↓", prio: 57 });
+  }
+}
+const CDL_SHORT = { "Bullish engulfing": "Engulf", "Bearish engulfing": "Engulf", "Morning star": "M-star", "Evening star": "E-star", "Three white soldiers": "3 soldiers", "Three black crows": "3 crows", "Bullish harami": "Harami", "Bearish harami": "Harami", "Shooting star": "Shooting ★", "Inverted hammer": "Inv hammer", "Piercing line": "Piercing", "Dark cloud cover": "Dark cloud", "Tweezer bottom": "Tweezer", "Tweezer top": "Tweezer", "Bullish marubozu": "Marubozu", "Bearish marubozu": "Marubozu", "Hanging man": "Hang man" };
+function drawCandles(L, k, C, a) {
+  const lv = a ? a.Z.map((z) => ({ p: z.c, name: z.names[0] })) : [];
+  TA.candlePatterns(k, lv, 40).filter((p) => p.dir && p.strength >= 2).slice(0, 5).forEach((p) => {
+    const c = p.dir > 0 ? C.up : C.dn; for (let j = 0; j < (p.n || 1); j++) L.hl.set(p.i - j, c); L.draw.push({ type: "pill", i: p.i, p: p.dir > 0 ? p.lo : p.hi, dy: p.dir > 0 ? 18 : -18, text: CDL_SHORT[p.name] || p.name, color: c, size: 10 });
+  });
 }
 
 /* ---------- controls ---------- */

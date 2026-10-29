@@ -89,6 +89,9 @@ canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:
 .calrow.past{opacity:.5}.caln{min-width:0}.calc{font-weight:600;white-space:nowrap;font-size:12.5px}
 .psums{display:grid;gap:6px}.psum{display:grid;grid-template-columns:44px 1fr;gap:8px;font-size:13.5px}
 .pgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr))}
+.pfsum{display:grid;gap:6px;grid-template-columns:repeat(3,1fr);margin:4px 0}
+.pfsum div{background:var(--bg);border:1px solid var(--weak);border-radius:10px;padding:7px 8px;font-size:11.5px;color:var(--fg2);line-height:1.35}
+.pfsum b{display:block;font-size:14px;color:var(--fg);margin:2px 0}.pfsum b span{display:block;white-space:nowrap}.pfsum i{font-style:normal;display:block;color:var(--fg3);font-size:11px}
 .pcard{display:grid;gap:4px}.pname{font-size:16px;font-weight:700}.tfb{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;background:var(--weak);color:var(--fg2)}
 .pstat{font-size:13px;font-weight:600}.pplan{font-size:13px;line-height:1.6;margin-top:4px;padding-top:6px;border-top:1px dashed var(--weak)}
 @media (max-width:520px){.mrow{grid-template-columns:1fr 70px}.mrow .mbar{grid-column:1/-1;order:3}}
@@ -144,7 +147,7 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<div style="background:color-mix(in srgb,var(--warn) 18%,var(--bg));color:var(--fg);font-size:13px;padding:7px max(14px,env(safe-area-inset-left));border-bottom:1px solid var(--line)"><b>Preview with sample data.</b> Prices and flows here are made up so you can try the layout, chart and layers. Real data runs on your Netlify site.</div>
+<div style="background:color-mix(in srgb,var(--warn) 18%,var(--bg));color:var(--fg);font-size:13px;padding:7px max(14px,env(safe-area-inset-left));border-bottom:1px solid var(--line)"><b>Preview with sample data.</b> Prices and flows here are made up so you can try the layout, chart and layers. Real data runs on your live Cloudflare site.</div>
 <script>
 /* DEMO MODE: no network. Exchange requests and live sockets are answered with generated sample data. */
 (function () {
@@ -192,7 +195,7 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
       if (path.includes("funding-rate")) return { code: "0", data: [{ fundingRate: "0.0000361" }] };
       if (path.includes("public/open-interest")) return { code: "0", data: [{ oiCcy: "25000.5" }] };
       if (path.includes("open-interest-volume")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => [String(2.05e9 - i * (sec / 1500) * 1e3 + Math.sin(i / 7) * 2.5e7 + Math.sin(i / 2.3) * 4e6), "1e9"], sec) }; }
-      if (path.includes("taker-volume")) return { code: "0", data: rub(288, () => [String(90 + rnd() * 60), String(90 + rnd() * 60)]) };
+      if (path.includes("taker-volume")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => { const tilt = Math.sin(i / 9) * 25; return [String(100 - tilt + rnd() * 40), String(100 + tilt + rnd() * 40)]; }, sec) }; }
       if (path.includes("long-short")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => [String(1.6 + Math.sin(i / 40) * 0.2 + Math.sin(i / 3) * 0.03)], sec) }; }
     }
     if (h === "api.hyperliquid.xyz") return [{ universe: [{ name: "BTC" }] }, [{ markPx: P(-2), funding: "0.0000125", openInterest: "31000" }]];
@@ -307,8 +310,9 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
         <div class="lg"><span class="lgt">Candles</span><button class="chip" data-tog="mono">Mono</button><button class="chip" data-tog="sess">Sessions</button></div>
         <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
         <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button></div>
+        <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><button class="chip" data-tog="cdl">Candle patterns</button></div>
         <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
-        <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="bub">Big trades</button></div>
+        <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
         <div class="lg"><span class="lgt">Lower pane</span><span class="seg"><button data-lower="off">Off</button><button data-lower="cvd">CVD</button><button data-lower="delta">Delta</button><button data-lower="oi">OI</button></span></div>
         <div class="ctl" id="fibSel" hidden></div>
       </div>
@@ -329,7 +333,7 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
     <div class="panel"><div class="ph"><span class="pt">Assessment</span></div><div id="taAssess"></div></div>
     <div class="panel"><div class="ph"><span class="pt">Technicals by timeframe</span></div><div class="tw"><table id="taTbl"></table></div><div class="src">Binance spot candles. Score is the average of the signal votes (−100 to +100); 30 or more counts as a clear lean.</div></div>
     <div class="two">
-      <div class="panel"><div class="ph"><span class="pt">Moving averages</span></div><div class="tw"><table id="maTbl"></table></div><div class="src">▲ price above · ▼ price below</div></div>
+      <div class="panel"><div class="ph"><span class="pt">Moving averages</span></div><div class="tw"><table id="maTbl"></table></div><div class="src">How far price is above (▲) or below (▼) each key average. Trend = Up when price is above 3 or 4 of them.</div><details style="margin-top:8px"><summary class="mut" style="cursor:pointer;font-size:13px">Show all averages</summary><div class="tw"><table id="maAll"></table></div></details></div>
       <div class="panel"><div class="ph"><span class="pt">Key zones</span></div><div class="tw"><table id="zoneTbl"></table></div><div class="src">Swing highs/lows (30m, 4h), PDH/PDL, opens, VWAP and liquidation clusters merged when within 0.12%.</div></div>
     </div>
   </section>
@@ -357,6 +361,13 @@ footer{font-size:12px;color:var(--fg3);padding:0 0 30px}
 
   <!-- CVD -->
   <section data-view="flow" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel">
+      <div class="ph"><span class="pt">Positions opening and closing · all venues</span><span class="seg" id="pfSeg" style="margin-left:auto"></span></div>
+      <div id="pfSum" class="pfsum"></div>
+      <div id="pfRead" class="sub" style="margin:6px 0 8px;line-height:1.6"></div>
+      <div id="pfChart"></div>
+      <div class="src">Each bar's change in open interest is split by who was aggressive: OI up with taker buying = longs opening, with taker selling = shorts opening; OI down with taker selling = longs closing, with taker buying = shorts closing. OKX OI and taker flow, scaled to all venues' combined OI. An estimate. Tap or hover for values.</div>
+    </div>
     <div class="panel"><div class="ph"><span class="pt">Price vs spot and perp CVD · 24h</span></div><div id="cvdMain"></div><div class="src">Cumulative taker buys minus sells. Colored second line is a 20-period EMA of the CVD.</div></div>
     <div class="panel"><div class="ph"><span class="pt">CVD by exchange</span></div><div class="ctl" id="cvdSel"></div><div id="cvdEx"></div><div class="src">Binance from 5m candles · OKX from 5m taker stats · Coinbase from its trade feed, so it starts when you open the page and fills in while it stays open.</div></div>
     <div class="two">
@@ -868,6 +879,7 @@ async function getJSON(url, opt = {}) {
 }
 function why(e, optional) {
   if (e && e.blocked) return { txt: e.message, blocked: true };
+  if (e && e.ws) return { txt: e.message + " · reconnecting" }; // live socket dropped (common when the phone sleeps or switches apps)
   if (e && e.status) {
     if (e.status === 451 || e.status === 403) return { txt: `Refused in your region (HTTP ${e.status})`, blocked: true };
     if (e.status === 429) return { txt: "Rate limited (HTTP 429), backing off" };
@@ -1087,7 +1099,7 @@ const stPill = (id) => { const s = status(id); return `<span class="st ${s}">${S
 const CH = { ready: false };
 const TFS = ["5m", "15m", "30m", "1h", "4h", "1d"];
 function rgba(hex, a) { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return hex; const n = parseInt(m[1], 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
-function chartColors() { return { bg: cssv("--panel"), fg: cssv("--fg2"), grid: cssv("--weak"), line: cssv("--line"), up: cssv("--up"), dn: cssv("--dn"), acc: cssv("--acc"), warn: cssv("--warn"), purple: cssv("--purple"), fg3: cssv("--fg3") }; }
+function chartColors() { return { bg: cssv("--panel"), fg: cssv("--fg2"), fg2: cssv("--fg2"), grid: cssv("--weak"), line: cssv("--line"), up: cssv("--up"), dn: cssv("--dn"), acc: cssv("--acc"), warn: cssv("--warn"), purple: cssv("--purple"), fg3: cssv("--fg3") }; }
 function baseOpts(c, h) {
   return {
     autoSize: true, height: h,
@@ -1282,7 +1294,7 @@ function drawSources() {
   $("#srcTbl").innerHTML = `<thead><tr><th>Source</th><th class="l">Feeds</th><th>Every</th><th>Status</th><th>Last OK</th><th>Latency</th><th class="l">Detail</th><th></th></tr></thead><tbody>${rows}</tbody>`;
 }
 function report() {
-  const lines = [`BTC Dashboard v2.0 stage 2 status · ${new Date().toString()}`, `Browser: ${navigator.userAgent}`, `Page: ${location.href}`, ""];
+  const lines = [`BTC Dashboard v2.0 stage 4 status · ${new Date().toString()}`, `Browser: ${navigator.userAgent}`, `Page: ${location.href}`, ""];
   for (const s of Object.values(SRC)) lines.push(`${s.id.padEnd(8)} ${status(s.id).padEnd(8)} lastOK=${ago(s.st.okAt)} fails=${s.st.fails} ${s.st.err}`);
   return lines.join("\n");
 }
@@ -1389,7 +1401,7 @@ function wsDef(id, name, feeds, url, onOpen, onMsg, opt = {}) {
     if (W.sock && W.sock.readyState === 3) { // report the failure once, reconnect on the next try
       const err = W.err || "Disconnected"; W.sock = null;
       if (opt.optional && !W.since) throw blockedErr(err);
-      throw new Error(err);
+      const e = new Error(err); e.ws = true; throw e;
     }
     if (!W.sock) connect();
     const e = new Error("Connecting…"); e.soft = true; throw e;
@@ -1604,10 +1616,14 @@ function drawTA(a) {
     ${row("EMA 50/200 cross", (t) => cell(t.cross ? `${t.cross.dir > 0 ? "Golden" : "Death"} cross ${t.cross.ago} bars ago` : "none recent", t.cross ? t.cross.dir : 0))}
   </tbody>`;
   const px = a.px, ma = (v) => (ok(v) ? `<td class="${px >= v ? "up" : "dn"}">${n0(v)} ${px >= v ? "▲" : "▼"}</td>` : "<td>–</td>");
-  $("#maTbl").innerHTML = `<thead><tr><th>Average</th>${tfs.map((t) => `<th>${t}</th>`).join("")}</tr></thead><tbody>
+  const KEY = [["EMA 21", "ema", 21], ["EMA 50", "ema", 50], ["EMA 200", "ema", 200], ["SMA 200", "sma", 200]];
+  const dcell = (v) => (ok(v) ? `<td class="${px >= v ? "up" : "dn"}">${px >= v ? "▲" : "▼"} ${pct(((px - v) / v) * 100, 1)}</td>` : "<td>–</td>");
+  $("#maTbl").innerHTML = `<thead><tr><th>Price vs</th>${tfs.map((t) => `<th>${t}</th>`).join("")}</tr></thead><tbody>
+    ${KEY.map(([n, k, p]) => `<tr><td>${n}</td>${tfs.map((tf) => dcell(T[tf][k][p])).join("")}</tr>`).join("")}
+    <tr><td><b>Trend</b></td>${tfs.map((tf) => { const v = KEY.map(([, k, p]) => T[tf][k][p]).filter(ok), up = v.filter((x) => px >= x).length; return `<td class="${up >= 3 ? "up" : up <= 1 ? "dn" : "mut"}"><b>${up >= 3 ? "Up" : up <= 1 ? "Down" : "Mixed"}</b></td>`; }).join("")}</tr></tbody>`;
+  if ($("#maAll")) $("#maAll").innerHTML = `<thead><tr><th>Average</th>${tfs.map((t) => `<th>${t}</th>`).join("")}</tr></thead><tbody>
     ${TA.MA_E.map((p) => `<tr><td>EMA ${p}</td>${tfs.map((tf) => ma(T[tf].ema[p])).join("")}</tr>`).join("")}
-    ${TA.MA_S.map((p) => `<tr><td>SMA ${p}</td>${tfs.map((tf) => ma(T[tf].sma[p])).join("")}</tr>`).join("")}
-    <tr><td><b>Above / total</b></td>${tfs.map((tf) => { const all = [...TA.MA_E.map((p) => T[tf].ema[p]), ...TA.MA_S.map((p) => T[tf].sma[p])].filter(ok), up = all.filter((v) => px >= v).length; return `<td class="${up / all.length > 0.6 ? "up" : up / all.length < 0.4 ? "dn" : "mut"}"><b>${up}/${all.length}</b></td>`; }).join("")}</tr></tbody>`;
+    ${TA.MA_S.map((p) => `<tr><td>SMA ${p}</td>${tfs.map((tf) => ma(T[tf].sma[p])).join("")}</tr>`).join("")}</tbody>`;
   $("#zoneTbl").innerHTML = `<thead><tr><th>Zone</th><th>Dist</th><th>Strength</th><th class="l">Made of</th></tr></thead><tbody>${a.Z.slice().sort((x, y) => Math.abs(x.dist) - Math.abs(y.dist)).slice(0, 14).sort((x, y) => y.c - x.c).map((z) => `<tr><td class="${z.c > px ? "dn" : "up"}">${z.lo === z.hi ? n0(z.c) : `${n0(z.lo)}–${n0(z.hi)}`}</td><td>${pct(z.dist)}</td><td>${"●".repeat(Math.min(5, Math.round(z.w)))}</td><td class="wrap">${esc(z.names.join(", "))}</td></tr>`).join("")}</tbody>`;
 }
 
@@ -1926,7 +1942,7 @@ syncCtl(); setTab(ST.tab);
 /* ===================== Stage 3: own canvas chart engine + new visuals ===================== */
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
 Object.assign(ST, {
-  heat: LS.get("heat", true), bub: LS.get("bub", true), sess: LS.get("sess", true), my: LS.get("my", true),
+  heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", true), pat: LS.get("pat", true), trend: LS.get("trend", true), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
   lower: LS.get("lower", "cvd"), clean: LS.get("clean", false), layersOpen: false,
 });
 
@@ -2031,15 +2047,21 @@ class CChart {
     // liquidation heatmap
     const H = Ls.heat;
     if (H && H.max > 0) {
-      const ca = Math.max(0, Math.floor(this.ti(t0) * this.sec / H.dt + (this.k[0].t - H.t0) / H.dt) - 1);
-      for (let c = ca; c < H.cols; c++) {
-        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5), xb = this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.r) break; if (xb < 0) continue;
-        for (let r = 0; r < H.rows; r++) {
-          const v = H.grid[c * H.rows + r]; if (v < H.max * 0.06) continue; const pa = H.lo + r * H.step, y1 = this.Y(pa + H.step), y2 = this.Y(pa); if (y2 < 0 || y1 > L.mainH) continue;
-          const t = Math.pow(v / H.max, 0.75); g.fillStyle = heatColor(t); g.fillRect(xa, y1, Math.max(1, xb - xa + 0.5), Math.max(1, y2 - y1 + 0.5));
+      // scale colors to what's on screen (97th percentile), so one huge cluster doesn't wash everything else out
+      const ca = Math.max(0, Math.floor((t0 - H.t0) / H.dt) - 1), rLo = Math.max(0, Math.floor((this.yLo - H.lo) / H.step)), rHi = Math.min(H.rows - 1, Math.ceil((this.yHi - H.lo) / H.step)), vals = [];
+      for (let c = ca; c < H.cols; c++) { if (this.X(this.ti(H.t0 + c * H.dt) - 0.5) > L.r) break; for (let r = rLo; r <= rHi; r++) { const v = H.grid[c * H.rows + r]; if (v > 0) vals.push(v); } }
+      vals.sort((x, y) => x - y); const vmax = vals.length ? vals[Math.floor(vals.length * 0.97)] || vals[vals.length - 1] : 0;
+      if (vmax > 0) for (let c = ca; c < H.cols; c++) {
+        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5); let xb = this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.r) break; if (xb < 0) continue;
+        if (c === H.cols - 1) xb = L.r; // carry the latest map into the empty space right of the last candle
+        for (let r = rLo; r <= rHi; r++) {
+          const v = H.grid[c * H.rows + r]; if (v < vmax * 0.12) continue; const pa = H.lo + r * H.step, y1 = this.Y(pa + H.step), y2 = this.Y(pa);
+          g.fillStyle = heatColor(Math.min(1, Math.pow(v / vmax, 0.85))); g.fillRect(xa, y1, Math.max(1, xb - xa + 0.5), Math.max(1, y2 - y1 + 0.5));
         }
       }
     }
+    // liquidation cluster bands (estimated)
+    for (const z of Ls.liqBands || []) { const y1 = this.Y(z.p + z.h / 2), y2 = this.Y(z.p - z.h / 2), hgt = Math.max(5, y2 - y1); g.fillStyle = rgba(z.color, 0.12 + 0.28 * z.w); g.fillRect(0, y1, L.r, hgt); g.fillStyle = z.color; g.font = "700 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(z.label, 6, y1 + hgt / 2); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
     // zone boxes
     for (const z of Ls.boxes || []) { const y1 = this.Y(z.hi), y2 = this.Y(z.lo); g.fillStyle = rgba(z.color, 0.13); g.fillRect(0, Math.min(y1, y2) - 2, L.r, Math.max(4, Math.abs(y2 - y1) + 4)); }
     // value area shading
@@ -2049,13 +2071,19 @@ class CChart {
     const cwid = Math.max(1, Math.min(bw * 0.72, bw - 1)), vH = L.mainH * 0.16;
     for (let i = a; i <= b; i++) { const x = this.k[i], h = mv ? (x.v / mv) * vH : 0, X = this.X(i); g.fillStyle = rgba(x.c >= x.o ? (Ls.mono ? C.fg3 : C.up) : (Ls.mono ? C.fg3 : C.dn), 0.28); g.fillRect(X - cwid / 2, L.mainH - h, cwid, h); }
     // candles
+    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null;
+    if (HL) for (let i = a; i <= b; i++) { const hc = HL.get(i); if (!hc) continue; const x = this.k[i], X = this.X(i), y1 = this.Y(x.h) - 6, y2 = this.Y(x.l) + 6;
+      g.fillStyle = rgba(hc, 0.13); g.fillRect(X - bw / 2, y1, bw, y2 - y1); }
     for (let i = a; i <= b; i++) {
-      const x = this.k[i], X = Math.round(this.X(i)) + 0.5, up = x.c >= x.o, col = Ls.mono ? C.fg : up ? C.up : C.dn;
+      const x = this.k[i], X = Math.round(this.X(i)) + 0.5, up = x.c >= x.o, hc = HL && HL.get(i), mono = Ls.mono && !hc, col = mono ? C.fg : up ? C.up : C.dn;
       const yo = this.Y(x.o), yc = this.Y(x.c), top = Math.min(yo, yc), hb = Math.max(1, Math.abs(yc - yo));
-      g.strokeStyle = col; g.lineWidth = 1; g.beginPath(); g.moveTo(X, this.Y(x.h)); g.lineTo(X, this.Y(x.l)); g.stroke();
-      if (cwid < 2.5) continue;
-      if (Ls.mono && up) { g.fillStyle = C.bg; g.fillRect(X - cwid / 2, top, cwid, hb); g.strokeRect(X - cwid / 2 + 0.5, top + 0.5, cwid - 1, Math.max(0, hb - 1)); }
-      else { g.fillStyle = col; g.fillRect(X - cwid / 2, top, cwid, hb); }
+      if (hc) { g.save(); g.shadowColor = col; g.shadowBlur = 7; }
+      g.strokeStyle = col; g.lineWidth = hc ? 1.4 : 1; g.beginPath(); g.moveTo(X, this.Y(x.h)); g.lineTo(X, this.Y(x.l)); g.stroke();
+      if (cwid >= 2.5) {
+        if (mono && up) { g.fillStyle = C.bg; g.fillRect(X - cwid / 2, top, cwid, hb); g.strokeRect(X - cwid / 2 + 0.5, top + 0.5, cwid - 1, Math.max(0, hb - 1)); }
+        else { g.fillStyle = col; g.fillRect(X - cwid / 2, top, cwid, hb); }
+      }
+      if (hc) g.restore();
     }
     // indicator lines
     for (const s of Ls.lines || []) {
@@ -2063,11 +2091,30 @@ class CChart {
       for (const p of s.pts) { const i = this.ti(p.t); if (i < a - 2 || i > b + 2) continue; const X = this.X(i), Yv = this.Y(p.v); if (!on) { g.moveTo(X, Yv); on = true; } else g.lineTo(X, Yv); }
       g.stroke(); g.setLineDash([]);
     }
+    // drawings: pattern shapes, trendlines, swing labels, pattern tags
+    for (const d of Ls.draw || []) {
+      if (d.type === "poly") { g.beginPath(); d.pts.forEach(([i, p], j) => (j ? g.lineTo(this.X(i), this.Y(p)) : g.moveTo(this.X(i), this.Y(p)))); g.closePath(); g.fillStyle = rgba(d.color, d.alpha || 0.09); g.fill(); }
+      else if (d.type === "seg") { g.save(); g.strokeStyle = d.color; g.lineWidth = d.w || 2; g.lineCap = "round"; g.setLineDash(d.dash || []); if (d.glow) { g.shadowColor = d.color; g.shadowBlur = 8; } g.beginPath(); g.moveTo(this.X(d.i0), this.Y(d.p0)); g.lineTo(this.X(d.i1), this.Y(d.p1)); g.stroke(); g.restore(); }
+      else if (d.type === "dot") { g.beginPath(); g.arc(this.X(d.i), this.Y(d.p), d.r || 3.5, 0, Math.PI * 2); g.fillStyle = C.bg; g.fill(); g.strokeStyle = d.color; g.lineWidth = 1.6; g.stroke(); }
+      else if (d.type === "pill" || d.type === "text") {
+        const X = this.X(d.i), Yv = this.Y(d.p) + (d.dy || 0); g.font = `${d.bold === false ? 600 : 700} ${d.size || 10.5}px IBM Plex Sans, system-ui, sans-serif`; const w = g.measureText(d.text).width;
+        if (d.type === "text") { g.fillStyle = d.color; g.textAlign = "center"; g.fillText(d.text, X, Yv); g.textAlign = "left"; }
+        else { const x0 = Math.min(L.r - w - 12, Math.max(2, d.anchor === "right" ? X - w - 12 : X - w / 2 - 6)); g.fillStyle = rgba(d.color, 0.92); g.beginPath(); if (g.roundRect) g.roundRect(x0, Yv - 9, w + 12, 18, 9); else g.rect(x0, Yv - 9, w + 12, 18); g.fill(); g.fillStyle = "#fff"; g.fillText(d.text, x0 + 6, Yv + 0.5); }
+        g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
+      }
+    }
     // horizontal levels
     for (const h of Ls.hlines || []) {
       if (!ok(h.p)) continue; const y = Math.round(this.Y(h.p)) + 0.5; if (y < 0 || y > L.mainH) continue;
       g.strokeStyle = h.color; g.lineWidth = h.w || 1; g.setLineDash(h.dash || []); g.globalAlpha = h.alpha || 0.9; g.beginPath(); g.moveTo(h.x0 ? Math.max(0, this.X(this.ti(h.x0))) : 0, y); g.lineTo(L.r, y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
       if (h.left) { g.fillStyle = h.color; g.font = "10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(h.left, 4, y - 6); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
+    }
+    // real liquidations (summed per candle and side)
+    for (const e of Ls.liqEv || []) {
+      const i = this.ti(e.t); if (i < a - 1 || i > b + 1) continue; const X = this.X(Math.round(i)), Yv = this.Y(e.p), s = Math.max(4, Math.min(16, Math.sqrt(e.usd / 2e4) * 3)), col = e.side === "long" ? C.dn : C.up;
+      g.beginPath(); if (e.side === "long") { g.moveTo(X - s, Yv - s * 0.2); g.lineTo(X + s, Yv - s * 0.2); g.lineTo(X, Yv + s); } else { g.moveTo(X - s, Yv + s * 0.2); g.lineTo(X + s, Yv + s * 0.2); g.lineTo(X, Yv - s); } g.closePath();
+      g.fillStyle = rgba(col, 0.75); g.fill(); g.strokeStyle = C.bg; g.lineWidth = 1; g.stroke();
+      if (e.usd >= 250000) { g.fillStyle = col; g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.textAlign = "center"; g.fillText(usd(e.usd).replace("$", ""), X, e.side === "long" ? Yv + s + 9 : Yv - s - 7); g.textAlign = "left"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
     }
     // big-trade bubbles
     for (const e of Ls.bubbles || []) {
@@ -2137,7 +2184,7 @@ const HEAT_STOPS = [[0, [40, 11, 84]], [0.25, [59, 82, 139]], [0.5, [33, 145, 14
 function heatColor(t) {
   let i = 1; while (i < HEAT_STOPS.length - 1 && HEAT_STOPS[i][0] < t) i++;
   const [ta, ca] = HEAT_STOPS[i - 1], [tb, cb] = HEAT_STOPS[i], f = Math.max(0, Math.min(1, (t - ta) / (tb - ta)));
-  const c = ca.map((v, j) => Math.round(v + (cb[j] - v) * f)); return `rgba(${c[0]},${c[1]},${c[2]},${(0.08 + 0.55 * t).toFixed(2)})`;
+  const c = ca.map((v, j) => Math.round(v + (cb[j] - v) * f)); return `rgba(${c[0]},${c[1]},${c[2]},${(0.06 + 0.56 * t).toFixed(2)})`;
 }
 
 /* ---------- big trades: Binance spot, OKX perp, Coinbase ---------- */
@@ -2256,7 +2303,7 @@ function heatData() {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.mono, ST.heat, ST.bub, ST.sess, ST.my, ST.lower, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lower, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -2270,7 +2317,12 @@ function chartExtras(fromView) {
   if (PF && on(ST.prof)) { L.profile = { ...PF, poc: PF.vp.poc, vah: PF.vp.vah, val: PF.vp.val }; L.hlines.push({ p: PF.vp.poc, color: "#e8c547", w: 1.5, tag: "POC", prio: 70 }, { p: PF.vp.vah, color: C.fg2, dash: [5, 3], tag: "VAH", prio: 45 }, { p: PF.vp.val, color: C.fg2, dash: [5, 3], tag: "VAL", prio: 45 }); }
   if (PF && on(ST.tpo)) L.hlines.push({ p: PF.tp.poc, color: C.acc, dash: [2, 3], tag: "TPO POC", prio: 42 }, { p: PF.tp.vah, color: C.acc, dash: [2, 3], prio: 5 }, { p: PF.tp.val, color: C.acc, dash: [2, 3], prio: 5 });
   if (on(ST.zones) && a) a.Z.filter((z) => Math.abs(z.dist) <= 4 && z.w >= 2).forEach((z) => L.boxes.push({ lo: z.lo, hi: z.hi, color: z.c > a.px ? C.dn : C.up }));
-  if (on(ST.liq) && a && a.L) [...a.L.shorts.slice(0, 3), ...a.L.longs.slice(0, 3)].forEach((x) => L.hlines.push({ p: x.p, color: x.dist > 0 ? C.up : C.dn, dash: [8, 4], w: 1.4, tag: `Liq ${usd(x.usd).replace("$", "")}`, prio: 55 }));
+  if (on(ST.liq) && a && a.L) { const tops = [...a.L.shorts.slice(0, 4), ...a.L.longs.slice(0, 4)].filter((x) => Math.abs(x.dist) <= 8), mx = Math.max(...tops.map((x) => x.usd), 1);
+    L.liqBands = tops.map((x) => ({ p: x.p, h: a.L.step, w: x.usd / mx, color: x.dist > 0 ? C.up : C.dn, label: `${x.dist > 0 ? "Shorts" : "Longs"} ${usd(x.usd)}` }));
+    tops.forEach((x) => L.hlines.push({ p: x.p, color: x.dist > 0 ? C.up : C.dn, alpha: 0, tag: `Liq ${usd(x.usd).replace("$", "")}`, prio: 55 })); }
+  if (on(ST.liqev) && typeof LIQ !== "undefined") { const sec = TF_SEC[ST.tf], t0 = k[0].t, m = new Map();
+    for (const e of LIQ.values()) { const t = e.t / 1000; if (t < t0) continue; const bt = Math.floor(t / sec) * sec, key = bt + e.side, o = m.get(key) || { t: bt, side: e.side, usd: 0, pv: 0 }; o.usd += e.usd; o.pv += e.px * e.usd; m.set(key, o); }
+    L.liqEv = [...m.values()].map((o) => ({ ...o, p: o.pv / o.usd })); }
   if (on(ST.heat)) L.heat = heatData();
   if (on(ST.bub)) { const t0 = k[0].t; L.bubbles = [...BIG.values()].filter((e) => e.t >= t0); }
   if (on(ST.sess) && intra) {
@@ -2278,14 +2330,56 @@ function chartExtras(fromView) {
     const done = {}; L.sessions.slice().sort((x, y) => y.t0 - x.t0).forEach((s) => { if (done[s.name] || s.t0 > Date.now() / 1000) return; const bars = k.filter((x) => x.t >= s.t0 && x.t < s.t1); if (!bars.length) return; done[s.name] = 1;
       const ab = s.name === "New York" ? "NY" : s.name === "London" ? "LDN" : "Asia"; L.hlines.push({ p: Math.max(...bars.map((x) => x.h)), color: s.color, dash: [3, 3], tag: `${ab} H`, prio: 35, x0: s.t0, alpha: 0.75 }, { p: Math.min(...bars.map((x) => x.l)), color: s.color, dash: [3, 3], tag: `${ab} L`, prio: 35, x0: s.t0, alpha: 0.75 }); });
   }
+  L.draw = []; L.hl = new Map();
+  if (on(ST.trend) && k.length > 40) drawStructure(L, k, C);
+  if (on(ST.pat) && k.length > 60) drawGeo(L, k, C);
+  if (on(ST.cdl) && k.length > 30) drawCandles(L, k, C, a);
   if (ST.my && MYLV.list.length) MYLV.list.forEach((l) => L.hlines.push({ p: l.p, color: cssv("--my"), w: 1.6, tag: `${l.label.slice(0, 5)} ${kfmt(l.p)}`, prio: 90, left: l.label }));
   // lower pane
   if (ST.lower === "cvd") { let s = 0; L.sub = { name: "Spot CVD · Binance (BTC)", color: C.acc, pts: k.map((x) => ({ t: x.t, v: (s += 2 * x.tb - x.v) })), fmt: (v) => sgn(v, 0) }; }
   else if (ST.lower === "delta") L.sub = { name: "Buy − sell volume per candle (BTC)", kind: "hist", pts: k.map((x) => ({ t: x.t, v: 2 * x.tb - x.v })), fmt: (v) => sgn(v, 0) };
   else if (ST.lower === "oi" && live("okxOI")) { const px = curPx() || 1; L.sub = { name: "Open interest · OKX (BTC, 5m)", color: C.warn, pts: D.okxOI.s.map((x) => ({ t: x.t, v: x.v > 1e7 ? x.v / px : x.v })), fmt: (v) => kfmt(v) }; }
   CC.L = L; CC.dirty();
-  const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "heat", "bub", "sess", "my"].filter((x) => ST[x]).length;
+  const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl"].filter((x) => ST[x]).length;
   const lb = $("#bLayers"); if (lb) lb.textContent = `Layers · ${ST.clean ? "clean" : n + " on"} ${ST.layersOpen ? "▴" : "▾"}`;
+}
+
+/* ---------- chart drawings: structure, trendlines, chart patterns, candle patterns ---------- */
+let GEOC = { key: "", v: [] };
+function drawStructure(L, k, C) {
+  const n = k.length, W0 = Math.max(0, n - 160), { hi, lo } = TA.pivots(k.slice(W0, -1), 4, 4); hi.forEach((q) => (q.i += W0)); lo.forEach((q) => (q.i += W0));
+  const lab = (arr, isHi) => arr.slice(-6).forEach((q, j, s) => { if (!j && arr.length < 7) return; const prev = j ? s[j - 1] : arr[arr.length - 7]; const t = isHi ? (q.p > prev.p ? "HH" : "LH") : q.p > prev.p ? "HL" : "LL", good = t === "HH" || t === "HL";
+    L.draw.push({ type: "text", i: q.i, p: q.p, dy: isHi ? -12 : 16, text: t, color: good ? C.up : C.dn, size: 10.5 }); });
+  lab(hi, true); lab(lo, false);
+  const line = (arr, color, name) => { if (arr.length < 2) return; const [p1, p2] = arr.slice(-2), m = (p2.p - p1.p) / (p2.i - p1.i || 1), i1 = n + 8;
+    L.draw.push({ type: "seg", i0: p1.i, p0: p1.p, i1, p1: p2.p + m * (i1 - p2.i), color, w: 1.6, dash: [7, 5], glow: true }, { type: "dot", i: p1.i, p: p1.p, color }, { type: "dot", i: p2.i, p: p2.p, color });
+    L.hlines.push({ p: p2.p + m * (n - 1 - p2.i), color, alpha: 0, tag: name, prio: 52 }); };
+  line(hi, C.dn, "Res line"); line(lo, C.up, "Sup line");
+}
+function drawGeo(L, k, C) {
+  const key = ST.tf + ":" + k.length + ":" + k[k.length - 2].t; if (GEOC.key !== key) GEOC = { key, v: TA.geoPatterns(k, ST.tf) };
+  const col = (c) => C[c] || c, n = k.length;
+  for (const p of GEOC.v) {
+    const c = p.dir > 0 ? C.up : p.dir < 0 ? C.dn : C.warn, ls = p.lines;
+    if (ls.length >= 2 && p.kind !== "hs") { const [u, d] = ls; L.draw.push({ type: "poly", pts: [[u.i0, u.p0], [u.i1, u.p1], [d.i1, d.p1], [d.i0, d.p0]], color: c, alpha: 0.1 }); }
+    ls.forEach((s) => L.draw.push({ type: "seg", i0: s.i0, p0: s.p0, i1: s.i1, p1: s.p1, color: col(s.color), w: s.w || 2.2, glow: true }));
+    (p.touches || []).forEach((q) => L.draw.push({ type: "dot", i: q.i, p: q.p, color: c }));
+    const tch = (p.touches || []).map((q) => q.i), iEnd = Math.min(n - 1, tch.length ? Math.max(...tch) + 1 : Math.min(...ls.map((s) => s.i1)));
+    for (let i = Math.max(0, p.i0); i <= iEnd; i++) if (!L.hl.has(i)) L.hl.set(i, c);
+    const top = Math.max(...ls.map((s) => Math.max(s.p0, s.p1)));
+    L.draw.push({ type: "pill", i: Math.min(n - 1, ls[0].i1 - 2), p: top, dy: -16, text: `${p.name}${p.brk ? (p.brk > 0 ? " ↑ broke out" : " ↓ broke down") : ""}`, color: c, anchor: "right" });
+    if (ok(p.breakUp) && p.brk >= 0) L.hlines.push({ p: p.breakUp, color: C.up, dash: [3, 3], alpha: 0.6, x0: k[Math.max(0, p.i0)].t, tag: "Break ↑", prio: 58 });
+    if (ok(p.breakDn) && p.brk <= 0) L.hlines.push({ p: p.breakDn, color: C.dn, dash: [3, 3], alpha: 0.6, x0: k[Math.max(0, p.i0)].t, tag: "Break ↓", prio: 58 });
+    if (ok(p.tgtUp) && p.brk >= 0 && p.dir >= 0) L.hlines.push({ p: p.tgtUp, color: C.up, dash: [1, 4], alpha: 0.8, x0: k[n - 1].t, tag: "Target ↑", prio: 57 });
+    if (ok(p.tgtDn) && p.brk <= 0 && p.dir <= 0) L.hlines.push({ p: p.tgtDn, color: C.dn, dash: [1, 4], alpha: 0.8, x0: k[n - 1].t, tag: "Target ↓", prio: 57 });
+  }
+}
+const CDL_SHORT = { "Bullish engulfing": "Engulf", "Bearish engulfing": "Engulf", "Morning star": "M-star", "Evening star": "E-star", "Three white soldiers": "3 soldiers", "Three black crows": "3 crows", "Bullish harami": "Harami", "Bearish harami": "Harami", "Shooting star": "Shooting ★", "Inverted hammer": "Inv hammer", "Piercing line": "Piercing", "Dark cloud cover": "Dark cloud", "Tweezer bottom": "Tweezer", "Tweezer top": "Tweezer", "Bullish marubozu": "Marubozu", "Bearish marubozu": "Marubozu", "Hanging man": "Hang man" };
+function drawCandles(L, k, C, a) {
+  const lv = a ? a.Z.map((z) => ({ p: z.c, name: z.names[0] })) : [];
+  TA.candlePatterns(k, lv, 40).filter((p) => p.dir && p.strength >= 2).slice(0, 5).forEach((p) => {
+    const c = p.dir > 0 ? C.up : C.dn; for (let j = 0; j < (p.n || 1); j++) L.hl.set(p.i - j, c); L.draw.push({ type: "pill", i: p.i, p: p.dir > 0 ? p.lo : p.hi, dy: p.dir > 0 ? 18 : -18, text: CDL_SHORT[p.name] || p.name, color: c, size: 10 });
+  });
 }
 
 /* ---------- controls ---------- */
@@ -2458,7 +2552,8 @@ document.addEventListener("click", (e) => { const b = e.target.closest("[data-po
 /* ---------- economic calendar (ForexFactory weekly feed) ---------- */
 PROXY["nfs.faireconomy.media"] = "/px/ff";
 def("cal", "Economic calendar (ForexFactory)", "US events this week", 1800000, async () => {
-  const j = await getJSONp("https://nfs.faireconomy.media/ff_calendar_thisweek.json");
+  // Try from your own connection first (ForexFactory rate-limits shared cloud IPs), then the site pass-through.
+  let j; try { j = await getJSON("https://nfs.faireconomy.media/ff_calendar_thisweek.json"); } catch (e) { j = await getJSONp("https://nfs.faireconomy.media/ff_calendar_thisweek.json"); }
   if (!Array.isArray(j)) throw new Error("no calendar");
   return { ev: j.filter((e) => e.country === "USD" && (e.impact === "High" || e.impact === "Medium")).map((e) => ({ t: Date.parse(e.date), title: e.title, impact: e.impact, f: e.forecast, p: e.previous, a: e.actual })).filter((e) => ok(e.t)).sort((a, b) => a.t - b.t) };
 });
@@ -2474,6 +2569,70 @@ function drawCal() {
   el.innerHTML = [...by.entries()].map(([d, es]) => `<div class="calday">${d}</div>${es.map((e) => { const past = e.t < Date.now(); return `<div class="calrow${past ? " past" : ""}"><span class="imp ${e.impact === "High" ? "hi" : "md"}" title="${e.impact} impact"></span><span class="calt">${new Date(e.t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span><span class="caln"><b>${esc(e.title)}</b><span class="mut">${e.f ? ` · forecast ${esc(e.f)}` : ""}${e.p ? ` · prev ${esc(e.p)}` : ""}${e.a ? ` · actual <b>${esc(e.a)}</b>` : ""}</span></span><span class="calc">${past ? "done" : untilTxt(e.t - Date.now())}</span></div>`; }).join("")}`).join("") || `<div class="unavail">No high or medium impact US events listed this week.</div>`;
 }
 
+/* ---------- positions opening / closing (CVD tab) ---------- */
+ST.pfTf = LS.get("pfTf", "5m");
+def("pf", "OKX OI + taker flow history", "Positions opening/closing", 60000, async () => {
+  const per = ST.pfTf;
+  const [oi, tk] = await Promise.all([okxR(`/api/v5/rubik/stat/contracts/open-interest-volume?ccy=BTC&period=${per}`), okxR(`/api/v5/rubik/stat/taker-volume?ccy=BTC&instType=CONTRACTS&period=${per}`)]);
+  const T = new Map(tk.map((r) => [Math.floor(+r[0] / 1000), { sell: +r[1], buy: +r[2] }]));
+  const rows = oi.map((r) => ({ t: Math.floor(+r[0] / 1000), oi: +r[1] })).filter((x) => ok(x.oi) && T.has(x.t)).sort((a, b) => a.t - b.t).map((x) => ({ ...x, ...T.get(x.t) }));
+  if (rows.length < 5) throw new Error("not enough OI/taker history"); return { per, rows };
+});
+let PFI = null, PFN = 0, PFW = 1;
+function pfRows() {
+  const A = aggr(), scale = A.oi && live("okx") && D.okx.oi ? A.oi / D.okx.oi : 1, R = D.pf.rows, out = [];
+  for (let i = 1; i < R.length; i++) {
+    const d = (R[i].oi - R[i - 1].oi) * scale, tot = R[i].buy + R[i].sell, b = tot ? R[i].buy / tot : 0.5;
+    out.push({ t: R[i].t, oi: R[i].oi * scale, lo: d > 0 ? d * b : 0, so: d > 0 ? d * (1 - b) : 0, lc: d < 0 ? -d * (1 - b) : 0, sc: d < 0 ? -d * b : 0, b });
+  }
+  return { rows: out, scale };
+}
+function drawPf() {
+  const box = $("#pfChart"); if (!box) return; const C = chartColors();
+  $("#pfSeg").innerHTML = [["5m", "5m · 1d"], ["1H", "1h · 4d"], ["1D", "1d · 3mo"]].map(([v, l]) => `<button data-pftf="${v}" aria-pressed="${ST.pfTf === v}">${l}</button>`).join("");
+  if (!live("pf") || D.pf.per !== ST.pfTf) { box.innerHTML = unavail("pf", "Loading positioning…"); $("#pfSum").innerHTML = ""; $("#pfRead").textContent = ""; return; }
+  const { rows: all } = pfRows(), rows = all.slice(-(ST.pfTf === "5m" ? 288 : ST.pfTf === "1H" ? 96 : 90)), n = rows.length; if (n < 3) return;
+  const pm = priceAt(ST.pfTf); rows.forEach((r) => (r.px = pm.get(r.t)));
+  // window totals
+  const sum = (k, from) => rows.slice(from).reduce((s, r) => s + r[k], 0), win = ST.pfTf === "5m" ? [["1h", n - 12], ["4h", n - 48], ["24h", 0]] : ST.pfTf === "1H" ? [["4h", n - 4], ["24h", n - 24], ["4d", 0]] : [["7d", n - 7], ["30d", n - 30], ["3mo", 0]];
+  $("#pfSum").innerHTML = win.map(([lab, f]) => { const lo = sum("lo", Math.max(0, f)), lc = sum("lc", Math.max(0, f)), so = sum("so", Math.max(0, f)), sc = sum("sc", Math.max(0, f)), nl = lo - lc, ns = so - sc;
+    const read = nl > 0 && ns <= 0 ? "Longs building" : ns > 0 && nl <= 0 ? "Shorts building" : nl > 0 && ns > 0 ? "Both sides adding" : "Both sides cutting";
+    return `<div><b style="font-size:12px;color:var(--fg2)">${lab}</b><i>${read}</i><b><span class="up">L ${nl >= 0 ? "+" : "−"}${usd(Math.abs(nl))}</span><span class="dn">S ${ns >= 0 ? "+" : "−"}${usd(Math.abs(ns))}</span></b><i>In +${usd(lo + so)}</i><i>Out −${usd(lc + sc)}</i></div>`; }).join("");
+  const W = cw("#pfChart"), pr = 70, pw = W - pr, bw = pw / n, X = (i) => (i + 0.5) * bw, gap = 10;
+  const panes = [["Price", 90], ["Longs: opening ▲ green · closing ▼ grey", 110], ["Shorts: opening ▲ red · closing ▼ grey", 110], ["Net change, cumulative", 90]];
+  let y = 4, s = `<svg id="pfSvg" width="100%" viewBox="0 0 ${W} ${panes.reduce((t, p) => t + p[1] + gap, 0) + 18}" style="display:block;touch-action:pan-y;cursor:crosshair" role="img" aria-label="Longs and shorts opening and closing">`;
+  const frame = (h, name) => (s += `<rect x="0" y="${y}" width="${pw}" height="${h}" fill="none" stroke="${C.grid}"/><text x="6" y="${y + 14}" font-size="11.5" font-weight="600" fill="${C.fg2}">${name}</text>`);
+  // price
+  { const [name, h] = panes[0], v = rows.map((r) => r.px).filter(ok); frame(h, name); if (v.length > 1) { const lo = Math.min(...v), hi = Math.max(...v), Y = (x) => y + 18 + (1 - (x - lo) / (hi - lo || 1)) * (h - 24);
+    s += `<polyline fill="none" stroke="${C.fg}" stroke-width="1.6" points="${rows.map((r, i) => (ok(r.px) ? `${X(i).toFixed(1)},${Y(r.px).toFixed(1)}` : "")).filter(Boolean).join(" ")}"/><text x="${pw + 6}" y="${Y(v[v.length - 1]) + 4}" font-size="12" font-weight="700" fill="${C.fg}">${n0(v[v.length - 1])}</text>`; } y += h + gap; }
+  // longs / shorts mirrored bars
+  for (const [pi, up, dn, col] of [[1, "lo", "lc", C.up], [2, "so", "sc", C.dn]]) {
+    const [name, h] = panes[pi], mx = Math.max(...rows.map((r) => Math.max(r[up], r[dn])), 1), mid = y + 18 + (h - 22) / 2, half = (h - 26) / 2; frame(h, name);
+    s += `<line x1="0" x2="${pw}" y1="${mid}" y2="${mid}" stroke="${C.fg3}" stroke-dasharray="2 3"/>`;
+    rows.forEach((r, i) => { const hu = (r[up] / mx) * half, hd = (r[dn] / mx) * half, x = X(i) - bw * 0.4, w = Math.max(1, bw * 0.8);
+      if (hu > 0.3) s += `<rect x="${x.toFixed(1)}" y="${(mid - hu).toFixed(1)}" width="${w.toFixed(1)}" height="${hu.toFixed(1)}" fill="${col}"/>`;
+      if (hd > 0.3) s += `<rect x="${x.toFixed(1)}" y="${mid}" width="${w.toFixed(1)}" height="${hd.toFixed(1)}" fill="${rgba(C.fg3, 0.7)}"/>`; });
+    s += `<text x="${pw + 6}" y="${y + 24}" font-size="11" fill="${col}">+${usd(mx)}</text><text x="${pw + 6}" y="${y + h - 4}" font-size="11" fill="${C.fg3}">−${usd(mx)}</text>`; y += h + gap;
+  }
+  // cumulative net
+  { const [name, h] = panes[3]; frame(h, name); let cl = 0, cs = 0; const L1 = rows.map((r) => (cl += r.lo - r.lc)), S1 = rows.map((r) => (cs += r.so - r.sc)), v = [...L1, ...S1, 0], lo = Math.min(...v), hi = Math.max(...v), Y = (x) => y + 18 + (1 - (x - lo) / (hi - lo || 1)) * (h - 24);
+    s += `<line x1="0" x2="${pw}" y1="${Y(0)}" y2="${Y(0)}" stroke="${C.fg3}" stroke-dasharray="2 3"/>`;
+    s += `<polyline fill="none" stroke="${C.up}" stroke-width="2" points="${L1.map((v2, i) => `${X(i).toFixed(1)},${Y(v2).toFixed(1)}`).join(" ")}"/><polyline fill="none" stroke="${C.dn}" stroke-width="2" points="${S1.map((v2, i) => `${X(i).toFixed(1)},${Y(v2).toFixed(1)}`).join(" ")}"/>`;
+    s += `<text x="${pw + 6}" y="${Y(L1[n - 1]) + 4}" font-size="11.5" font-weight="700" fill="${C.up}">L ${usd(L1[n - 1])}</text><text x="${pw + 6}" y="${Y(S1[n - 1]) + 16}" font-size="11.5" font-weight="700" fill="${C.dn}">S ${usd(S1[n - 1])}</text>`; y += h + gap; }
+  const fx = (t) => fmtT(t, ST.pfTf === "1D" ? { month: "short", day: "numeric" } : ST.pfTf === "1H" ? { weekday: "short", hour: "numeric" } : { hour: "numeric", minute: "2-digit" });
+  s += `<text x="2" y="${y + 8}" font-size="11" fill="${C.fg3}">${fx(rows[0].t)}</text><text x="${pw}" y="${y + 8}" font-size="11" fill="${C.fg3}" text-anchor="end">${fx(rows[n - 1].t)}</text>`;
+  const ci = PFI === null ? n - 1 : Math.min(n - 1, PFI); if (PFI !== null) s += `<line x1="${X(ci)}" x2="${X(ci)}" y1="2" y2="${y - gap}" stroke="${C.fg2}" stroke-dasharray="3 3"/>`;
+  box.innerHTML = s + "</svg>"; PFN = n; PFW = pw;
+  const r = rows[ci];
+  $("#pfRead").innerHTML = `<b>${fmtT(r.t, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</b> · Price <b>${n0(r.px)}</b> · OI <b>${usd(r.oi)}</b> · <span class="up">Longs +${usd(r.lo)} / −${usd(r.lc)}</span> · <span class="dn">Shorts +${usd(r.so)} / −${usd(r.sc)}</span> · takers ${(r.b * 100).toFixed(0)}% buy`;
+}
+["pointermove", "click"].forEach((ev) => document.addEventListener(ev, (e) => {
+  const svg = e.target.closest && e.target.closest("#pfSvg"); if (!svg) return; if (ev === "pointermove" && e.pointerType !== "mouse") return;
+  const r = svg.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * svg.viewBox.baseVal.width; if (x > PFW) return;
+  PFI = Math.max(0, Math.min(PFN - 1, Math.floor((x / PFW) * PFN))); drawPf();
+}));
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-pftf]"); if (!b) return; ST.pfTf = b.dataset.pftf; LS.set("pfTf", ST.pfTf); PFI = null; tick("pf"); drawPf(); });
+
 /* ---------- wiring ---------- */
 const _d3 = drawStage2;
 drawStage2 = function (tab) {
@@ -2481,10 +2640,11 @@ drawStage2 = function (tab) {
   try {
     if (tab === "pat") { const a = analysis(); if (a) drawPatterns(a); else $("#patGeo").innerHTML = `<div class="unavail">Loading candles…</div>`; }
     if (tab === "derivs") drawPos();
+    if (tab === "flow") drawPf();
     if (tab === "mkts") drawCal();
   } catch (e) { console.error(e); }
 };
-render(); ["pos", "cal"].forEach((id) => tick(id));
+render(); ["pos", "cal", "pf"].forEach((id) => tick(id));
 
 </script>
 <script>new MutationObserver(()=>{try{recolorCharts();render();}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});</script>
