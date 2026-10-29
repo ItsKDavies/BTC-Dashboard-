@@ -178,7 +178,7 @@ class CChart {
     for (const h of Ls.hlines || []) {
       if (!ok(h.p)) continue; const y = Math.round(this.Y(h.p)) + 0.5; if (y < 0 || y > L.mainH) continue; const lb = lbl.get(h), xe = lb ? L.r - lb.w - 12 : L.r;
       g.strokeStyle = h.color; g.lineWidth = h.w || 1; g.setLineDash(h.dash || []); g.globalAlpha = h.alpha || 0.9; g.beginPath(); g.moveTo(h.x0 ? Math.max(0, this.X(this.ti(h.x0))) : 0, y); g.lineTo(xe, y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
-      if (lb) { g.font = "600 11px IBM Plex Sans, system-ui, sans-serif"; g.fillStyle = h.color; g.textAlign = "right"; g.fillText(h.tag, L.r - 5, y); g.textAlign = "left"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
+      if (lb) { g.font = "600 11px IBM Plex Sans, system-ui, sans-serif"; g.fillStyle = h.color; g.textAlign = "right"; g.lineJoin = "round"; g.strokeStyle = rgba(C.bg, 0.85); g.lineWidth = 3.5; g.strokeText(h.tag, L.r - 5, y); g.fillText(h.tag, L.r - 5, y); g.textAlign = "left"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
       if (h.left) { g.fillStyle = h.color; g.font = "10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(h.left, 4, y - 6); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
     }
     // real liquidations (summed per candle and side)
@@ -366,7 +366,7 @@ function myAddBar() {
   if (!ST.my) { el.innerHTML = ""; return; }
   const n = MYLV.list.length;
   el.innerHTML = MYADD ? `<button class="chip" id="bAddLv" style="border-color:var(--my);color:var(--my)">+ Add level ${n0(MYADD)}</button>${n ? `<span class="mut" style="font-size:12px">${n} on chart</span>` : ""}`
-    : `<span class="mut" style="font-size:12px">${n ? `${n} of your levels on the chart (pink). ` : ""}Tap the chart where you want a level, then tap “+ Add level”. Or paste CoinWise levels in the My levels box below.</span>`;
+    : `<span class="mut" style="font-size:12px">${n ? `${n} of your levels on the chart (pink). ` : ""}Tap the chart, then “+ Add level” to mark a price.</span>`;
 }
 function drawMyLevels() { myAddBar();
   const box = $("#myList"); if (!box) return;

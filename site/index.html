@@ -218,18 +218,6 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
 <main>
   <!-- OVERVIEW -->
   <section data-view="overview" class="view" style="display:grid;gap:14px">
-    <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
-    <div class="grid" id="kpis"></div>
-    <div class="panel">
-      <div class="ph"><span class="pt">Assessment</span></div>
-      <div id="ovAssess"></div>
-      <div class="src">Multi-timeframe technicals (15m–1D) weighted 70%, live flow 30%. Full breakdown in the TA tab, entries in Setups. Not advice.</div>
-    </div>
-    <div class="panel">
-      <div class="ph"><span class="pt">Flow read</span><span class="st" id="flowSt"></span></div>
-      <div class="flow" id="flow"></div>
-      <div class="src">Price and spot CVD from Binance spot 5m · OI, taker flow from OKX 5m stats · rules only, not advice</div>
-    </div>
     <div class="panel" id="chartPanel">
       <div class="ph"><span class="pt">BTC / USDT · Binance spot</span><span class="st" id="chartSt"></span></div>
       <div class="ctl">
@@ -256,6 +244,19 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       <div id="cMain" class="chartbox"></div>
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
     </div>
+    <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
+    <div class="grid" id="kpis"></div>
+    <div class="panel">
+      <div class="ph"><span class="pt">Assessment</span></div>
+      <div id="ovAssess"></div>
+      <div class="src">Multi-timeframe technicals (15m–1D) weighted 70%, live flow 30%. Full breakdown in the TA tab, entries in Setups. Not advice.</div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">Flow read</span><span class="st" id="flowSt"></span></div>
+      <div class="flow" id="flow"></div>
+      <div class="src">Price and spot CVD from Binance spot 5m · OI, taker flow from OKX 5m stats · rules only, not advice</div>
+    </div>
+
     <div class="panel">
       <div class="ph"><span class="pt">My levels · CoinWise</span></div>
       <p class="note" style="margin:0 0 8px">Paste CoinWise's daily levels (or anyone's). Each price is picked up with the words before it as its label, then drawn on the chart in pink.</p>
