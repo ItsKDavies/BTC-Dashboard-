@@ -354,15 +354,16 @@ function sessions(tA, tB) {
 /* ---------- my levels (CoinWise paste) ---------- */
 let MYLV = LS.get("myLevels", { at: 0, list: [] });
 function parseLevels(txt, ref) {
-  const out = [];
+  const out = []; let prev = "";
   for (const line of txt.split(/\n|;|\|/)) {
     const re = /(\d{2,3}[,.]?\d{3}(?:\.\d+)?|\d{2,3}(?:\.\d+)?\s?[kK])/g; let m;
     while ((m = re.exec(line))) {
       let v = m[1].replace(/\s/g, ""); v = /k$/i.test(v) ? parseFloat(v) * 1000 : parseFloat(v.replace(/,/g, "").replace(/\.(?=\d{3}$)/, ""));
       if (!ok(v) || (ref && Math.abs(v - ref) / ref > 0.35)) continue;
       const label = line.slice(0, m.index).replace(/[^A-Za-z0-9 /+-]/g, " ").replace(/\s+/g, " ").trim().split(" ").slice(-3).join(" ");
-      out.push({ p: v, label: (label || "CW").slice(0, 16) });
+      out.push({ p: v, label: (label || prev || "CW").slice(0, 16) });
     }
+    if (!/\d{2,3}[,.]?\d{3}/.test(line) && line.trim()) prev = line.replace(/[^A-Za-z0-9 /+.-]/g, " ").replace(/\s+/g, " ").trim().split(" ").slice(-3).join(" ");
   }
   return out.filter((x, i) => out.findIndex((y) => Math.abs(y.p - x.p) < 1) === i).sort((a, b) => b.p - a.p);
 }
@@ -492,7 +493,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }

@@ -61,7 +61,7 @@ function drawGex() {
   const exps = live("dbOpt") ? [...new Set(D.dbOpt.rows.filter((r) => r.ms > Date.now()).map((r) => r.exp))].map((e) => ({ e, ms: D.dbOpt.rows.find((r) => r.exp === e).ms })).sort((a, b) => a.ms - b.ms).slice(0, 6) : [];
   if (ST.gexExp !== "all" && !exps.some((x) => x.e === ST.gexExp)) ST.gexExp = "all";
   $("#gexSeg").innerHTML = `<button data-gexp="all" aria-pressed="${ST.gexExp === "all"}">Total</button>` + exps.map((x) => `<button data-gexp="${x.e}" aria-pressed="${ST.gexExp === x.e}">${new Date(x.ms).toLocaleDateString([], { month: "short", day: "numeric" })}</button>`).join("");
-  const g = gexCalc(ST.gexExp);
+  const g = gexCalc(ST.gexExp); drawCwGex(g);
   if (!g) { el.innerHTML = unavail("dbOpt", "Loading Deribit options…"); $("#gexLv").innerHTML = ""; $("#gexBars").innerHTML = ""; $("#gexRead").innerHTML = ""; return; }
   const pos = ok(g.flip) ? g.S >= g.flip : g.net >= 0;
   el.innerHTML = `<div class="gkpi"><div class="${pos ? "gpos" : "gneg"}"><i>Regime</i><b>${pos ? "Positive gamma" : "Negative gamma"}</b><i>${pos ? "dampened · mean-reverting" : "amplified · trending"}</i></div>
@@ -88,8 +88,46 @@ function drawGexBars(g) {
   $("#gexCtl").innerHTML = `<span class="seg"><button data-gsplit="0" aria-pressed="${!ST.gexSplit}">Net</button><button data-gsplit="1" aria-pressed="${!!ST.gexSplit}">Calls vs puts</button></span><span class="seg"><button data-gwide="0" aria-pressed="${!ST.gexWide}">±12%</button><button data-gwide="1" aria-pressed="${!!ST.gexWide}">±25%</button></span>`;
   $("#gexBars").innerHTML = html || `<div class="unavail">No open interest near price for this expiry.</div>`;
 }
+
+/* ---------- CoinWise GEX (paste) ---------- */
+// CoinWise is members-only, so its levels can't be fetched. Paste them (copy the level cards, or use iPhone Live Text on a
+// screenshot) and they're kept on this device, compared with the computed levels and drawn on the chart.
+let CWG = LS.get("cwGex", { at: 0, list: [] });
+const CW_KIND = [[/gex\s*flip|\bflip\b/i, "FLIP", "GEX flip"], [/stability/i, "S", "Stability"], [/vol\.?\s*point/i, "V", "Vol point"], [/gamma\s*cliff/i, "GC", "Gamma cliff"],
+  [/gamma\s*resist/i, "P", "Gamma resist"], [/vol\.?\s*trigger/i, "N", "Vol trigger"], [/magnet/i, "A", "Magnet"]];
+function parseCwGex(txt, ref) {
+  const out = [], cnt = {}; let pend = null;
+  for (const raw of txt.split(/\n|;|\|/)) {
+    const line = raw.trim(); if (!line) continue;
+    const code = (/\b(FLIP|GC|[PNA][12]|S|V)\b/.exec(line) || [])[1], kind = CW_KIND.find(([rx]) => rx.test(line));
+    if (code || kind) pend = { code: code || (pend && pend.code), kind: kind || (pend && pend.kind) };
+    const m = /\$?\s?(\d{2,3}[,.]?\d{3}(?:\.\d+)?|\d{2,3}(?:\.\d+)?\s?[kK])\b/.exec(line); if (!m || !pend || !pend.kind) continue;
+    let v = m[1].replace(/\s/g, ""); v = /k$/i.test(v) ? parseFloat(v) * 1000 : parseFloat(v.replace(/,/g, "").replace(/\.(?=\d{3}$)/, ""));
+    if (!ok(v) || (ref && Math.abs(v - ref) / ref > 0.35)) continue;
+    const [, base, name] = pend.kind; let id = pend.code && pend.code.startsWith(base[0]) && /\d/.test(pend.code) ? pend.code : base;
+    if (base.length === 1 && "PNA".includes(base) && id === base) { cnt[base] = (cnt[base] || 0) + 1; id = base + cnt[base]; }
+    if (!out.some((x) => x.id === id)) out.push({ id, name, p: v });
+    pend = null;
+  }
+  return out.sort((a, b) => b.p - a.p);
+}
+function drawCwGex(g) {
+  const el = $("#cwgList"); if (!el) return;
+  const box = $("#cwgTxt"); if (box && !box.value && CWG.raw) box.value = CWG.raw;
+  if (!CWG.list.length) { el.innerHTML = `<div class="unavail">No CoinWise levels saved yet.</div>`; return; }
+  const S = g ? g.S : curPx(), mine = g ? gexLevels(g) : [];
+  const near = (p) => { const m = mine.slice().sort((a, b) => Math.abs(a.p - p) - Math.abs(b.p - p))[0]; return m && Math.abs(m.p - p) / p < 0.02 ? `${m.id} ${n0(m.p)}` : "–"; };
+  el.innerHTML = `<div class="sub" style="margin:2px 0 6px">Saved ${ago(CWG.at)}${Date.now() - CWG.at > 864e5 ? ` · <b class="wn">over a day old, paste fresh levels</b>` : ""}</div>
+    <div class="tw"><table><thead><tr><th class="l">CoinWise</th><th>Price</th><th>vs now</th><th>Computed nearby</th></tr></thead><tbody>${CWG.list.map((l) => `<tr><td class="l"><b>${l.id}</b> <span class="mut">${l.name}</span></td><td>${n0(l.p)}</td><td class="${cls(ok(S) ? l.p - S : 0)}">${ok(S) ? distTxt(l.p, S) : "–"}</td><td class="mut">${near(l.p)}</td></tr>`).join("")}</tbody></table></div>
+    ${ok(S) && CWG.list.find((l) => l.id === "FLIP") ? `<div class="sub" style="margin-top:6px">By CoinWise's flip, price is in <b class="${S >= CWG.list.find((l) => l.id === "FLIP").p ? "up\">positive" : "dn\">negative"} gamma</b>.</div>` : ""}`;
+}
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#bCwgSave")) { const raw = $("#cwgTxt").value, list = parseCwGex(raw, curPx()); CWG = { at: Date.now(), list, raw }; LS.set("cwGex", CWG); $("#cwgMsg").textContent = list.length ? `Saved ${list.length} levels` : "No levels recognised. Include the names (GEX Flip, Magnet…) with the prices."; CH.xKey = null; chartExtras(); drawGex(); }
+  if (e.target.closest("#bCwgClear")) { CWG = { at: 0, list: [] }; LS.set("cwGex", CWG); $("#cwgTxt").value = ""; $("#cwgMsg").textContent = "Cleared"; CH.xKey = null; chartExtras(); drawGex(); }
+});
 // main chart layer (Layers → GEX levels), always the Total view
 function gexHlines(L, C) {
+  for (const l of CWG.list) L.hlines.push({ p: l.p, color: cssv("--my"), w: 1.4, dash: [2, 2], alpha: 0.95, tag: `CW ${l.id} ${kfmt(l.p)}`, prio: 64 });
   const g = gexCalc("all"); if (!g) return;
   for (const l of gexLevels(g)) {
     const col = l.cls === "gp" ? C.up : l.cls === "gn" ? C.dn : l.cls === "ga" ? C.purple : l.cls === "gflip" ? "#e8c547" : C.fg3;

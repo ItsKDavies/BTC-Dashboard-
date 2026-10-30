@@ -390,6 +390,12 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       <div id="gexRead"></div>
     </div>
     <div class="panel"><div class="ph"><span class="pt">Key levels</span></div><div id="gexLv" class="glvs"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">CoinWise GEX · paste to compare</span></div>
+      <p class="note" style="margin:2px 0 8px">CoinWise is members-only, so the dashboard can't fetch it. On the CoinWise GEX tab, select and copy the level cards (or take a screenshot, long-press the text with Live Text, and copy), then paste here. Levels stay on this phone, show next to the computed ones, and draw on the chart in pink as <b>CW</b> lines (with Layers → GEX levels on).</p>
+      <textarea id="cwgTxt" rows="5" placeholder="GEX Flip $78,803&#10;Stability $90,651&#10;Vol. Point $71,732&#10;Gamma Cliff $79,615&#10;P1 Gamma Resist. $90,000&#10;N1 Vol. Trigger $77,000&#10;A1 Magnet $80,000" style="width:100%;font:13px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px"></textarea>
+      <div class="ctl" style="margin-top:6px"><button class="btn" id="bCwgSave">Save CoinWise levels</button><button class="btn" id="bCwgClear">Clear</button><span class="mut" id="cwgMsg" style="font-size:13px"></span></div>
+      <div id="cwgList"></div>
+    </div>
     <div class="panel"><div class="ph"><span class="pt">GEX by strike</span></div><div class="ctl" id="gexCtl"></div><div id="gexBars" class="gbars"></div>
       <div class="src">Green = calls (dealers long gamma, they dampen moves). Red = puts (dealers short gamma, they amplify moves). Bars are $ of hedging per 1% move. The flip is where total gamma crosses zero if price moved there. Computed in your browser from Deribit open interest and mark IV with Black-Scholes, assuming dealers are long calls and short puts (the usual GEX convention). Deribit only, so CME and OKX options aren't included. Refreshes every 5 min. Turn on <b>Layers → GEX levels</b> to see these lines on the chart.</div></div>
   </section>
