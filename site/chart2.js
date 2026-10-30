@@ -136,15 +136,24 @@ class CChart {
     let mv = 0; for (let i = a; i <= b; i++) mv = Math.max(mv, this.k[i].v);
     const cwid = Math.max(1, Math.min(bw * 0.72, bw - 1)), vH = L.mainH * 0.16;
     for (let i = a; i <= b; i++) { const x = this.k[i], h = mv ? (x.v / mv) * vH : 0, X = this.X(i); g.fillStyle = rgba(x.c >= x.o ? (Ls.mono ? C.fg3 : C.up) : (Ls.mono ? C.fg3 : C.dn), 0.28); g.fillRect(X - cwid / 2, L.mainH - h, cwid, h); }
+    // big-trade bubbles: drawn before the candles so candles stay on top; solid enough to read at a glance
+    const bubs = [];
+    for (const e of Ls.bubbles || []) {
+      const i = this.ti(e.t); if (i < a - 1 || i > b + 1) continue; const X = this.X(i), Yv = this.Y(e.p), r = Math.max(3, Math.min(24, Math.sqrt(e.usd / 2.5e5) * 6)), col = e.side === "buy" ? C.up : C.dn;
+      bubs.push({ X, Y: Yv, r, usd: e.usd });
+      g.beginPath(); g.arc(X, Yv, r, 0, Math.PI * 2); g.fillStyle = rgba(col, 0.6); g.fill(); g.strokeStyle = col; g.lineWidth = 1.6; g.stroke();
+    }
     // candles
-    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null;
+    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null, halo = bubs.length > 0;
     if (HL) for (let i = a; i <= b; i++) { const hc = HL.get(i); if (!hc) continue; const x = this.k[i], X = this.X(i), y1 = this.Y(x.h) - 6, y2 = this.Y(x.l) + 6;
       g.fillStyle = rgba(hc, 0.13); g.fillRect(X - bw / 2, y1, bw, y2 - y1); }
     for (let i = a; i <= b; i++) {
       const x = this.k[i], X = Math.round(this.X(i)) + 0.5, up = x.c >= x.o, hc = HL && HL.get(i), mono = Ls.mono && !hc, col = mono ? C.fg : up ? C.up : C.dn;
       const yo = this.Y(x.o), yc = this.Y(x.c), top = Math.min(yo, yc), hb = Math.max(1, Math.abs(yc - yo));
+      // dark outline so candles cut through the whale bubbles behind them
+      if (halo) { g.strokeStyle = C.bg; g.lineWidth = 3.5; g.beginPath(); g.moveTo(X, this.Y(x.h) - 1); g.lineTo(X, this.Y(x.l) + 1); g.stroke(); if (cwid >= 2.5) { g.lineWidth = 2.5; g.strokeRect(X - cwid / 2 - 0.25, top - 0.25, cwid + 0.5, hb + 0.5); } }
       if (hc) { g.save(); g.shadowColor = col; g.shadowBlur = 7; }
-      g.strokeStyle = col; g.lineWidth = hc ? 1.4 : 1; g.beginPath(); g.moveTo(X, this.Y(x.h)); g.lineTo(X, this.Y(x.l)); g.stroke();
+      g.strokeStyle = col; g.lineWidth = hc ? 1.4 : halo ? 1.3 : 1; g.beginPath(); g.moveTo(X, this.Y(x.h)); g.lineTo(X, this.Y(x.l)); g.stroke();
       if (cwid >= 2.5) {
         if (mono && up) { g.fillStyle = C.bg; g.fillRect(X - cwid / 2, top, cwid, hb); g.strokeRect(X - cwid / 2 + 0.5, top + 0.5, cwid - 1, Math.max(0, hb - 1)); }
         else { g.fillStyle = col; g.fillRect(X - cwid / 2, top, cwid, hb); }
@@ -188,11 +197,12 @@ class CChart {
       g.fillStyle = rgba(col, 0.75); g.fill(); g.strokeStyle = C.bg; g.lineWidth = 1; g.stroke();
       if (e.usd >= 250000) { g.fillStyle = col; g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.textAlign = "center"; g.fillText(usd(e.usd).replace("$", ""), X, e.side === "long" ? Yv + s + 9 : Yv - s - 7); g.textAlign = "left"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
     }
-    // big-trade bubbles
-    for (const e of Ls.bubbles || []) {
-      const i = this.ti(e.t); if (i < a - 1 || i > b + 1) continue; const X = this.X(i), Yv = this.Y(e.p), r = Math.max(3, Math.min(24, Math.sqrt(e.usd / 2.5e5) * 6)), col = e.side === "buy" ? C.up : C.dn;
-      g.beginPath(); g.arc(X, Yv, r, 0, Math.PI * 2); g.fillStyle = rgba(col, 0.32); g.fill(); g.strokeStyle = col; g.lineWidth = 1.2; g.stroke();
-      if (r >= 13) { g.fillStyle = C.fg; g.font = "600 10px IBM Plex Sans, system-ui, sans-serif"; g.textAlign = "center"; g.fillText(usd(e.usd).replace("$", ""), X, Yv); g.textAlign = "left"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
+    // big-trade bubble labels (bubbles themselves are drawn under the candles)
+    const lbls = [];
+    for (const e of bubs.filter((q) => q.r >= 13).sort((x, y) => y.usd - x.usd)) {
+      if (lbls.some((q) => Math.abs(q.X - e.X) < 30 && Math.abs(q.Y - e.Y) < 13)) continue; lbls.push(e); g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineJoin = "round";
+      const t = usd(e.usd).replace("$", ""); g.strokeStyle = rgba(C.bg, 0.9); g.lineWidth = 3; g.strokeText(t, e.X, e.Y); g.fillStyle = cssv("--fg") || C.fg; g.fillText(t, e.X, e.Y);
+      g.textAlign = "left"; g.textBaseline = "alphabetic"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
     }
     // volume profile histogram
     if (PF) {
