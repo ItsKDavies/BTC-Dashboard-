@@ -316,6 +316,9 @@ function ladder(s, r, px, W = 640) {
     ${mk(s.stop, "SL", C.dn, false)}${mk(s.entry, "Entry", C.fg, true)}${mk(s.tp1, "TP1", C.up, false)}${mk(s.tp2, "TP2", C.up, true)}${X0(r.liq) >= pl && X0(r.liq) <= W - pr ? mk(r.liq, "Liq", C.purple, false) : ""}
     <path d="M${X(px) - 6},${y - 22} L${X(px) + 6},${y - 22} L${X(px)},${y - 13}Z" fill="${C.acc}"/></svg>`;
 }
+// remember which setup charts are open, so the auto-refresh doesn't fold them shut
+const SETOPEN = LS.get("setOpen", {});
+document.addEventListener("toggle", (e) => { const d = e.target; if (!d.dataset || !d.dataset.setid) return; if (d.open) SETOPEN[d.dataset.setid] = 1; else delete SETOPEN[d.dataset.setid]; LS.set("setOpen", SETOPEN); }, true);
 function setupCard(s, i, a) {
   const r = TA.risk(s, ST.lev, ST.margin), px = a.px, C = chartColors(), side = s.side > 0 ? "Long" : "Short", id = `${side[0]}${i + 1}`;
   const k = D.taK["30m"].slice(-60), W = cw(s.side > 0 ? "#setL" : "#setS", 30);
@@ -340,7 +343,7 @@ function setupCard(s, i, a) {
       <tr><td>TP1 hit</td><td>${pnl(r.tp1)}</td></tr>
       <tr><td>TP2 hit</td><td>${pnl(r.tp2)}</td></tr>
     </tbody></table></div>
-    <details style="margin-top:8px"><summary class="mut" style="cursor:pointer;font-size:13px">Chart with levels</summary>${chart}</details>
+    <details data-setid="${id}" ${SETOPEN[id] ? "open" : ""} style="margin-top:8px"><summary class="mut" style="cursor:pointer;font-size:13px">Chart with levels</summary>${chart}</details>
   </div>`;
 }
 function drawSetups(a) {
