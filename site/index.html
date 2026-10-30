@@ -195,6 +195,42 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
 .btn[aria-pressed="true"]{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 18%,var(--panel)),color-mix(in srgb,var(--purple) 12%,var(--panel)))}
 .pill{background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 100%,var(--fg) 3%),var(--panel));border-color:var(--edge)}
 .st.ok{background:linear-gradient(135deg,color-mix(in srgb,var(--up) 18%,transparent),color-mix(in srgb,var(--up) 6%,transparent))}
+.nov,.ntop{display:grid;gap:10px}.ntop{grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr))}
+.ncard{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 10px 10px 12px;border:1px solid var(--weak);border-left:3px solid var(--line);border-radius:10px;background:var(--bg)}
+.ncard.nup,.nrow.nup{border-left-color:var(--up)}.ncard.ndn,.nrow.ndn{border-left-color:var(--dn)}
+.nimg{width:84px;height:64px;object-fit:cover;border-radius:7px;background:var(--weak)}.nbody{min-width:0;display:grid;gap:4px}
+.ntags{display:flex;flex-wrap:wrap;gap:4px}.ntag{font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:5px;background:var(--weak);color:var(--fg2);white-space:nowrap}
+.ntag.nmaj{background:color-mix(in srgb,var(--dn) 18%,transparent);color:var(--dn)}.ntag.nimp{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.ntag.nbtc{background:color-mix(in srgb,#f7931a 20%,transparent);color:#f7931a}.ntag.nnew{background:var(--acc);color:#fff;margin-right:5px}
+.ntitle{color:var(--fg);font-weight:650;font-size:14.5px;line-height:1.3;text-decoration:none}.ntitle:hover,.nlink:hover{text-decoration:underline}
+.ndesc{font-size:12.5px;color:var(--fg2);line-height:1.4}.nmeta{display:block;font-size:11.5px;color:var(--fg3)}.nmeta b{color:var(--fg2);font-weight:600}
+.nrow{display:grid;grid-template-columns:58px 14px 1fr;gap:4px;align-items:baseline;padding:7px 0 7px 6px;border-bottom:1px solid var(--weak);border-left:2px solid transparent}
+.ntime{font-size:12px;color:var(--fg3);font-variant-numeric:tabular-nums}.imp.lo{background:var(--weak)}
+.nlink{color:var(--fg);font-size:13.5px;line-height:1.35;text-decoration:none;display:block}
+.npulse{display:grid;gap:6px;grid-template-columns:repeat(3,1fr)}.npulse>div{background:var(--bg);border:1px solid var(--weak);border-radius:10px;padding:8px;font-size:12px;line-height:1.35}
+.npulse i{font-style:normal;display:block;color:var(--fg3);font-size:11px}.npulse>div>b{display:block;font-size:17px;margin:2px 0}
+.ntone{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:4px 0;background:var(--weak)}.ntone span.up{background:var(--up)}.ntone span.dn{background:var(--dn)}.ntone span.mid{background:var(--fg3);opacity:.35}
+.nfs{display:inline-block;margin:2px 4px 0 0;padding:0 6px;border-radius:5px;font-size:11px}.nfs.ok{color:var(--up);background:color-mix(in srgb,var(--up) 12%,transparent)}.nfs.down{color:var(--dn);background:color-mix(in srgb,var(--dn) 12%,transparent)}.nfs.wait{color:var(--fg3);background:var(--weak)}
+.nbadge{display:inline-block;min-width:17px;padding:0 5px;margin-left:3px;border-radius:9px;background:var(--dn);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}
+@media (max-width:520px){.nimg{width:68px;height:54px}.npulse{grid-template-columns:1fr 1fr}.npulse>div:last-child{grid-column:1/-1}}
+.gkpi{display:grid;gap:6px;grid-template-columns:repeat(4,1fr)}.gkpi>div{background:var(--bg);border:1px solid var(--weak);border-radius:10px;padding:8px;line-height:1.35}
+.gkpi i{font-style:normal;display:block;color:var(--fg3);font-size:11px}.gkpi b{display:block;font-size:16px;margin:2px 0;font-variant-numeric:tabular-nums}
+.gkpi .gpos{border-color:color-mix(in srgb,var(--up) 45%,transparent)}.gkpi .gpos b{color:var(--up)}.gkpi .gneg{border-color:color-mix(in srgb,var(--dn) 45%,transparent)}.gkpi .gneg b{color:var(--dn)}
+.gread{margin:10px 0 0;padding-left:18px;display:grid;gap:6px;font-size:13.5px;line-height:1.45;color:var(--fg2)}.gread b{color:var(--fg)}
+.glvs{display:grid;gap:6px}.glv{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;background:var(--bg);border:1px solid var(--weak);border-left:3px solid var(--fg3)}
+.glv i{font-style:normal;display:block;font-size:11.5px;color:var(--fg3);line-height:1.35}.glv b{font-size:13.5px}.gp2{text-align:right}.gp2 b{font-size:15px;font-variant-numeric:tabular-nums}
+.gid{font-size:11px;font-weight:800;text-align:center;padding:3px 0;border-radius:6px;background:var(--weak)}
+.glv.gflip{border-left-color:#e8c547}.glv.gflip .gid{background:#e8c547;color:#000}.glv.gp{border-left-color:var(--up)}.glv.gp .gid{background:var(--up);color:#fff}
+.glv.gn{border-left-color:var(--dn)}.glv.gn .gid{background:var(--dn);color:#fff}.glv.ga{border-left-color:var(--purple)}.glv.ga .gid{background:var(--purple);color:#fff}.glv.gm .gid{background:var(--fg3);color:var(--bg)}
+.gbars{display:grid;gap:1px;font-variant-numeric:tabular-nums}.grow{display:grid;grid-template-columns:44px 1fr 92px;gap:6px;align-items:center;font-size:12px;min-height:17px}
+.gk{color:var(--fg2);text-align:right}.gbar{position:relative;height:12px;background:linear-gradient(var(--line),var(--line)) 50% 0/1px 100% no-repeat}.gb{position:absolute;top:1px;bottom:1px;border-radius:2px}
+.gbp{background:var(--up)}.gbn{background:var(--dn)}.gv{text-align:right;white-space:nowrap;font-size:11.5px}
+.gt{font-style:normal;font-size:9.5px;font-weight:800;padding:0 4px;border-radius:4px;margin-right:4px;color:#fff}.gt.gp{background:var(--up)}.gt.gn{background:var(--dn)}.gt.ga{background:var(--purple)}.gt.gm{background:var(--fg3)}
+.gmark{position:relative;height:18px;display:flex;align-items:center;margin:1px 0}.gmark:before{content:"";position:absolute;left:44px;right:0;border-top:1.5px dashed var(--fg3)}
+.gmark span{position:relative;margin-left:56px;font-size:11px;font-weight:700;padding:0 6px;border-radius:5px}.gmp span{background:var(--acc);color:#fff}.gmp:before{border-top-style:solid;border-color:var(--acc)}
+.gmf span{background:#e8c547;color:#000}.gmf:before{border-color:#e8c547}
+.govr{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;align-items:baseline}.govr>b{flex-basis:100%;font-size:15px}.govr span{color:var(--fg2)}.govr span b{color:var(--fg)}
+@media (max-width:520px){.gkpi{grid-template-columns:1fr 1fr}.grow{grid-template-columns:40px 1fr 84px}.gmark:before{left:40px}.gmark span{margin-left:50px}}
 </style>
 </head>
 <body>
@@ -215,11 +251,13 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
     </div>
     <nav class="tabs" role="tablist" aria-label="Dashboard sections">
       <button class="tab" role="tab" data-tab="overview">Overview</button>
+      <button class="tab" role="tab" data-tab="news">News</button>
       <button class="tab" role="tab" data-tab="ta">TA</button>
       <button class="tab" role="tab" data-tab="pat">Patterns</button>
       <button class="tab" role="tab" data-tab="setups">Setups</button>
       <button class="tab" role="tab" data-tab="flow">CVD</button>
       <button class="tab" role="tab" data-tab="sess">Sessions</button>
+      <button class="tab" role="tab" data-tab="gex">GEX</button>
       <button class="tab" role="tab" data-tab="liq">Liquidations</button>
       <button class="tab" role="tab" data-tab="mkts">Markets</button>
       <button class="tab" role="tab" data-tab="derivs">Derivatives</button>
@@ -249,6 +287,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button><button class="chip" data-tog="lineLbl">Labels on lines</button></div>
         <div class="ctl" id="fibSel" hidden style="padding-left:90px;margin:-2px 0 2px"></div>
         <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><span class="seg"><button data-tln="few">Few</button><button data-tln="more">More</button><button data-tln="max">Max</button></span><button class="chip" data-tog="cdl">Candle patterns</button></div>
+        <div class="lg"><span class="lgt">Options</span><button class="chip" data-tog="gexl">GEX levels</button></div>
         <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
         <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqb">Liq bands</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
         <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><button class="chip" data-low="cvdc">CVD candles</button><button class="chip" data-low="oic">OI candles</button><button class="chip" data-low="liq">Liquidations</button><button class="chip" data-low="vol">Buy / sell volume</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 4. Drag the bar above the panes to resize, double-tap it to reset. <button class="chip" data-lpre="cw" style="min-height:26px;font-size:12px">CoinWise-style stack</button> <button class="chip" data-lpre="simple" style="min-height:26px;font-size:12px">Simple</button></span></div>
@@ -259,6 +298,8 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
     </div>
     <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">Options gamma (GEX)</span></div><div id="ovGex"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">Top crypto headlines · 24h</span></div><div id="ovNews" class="nov"></div></div>
     <div class="grid" id="kpis"></div>
     <div class="panel">
       <div class="ph"><span class="pt">Assessment</span></div>
@@ -280,6 +321,18 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
   </section>
 
   <!-- TA -->
+  <!-- NEWS -->
+  <section data-view="news" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">News pulse · last 24h</span></div><div id="newsPulse"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">Top stories</span></div><div id="newsTop"></div></div>
+    <div class="panel">
+      <div class="ph"><span class="pt">Headlines · 48h</span></div>
+      <div class="ctl"><span class="seg" id="newsSeg"></span></div>
+      <div class="ctl" id="newsChips"></div>
+      <div id="newsList"></div>
+      <div class="src">Feeds: <span id="newsFeeds"></span><br>Same story from several outlets is merged into one line. <b>Important</b> and <b>Major</b> come from rules: topic (macro, regulation, ETFs, hacks, big market moves), how many outlets carry it, and whether it's about Bitcoin. Tone is from headline words only. Refreshes every 5 min. Tap a headline to open the article.</div>
+    </div>
+  </section>
   <section data-view="ta" class="view" hidden style="display:grid;gap:14px">
     <div class="panel"><div class="ph"><span class="pt">Assessment</span></div><div id="taAssess"></div></div>
     <div class="panel"><div class="ph"><span class="pt">Technicals by timeframe</span></div><div class="tw"><table id="taTbl"></table></div><div class="src">Binance spot candles. Score is the average of the signal votes (−100 to +100); 30 or more counts as a clear lean.</div></div>
@@ -328,6 +381,18 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
   </section>
 
   <!-- LIQUIDATIONS -->
+  <!-- GEX -->
+  <section data-view="gex" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel">
+      <div class="ph"><span class="pt">Gamma exposure · Deribit BTC options</span></div>
+      <div class="ctl"><span class="seg" id="gexSeg" style="overflow-x:auto;max-width:100%"></span></div>
+      <div id="gexTop"></div>
+      <div id="gexRead"></div>
+    </div>
+    <div class="panel"><div class="ph"><span class="pt">Key levels</span></div><div id="gexLv" class="glvs"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">GEX by strike</span></div><div class="ctl" id="gexCtl"></div><div id="gexBars" class="gbars"></div>
+      <div class="src">Green = calls (dealers long gamma, they dampen moves). Red = puts (dealers short gamma, they amplify moves). Bars are $ of hedging per 1% move. The flip is where total gamma crosses zero if price moved there. Computed in your browser from Deribit open interest and mark IV with Black-Scholes, assuming dealers are long calls and short puts (the usual GEX convention). Deribit only, so CME and OKX options aren't included. Refreshes every 5 min. Turn on <b>Layers → GEX levels</b> to see these lines on the chart.</div></div>
+  </section>
   <section data-view="liq" class="view" hidden style="display:grid;gap:14px">
     <div class="panel">
       <div class="ph"><span class="pt">Live maps on Coinglass and CoinAnk</span></div>
@@ -401,7 +466,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
     </div>
   </section>
 </main>
-<footer>BTC Market Dashboard v2.0 · stage 4 · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
+<footer>BTC Market Dashboard v2.0 · stage 4 + news + GEX · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
 </div>
 
 <script src="ta.js"></script>
@@ -409,5 +474,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
 <script src="app2.js"></script>
 <script src="chart2.js"></script>
 <script src="stage4.js"></script>
+<script src="news.js"></script>
+<script src="gex.js"></script>
 </body>
 </html>

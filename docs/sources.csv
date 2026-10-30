@@ -39,3 +39,9 @@ wsOkT,OKX perp trades,Big-trade bubbles,WebSocket (live),0,0,no,no,no,yes,chart2
 fng,Fear & Greed (alternative.me),Mood gauges,600s,1,0.1,yes,no,no,yes,chart2.js:239,https://api.alternative.me/fng/?limit=30
 pos,OKX OI + long/short history,Positioning charts,60s,2,2.0,yes,no,no,yes,stage4.js:98,https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BTC&period={5m|1H|1D} ; https://www.okx.com/api/v5/rubik/stat/contracts/open-interest-volume?ccy=BTC&period={5m|1H|1D}
 cal,Economic calendar (ForexFactory),US events this week,1800s,1,0.03,yes,no,no,yes,stage4.js:152,https://nfs.faireconomy.media/ff_calendar_thisweek.json
+nwCd,News: CoinDesk,"News tab, Overview headlines",300s,1,0.2,yes,yes,no,yes,news.js,https://www.coindesk.com/arc/outboundfeeds/rss/
+nwCt,News: Cointelegraph,"News tab, Overview headlines",300s,1,0.2,yes,yes,no,yes,news.js,https://cointelegraph.com/rss
+nwTb,News: The Block,"News tab, Overview headlines",300s,1,0.2,yes,yes,no,yes,news.js,https://www.theblock.co/rss.xml
+nwDc,News: Decrypt,"News tab, Overview headlines",300s,1,0.2,yes,yes,no,yes,news.js,https://decrypt.co/feed
+nwBm,News: Bitcoin Magazine,"News tab, Overview headlines",300s,1,0.2,yes,yes,no,yes,news.js,https://bitcoinmagazine.com/.rss/full/
+nwGn,News: Google News,"News tab, Overview headlines",300s,1,0.2,yes,yes,no,yes,news.js,https://news.google.com/rss/search?q=bitcoin+OR+crypto+when:1d

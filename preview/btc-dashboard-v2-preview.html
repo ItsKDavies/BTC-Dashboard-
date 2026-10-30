@@ -193,6 +193,42 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
 .btn[aria-pressed="true"]{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 18%,var(--panel)),color-mix(in srgb,var(--purple) 12%,var(--panel)))}
 .pill{background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 100%,var(--fg) 3%),var(--panel));border-color:var(--edge)}
 .st.ok{background:linear-gradient(135deg,color-mix(in srgb,var(--up) 18%,transparent),color-mix(in srgb,var(--up) 6%,transparent))}
+.nov,.ntop{display:grid;gap:10px}.ntop{grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr))}
+.ncard{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 10px 10px 12px;border:1px solid var(--weak);border-left:3px solid var(--line);border-radius:10px;background:var(--bg)}
+.ncard.nup,.nrow.nup{border-left-color:var(--up)}.ncard.ndn,.nrow.ndn{border-left-color:var(--dn)}
+.nimg{width:84px;height:64px;object-fit:cover;border-radius:7px;background:var(--weak)}.nbody{min-width:0;display:grid;gap:4px}
+.ntags{display:flex;flex-wrap:wrap;gap:4px}.ntag{font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:5px;background:var(--weak);color:var(--fg2);white-space:nowrap}
+.ntag.nmaj{background:color-mix(in srgb,var(--dn) 18%,transparent);color:var(--dn)}.ntag.nimp{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.ntag.nbtc{background:color-mix(in srgb,#f7931a 20%,transparent);color:#f7931a}.ntag.nnew{background:var(--acc);color:#fff;margin-right:5px}
+.ntitle{color:var(--fg);font-weight:650;font-size:14.5px;line-height:1.3;text-decoration:none}.ntitle:hover,.nlink:hover{text-decoration:underline}
+.ndesc{font-size:12.5px;color:var(--fg2);line-height:1.4}.nmeta{display:block;font-size:11.5px;color:var(--fg3)}.nmeta b{color:var(--fg2);font-weight:600}
+.nrow{display:grid;grid-template-columns:58px 14px 1fr;gap:4px;align-items:baseline;padding:7px 0 7px 6px;border-bottom:1px solid var(--weak);border-left:2px solid transparent}
+.ntime{font-size:12px;color:var(--fg3);font-variant-numeric:tabular-nums}.imp.lo{background:var(--weak)}
+.nlink{color:var(--fg);font-size:13.5px;line-height:1.35;text-decoration:none;display:block}
+.npulse{display:grid;gap:6px;grid-template-columns:repeat(3,1fr)}.npulse>div{background:var(--bg);border:1px solid var(--weak);border-radius:10px;padding:8px;font-size:12px;line-height:1.35}
+.npulse i{font-style:normal;display:block;color:var(--fg3);font-size:11px}.npulse>div>b{display:block;font-size:17px;margin:2px 0}
+.ntone{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:4px 0;background:var(--weak)}.ntone span.up{background:var(--up)}.ntone span.dn{background:var(--dn)}.ntone span.mid{background:var(--fg3);opacity:.35}
+.nfs{display:inline-block;margin:2px 4px 0 0;padding:0 6px;border-radius:5px;font-size:11px}.nfs.ok{color:var(--up);background:color-mix(in srgb,var(--up) 12%,transparent)}.nfs.down{color:var(--dn);background:color-mix(in srgb,var(--dn) 12%,transparent)}.nfs.wait{color:var(--fg3);background:var(--weak)}
+.nbadge{display:inline-block;min-width:17px;padding:0 5px;margin-left:3px;border-radius:9px;background:var(--dn);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}
+@media (max-width:520px){.nimg{width:68px;height:54px}.npulse{grid-template-columns:1fr 1fr}.npulse>div:last-child{grid-column:1/-1}}
+.gkpi{display:grid;gap:6px;grid-template-columns:repeat(4,1fr)}.gkpi>div{background:var(--bg);border:1px solid var(--weak);border-radius:10px;padding:8px;line-height:1.35}
+.gkpi i{font-style:normal;display:block;color:var(--fg3);font-size:11px}.gkpi b{display:block;font-size:16px;margin:2px 0;font-variant-numeric:tabular-nums}
+.gkpi .gpos{border-color:color-mix(in srgb,var(--up) 45%,transparent)}.gkpi .gpos b{color:var(--up)}.gkpi .gneg{border-color:color-mix(in srgb,var(--dn) 45%,transparent)}.gkpi .gneg b{color:var(--dn)}
+.gread{margin:10px 0 0;padding-left:18px;display:grid;gap:6px;font-size:13.5px;line-height:1.45;color:var(--fg2)}.gread b{color:var(--fg)}
+.glvs{display:grid;gap:6px}.glv{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;background:var(--bg);border:1px solid var(--weak);border-left:3px solid var(--fg3)}
+.glv i{font-style:normal;display:block;font-size:11.5px;color:var(--fg3);line-height:1.35}.glv b{font-size:13.5px}.gp2{text-align:right}.gp2 b{font-size:15px;font-variant-numeric:tabular-nums}
+.gid{font-size:11px;font-weight:800;text-align:center;padding:3px 0;border-radius:6px;background:var(--weak)}
+.glv.gflip{border-left-color:#e8c547}.glv.gflip .gid{background:#e8c547;color:#000}.glv.gp{border-left-color:var(--up)}.glv.gp .gid{background:var(--up);color:#fff}
+.glv.gn{border-left-color:var(--dn)}.glv.gn .gid{background:var(--dn);color:#fff}.glv.ga{border-left-color:var(--purple)}.glv.ga .gid{background:var(--purple);color:#fff}.glv.gm .gid{background:var(--fg3);color:var(--bg)}
+.gbars{display:grid;gap:1px;font-variant-numeric:tabular-nums}.grow{display:grid;grid-template-columns:44px 1fr 92px;gap:6px;align-items:center;font-size:12px;min-height:17px}
+.gk{color:var(--fg2);text-align:right}.gbar{position:relative;height:12px;background:linear-gradient(var(--line),var(--line)) 50% 0/1px 100% no-repeat}.gb{position:absolute;top:1px;bottom:1px;border-radius:2px}
+.gbp{background:var(--up)}.gbn{background:var(--dn)}.gv{text-align:right;white-space:nowrap;font-size:11.5px}
+.gt{font-style:normal;font-size:9.5px;font-weight:800;padding:0 4px;border-radius:4px;margin-right:4px;color:#fff}.gt.gp{background:var(--up)}.gt.gn{background:var(--dn)}.gt.ga{background:var(--purple)}.gt.gm{background:var(--fg3)}
+.gmark{position:relative;height:18px;display:flex;align-items:center;margin:1px 0}.gmark:before{content:"";position:absolute;left:44px;right:0;border-top:1.5px dashed var(--fg3)}
+.gmark span{position:relative;margin-left:56px;font-size:11px;font-weight:700;padding:0 6px;border-radius:5px}.gmp span{background:var(--acc);color:#fff}.gmp:before{border-top-style:solid;border-color:var(--acc)}
+.gmf span{background:#e8c547;color:#000}.gmf:before{border-color:#e8c547}
+.govr{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;align-items:baseline}.govr>b{flex-basis:100%;font-size:15px}.govr span{color:var(--fg2)}.govr span b{color:var(--fg)}
+@media (max-width:520px){.gkpi{grid-template-columns:1fr 1fr}.grow{grid-template-columns:40px 1fr 84px}.gmark:before{left:40px}.gmark span{margin-left:50px}}
 </style>
 <div style="background:color-mix(in srgb,var(--warn) 18%,var(--bg));color:var(--fg);font-size:13px;padding:7px max(14px,env(safe-area-inset-left));border-bottom:1px solid var(--line)"><b>Preview with sample data.</b> Prices and flows here are made up so you can try the layout, chart and layers. Real data runs on your live Cloudflare site.</div>
 <script>
@@ -249,7 +285,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
     if (h === "api.bitget.com") return path.includes("/spot/") ? { code: "00000", data: [{ lastPr: P(-15), open: "80850", baseVolume: "3100", high24h: "81580", low24h: "79230" }] } : { code: "00000", data: [{ lastPr: P(-8), fundingRate: "0.00005", holdingAmount: "42000" }] };
     if (h === "www.deribit.com") {
       if (path.includes("book_summary") && q.kind === "future") return { result: [{ instrument_name: "BTC-PERPETUAL", mark_price: px(), open_interest: 9e8, volume_usd: 1e9 }, { instrument_name: "BTC-27NOV26", mark_price: px() * 1.004, open_interest: 1e8, volume_usd: 2e7 }, { instrument_name: "BTC-25DEC26", mark_price: px() * 1.011, open_interest: 3e8, volume_usd: 5e7 }, { instrument_name: "BTC-26MAR27", mark_price: px() * 1.027, open_interest: 2e8, volume_usd: 3e7 }] };
-      if (path.includes("book_summary")) { const r = []; for (const e of ["30OCT26", "27NOV26", "25DEC26"]) for (let k = 64000; k <= 100000; k += 2000) for (const cp of ["C", "P"]) r.push({ instrument_name: `BTC-${e}-${k}-${cp}`, open_interest: Math.max(0, 900 - Math.abs(k - (cp === "C" ? 86000 : 76000)) / 30) * (e === "25DEC26" ? 3 : 1), volume: 10 }); return { result: r }; }
+      if (path.includes("book_summary")) { const r = []; const E = [1, 3, 8, 29, 57].map((d) => { const x = new Date(Date.now() + d * 864e5); return x.getUTCDate() + ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][x.getUTCMonth()] + String(x.getUTCFullYear()).slice(2); }); for (const e of E) for (let k = 64000; k <= 100000; k += 1000) for (const cp of ["C", "P"]) r.push({ instrument_name: `BTC-${e}-${k}-${cp}`, open_interest: Math.max(0, 900 - Math.abs(k - (cp === "C" ? 86000 : 76000)) / 30) * (e === E[3] ? 3 : 1) * (k % 2000 ? 0.4 : 1) * (k === 80000 ? 2.2 : 1), volume: 10, mark_iv: 42 + Math.abs(k - 80000) / 1500, underlying_price: px() }); return { result: r }; }
       return { result: { mark_price: px() + 7, funding_8h: 0.00002, open_interest: 9e8 } };
     }
     if (h === "futures.kraken.com") return { result: "success", ticker: { markPrice: px() - 3, last: px() - 3, fundingRate: 0.8, openInterest: 3000 } };
@@ -269,10 +305,21 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
     if (h === "fapi.binance.com") return { __status: 451 };
     return null;
   }
-  const PXMAP = { okx: "https://www.okx.com", kraken: "https://futures.kraken.com", mexc: "https://contract.mexc.com", bingx: "https://open-api.bingx.com", bybit: "https://api.bybit.com", bnf: "https://fapi.binance.com", krakens: "https://api.kraken.com", bitstamp: "https://www.bitstamp.net", gemini: "https://api.gemini.com", mexcs: "https://api.mexc.com", fng: "https://api.alternative.me", ff: "https://nfs.faireconomy.media" };
+  const PXMAP = { okx: "https://www.okx.com", kraken: "https://futures.kraken.com", mexc: "https://contract.mexc.com", bingx: "https://open-api.bingx.com", bybit: "https://api.bybit.com", bnf: "https://fapi.binance.com", krakens: "https://api.kraken.com", bitstamp: "https://www.bitstamp.net", gemini: "https://api.gemini.com", mexcs: "https://api.mexc.com", fng: "https://api.alternative.me", ff: "https://nfs.faireconomy.media", coindesk: "https://www.coindesk.com", ctg: "https://cointelegraph.com", theblock: "https://www.theblock.co", decrypt: "https://decrypt.co", btcmag: "https://bitcoinmagazine.com", gnews: "https://news.google.com" };
+  function sampleRss(host) {
+    const H = [["Sample: Spot bitcoin ETFs log $480M net inflows as BTC holds near $78K", 0.4], ["Sample: SEC delays decision on staking in ether ETFs", 2.2], ["Sample: Fed's Powell signals patience on rate cuts after hot CPI print", 1.1],
+      ["Sample: DeFi lender drained of $40M in bridge exploit", 3.5], ["Sample: Bitcoin options worth $5B expire Friday; max pain near $80K", 5], ["Sample: Bitcoin slides as $300M in longs liquidated", 0.9],
+      ["Sample: Strategy buys another 2,000 BTC", 7], ["Sample: Senate committee advances crypto market structure bill", 9], ["Sample: Top 5 altcoins to watch this week", 4], ["Sample: Solana memecoin volume jumps", 12], ["Sample: Ethereum developers set date for next upgrade", 20]];
+    const n = { "www.coindesk.com": "CoinDesk", "cointelegraph.com": "Cointelegraph", "www.theblock.co": "The Block", "decrypt.co": "Decrypt", "bitcoinmagazine.com": "Bitcoin Magazine", "news.google.com": "Google News" }[host];
+    const k = Object.keys({ "www.coindesk.com": 0, "cointelegraph.com": 1, "www.theblock.co": 2, "decrypt.co": 3, "bitcoinmagazine.com": 4, "news.google.com": 5 }).indexOf(host);
+    const items = H.filter((_, i) => (i + k) % 3 !== 0).map(([t, h], i) => `<item><title>${t}${host === "news.google.com" ? " - Reuters" : ""}</title><link>https://example.com/${k}/${i}</link><pubDate>${new Date(Date.now() - (h + k * 0.1) * 36e5).toUTCString()}</pubDate><description>Sample article text for the preview. Real headlines load on the live site.</description>${host === "news.google.com" ? "<source>Reuters</source>" : ""}</item>`).join("");
+    return `<?xml version="1.0"?><rss version="2.0"><channel><title>${n}</title>${items}</channel></rss>`;
+  }
+  const NEWS_HOSTS = ["www.coindesk.com", "cointelegraph.com", "www.theblock.co", "decrypt.co", "bitcoinmagazine.com", "news.google.com"];
   window.fetch = async function (input, opt) {
     let url = typeof input === "string" ? input : input.url; const m = /^\/px\/(\w+)(\/.*)$/.exec(url); if (m) url = PXMAP[m[1]] + m[2];
     await new Promise((r) => setTimeout(r, 60 + rnd() * 120));
+    if (NEWS_HOSTS.includes(new URL(url).host)) return new Response(sampleRss(new URL(url).host), { status: 200, headers: { "content-type": "application/rss+xml" } });
     const d = answer(url); if (d === null) throw new TypeError("Failed to fetch");
     return new Response(JSON.stringify(d), { status: d.__status || 200, headers: { "content-type": "application/json" } });
   };
@@ -314,11 +361,13 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
     </div>
     <nav class="tabs" role="tablist" aria-label="Dashboard sections">
       <button class="tab" role="tab" data-tab="overview">Overview</button>
+      <button class="tab" role="tab" data-tab="news">News</button>
       <button class="tab" role="tab" data-tab="ta">TA</button>
       <button class="tab" role="tab" data-tab="pat">Patterns</button>
       <button class="tab" role="tab" data-tab="setups">Setups</button>
       <button class="tab" role="tab" data-tab="flow">CVD</button>
       <button class="tab" role="tab" data-tab="sess">Sessions</button>
+      <button class="tab" role="tab" data-tab="gex">GEX</button>
       <button class="tab" role="tab" data-tab="liq">Liquidations</button>
       <button class="tab" role="tab" data-tab="mkts">Markets</button>
       <button class="tab" role="tab" data-tab="derivs">Derivatives</button>
@@ -348,6 +397,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button><button class="chip" data-tog="lineLbl">Labels on lines</button></div>
         <div class="ctl" id="fibSel" hidden style="padding-left:90px;margin:-2px 0 2px"></div>
         <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><span class="seg"><button data-tln="few">Few</button><button data-tln="more">More</button><button data-tln="max">Max</button></span><button class="chip" data-tog="cdl">Candle patterns</button></div>
+        <div class="lg"><span class="lgt">Options</span><button class="chip" data-tog="gexl">GEX levels</button></div>
         <div class="lg"><span class="lgt">Profile</span><button class="chip" data-tog="prof">Volume profile</button><button class="chip" data-tog="tpo">TPO</button></div>
         <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqb">Liq bands</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
         <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><button class="chip" data-low="cvdc">CVD candles</button><button class="chip" data-low="oic">OI candles</button><button class="chip" data-low="liq">Liquidations</button><button class="chip" data-low="vol">Buy / sell volume</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 4. Drag the bar above the panes to resize, double-tap it to reset. <button class="chip" data-lpre="cw" style="min-height:26px;font-size:12px">CoinWise-style stack</button> <button class="chip" data-lpre="simple" style="min-height:26px;font-size:12px">Simple</button></span></div>
@@ -358,6 +408,8 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
     </div>
     <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">Options gamma (GEX)</span></div><div id="ovGex"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">Top crypto headlines · 24h</span></div><div id="ovNews" class="nov"></div></div>
     <div class="grid" id="kpis"></div>
     <div class="panel">
       <div class="ph"><span class="pt">Assessment</span></div>
@@ -379,6 +431,18 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
   </section>
 
   <!-- TA -->
+  <!-- NEWS -->
+  <section data-view="news" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">News pulse · last 24h</span></div><div id="newsPulse"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">Top stories</span></div><div id="newsTop"></div></div>
+    <div class="panel">
+      <div class="ph"><span class="pt">Headlines · 48h</span></div>
+      <div class="ctl"><span class="seg" id="newsSeg"></span></div>
+      <div class="ctl" id="newsChips"></div>
+      <div id="newsList"></div>
+      <div class="src">Feeds: <span id="newsFeeds"></span><br>Same story from several outlets is merged into one line. <b>Important</b> and <b>Major</b> come from rules: topic (macro, regulation, ETFs, hacks, big market moves), how many outlets carry it, and whether it's about Bitcoin. Tone is from headline words only. Refreshes every 5 min. Tap a headline to open the article.</div>
+    </div>
+  </section>
   <section data-view="ta" class="view" hidden style="display:grid;gap:14px">
     <div class="panel"><div class="ph"><span class="pt">Assessment</span></div><div id="taAssess"></div></div>
     <div class="panel"><div class="ph"><span class="pt">Technicals by timeframe</span></div><div class="tw"><table id="taTbl"></table></div><div class="src">Binance spot candles. Score is the average of the signal votes (−100 to +100); 30 or more counts as a clear lean.</div></div>
@@ -427,6 +491,18 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
   </section>
 
   <!-- LIQUIDATIONS -->
+  <!-- GEX -->
+  <section data-view="gex" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel">
+      <div class="ph"><span class="pt">Gamma exposure · Deribit BTC options</span></div>
+      <div class="ctl"><span class="seg" id="gexSeg" style="overflow-x:auto;max-width:100%"></span></div>
+      <div id="gexTop"></div>
+      <div id="gexRead"></div>
+    </div>
+    <div class="panel"><div class="ph"><span class="pt">Key levels</span></div><div id="gexLv" class="glvs"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">GEX by strike</span></div><div class="ctl" id="gexCtl"></div><div id="gexBars" class="gbars"></div>
+      <div class="src">Green = calls (dealers long gamma, they dampen moves). Red = puts (dealers short gamma, they amplify moves). Bars are $ of hedging per 1% move. The flip is where total gamma crosses zero if price moved there. Computed in your browser from Deribit open interest and mark IV with Black-Scholes, assuming dealers are long calls and short puts (the usual GEX convention). Deribit only, so CME and OKX options aren't included. Refreshes every 5 min. Turn on <b>Layers → GEX levels</b> to see these lines on the chart.</div></div>
+  </section>
   <section data-view="liq" class="view" hidden style="display:grid;gap:14px">
     <div class="panel">
       <div class="ph"><span class="pt">Live maps on Coinglass and CoinAnk</span></div>
@@ -500,7 +576,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
     </div>
   </section>
 </main>
-<footer>BTC Market Dashboard v2.0 · stage 4 · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
+<footer>BTC Market Dashboard v2.0 · stage 4 + news + GEX · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
 </div>
 <script>
 /* BTC Dashboard v2 analysis engine: pure functions, no network or DOM.
@@ -1535,9 +1611,9 @@ def("dbFut", "Deribit futures", "Basis term structure", 60000, async () => {
   const j = await getJSON("https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=future");
   return { rows: (j.result || []).map((r) => ({ name: r.instrument_name, exp: expMs(r.instrument_name.split("-")[1]), mark: +r.mark_price, oi: +r.open_interest, vol: +r.volume_usd })) };
 });
-def("dbOpt", "Deribit options", "Put/call, max pain, OI by strike", 300000, async () => {
+def("dbOpt", "Deribit options", "Put/call, max pain, OI by strike, GEX", 300000, async () => {
   const j = await getJSON("https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=option");
-  const rows = (j.result || []).map((r) => { const p = r.instrument_name.split("-"); return { exp: p[1], ms: expMs(p[1]), k: +p[2], cp: p[3], oi: +r.open_interest, vol: +r.volume }; }).filter((r) => ok(r.k) && r.ms);
+  const rows = (j.result || []).map((r) => { const p = r.instrument_name.split("-"); return { exp: p[1], ms: expMs(p[1]), k: +p[2], cp: p[3], oi: +r.open_interest, vol: +r.volume, iv: +r.mark_iv, u: +r.underlying_price }; }).filter((r) => ok(r.k) && r.ms);
   if (!rows.length) throw new Error("no options"); return { rows };
 });
 
@@ -2561,7 +2637,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -2601,9 +2677,10 @@ function chartExtras(fromView) {
   if (on(ST.pat) && k.length > 60) drawGeo(L, k, C);
   if (on(ST.cdl) && k.length > 30) drawCandles(L, k, C, a);
   if (ST.my && MYLV.list.length) MYLV.list.forEach((l) => L.hlines.push({ p: l.p, color: cssv("--my"), w: 1.6, tag: `${l.label.slice(0, 5)} ${kfmt(l.p)}`, prio: 90, left: l.label }));
+  if (typeof gexHlines === "function" && on(ST.gexl)) gexHlines(L, C);
   L.subs = lowerPanes(k, C); const host = $("#cMain"); if (host) host.style.setProperty("--subx", `${L.subs.length > 1 ? 90 * (L.subs.length - 1) : 0}px`);
   const nb = CC.nSub(); CC.L = L; if (nb !== L.subs.length) CC.resize(); CC.dirty();
-  const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqb", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl"].filter((x) => ST[x]).length;
+  const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqb", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl", "gexl"].filter((x) => ST[x]).length;
   const lb = $("#bLayers"); if (lb) lb.textContent = `Layers · ${ST.clean ? "clean" : n + " on"} ${ST.layersOpen ? "▴" : "▾"}`;
 }
 
@@ -3178,6 +3255,313 @@ drawStage2 = function (tab) {
   } catch (e) { console.error(e); }
 };
 render(); ["pos", "cal", "pf", "sess30"].forEach((id) => tick(id));
+
+</script>
+<script>
+"use strict";
+/* ===================== News: important crypto headlines =====================
+   Public RSS feeds, fetched by the browser through the site's own /px/<name>/ pass-through (news sites block direct
+   browser requests). Stories that several outlets cover are merged into one. "Importance" is a rule score: topic
+   keywords + how many outlets carry the story + Bitcoin relevance + freshness. No AI, no API keys. */
+const NEWS_FEEDS = [
+  { id: "nwCd", name: "CoinDesk", px: "coindesk", host: "https://www.coindesk.com", path: "/arc/outboundfeeds/rss/" },
+  { id: "nwCt", name: "Cointelegraph", px: "ctg", host: "https://cointelegraph.com", path: "/rss" },
+  { id: "nwTb", name: "The Block", px: "theblock", host: "https://www.theblock.co", path: "/rss.xml" },
+  { id: "nwDc", name: "Decrypt", px: "decrypt", host: "https://decrypt.co", path: "/feed" },
+  { id: "nwBm", name: "Bitcoin Magazine", px: "btcmag", host: "https://bitcoinmagazine.com", path: "/.rss/full/" },
+  // Google News search: brings in Reuters, Bloomberg, CNBC, WSJ etc. when they cover crypto.
+  { id: "nwGn", name: "Google News", px: "gnews", host: "https://news.google.com", path: "/rss/search?q=bitcoin+OR+crypto+when:1d&hl=en-US&gl=US&ceid=US:en", agg: true },
+];
+const NEWS_MS = 300000; // 5 min per feed (the edge caches each feed for 5 min too)
+
+async function getText(url) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 12000);
+  try { const r = await fetch(url, { signal: ctl.signal, cache: "no-store" }); if (!r.ok) throw new HttpErr(r.status); return await r.text(); }
+  finally { clearTimeout(t); }
+}
+async function getFeed(f) {
+  if (canProxy) { try { return await getText(`/px/${f.px}${f.path}`); } catch (e) { if (e.status !== 404) throw e; } } // no pass-through: try direct
+  return getText(f.host + f.path);
+}
+const htmlText = (s) => { if (!s || !/[<&]/.test(s)) return (s || "").trim(); try { return (new DOMParser().parseFromString(s, "text/html").body.textContent || "").trim(); } catch (e) { return s.replace(/<[^>]*>/g, " ").trim(); } };
+const safeUrl = (u) => (/^https?:\/\//i.test(u || "") ? u : "");
+function parseFeed(xml, f) {
+  const doc = new DOMParser().parseFromString(xml, "text/xml");
+  if (doc.getElementsByTagName("parsererror").length) throw new Error("Feed isn't valid XML (site may be blocking the pass-through)");
+  const nodes = [...doc.getElementsByTagName("item")].concat([...doc.getElementsByTagName("entry")]).slice(0, 50);
+  const tx = (el, tag) => { const x = el.getElementsByTagName(tag)[0]; return x ? (x.textContent || "").trim() : ""; };
+  const at = (el, tag, a) => { const x = el.getElementsByTagName(tag)[0]; return x ? x.getAttribute(a) || "" : ""; };
+  const out = [];
+  for (const el of nodes) {
+    let title = htmlText(tx(el, "title")), link = tx(el, "link") || at(el, "link", "href"), outlet = f.name;
+    if (f.agg) { const s = tx(el, "source"); if (s) { outlet = s; title = title.replace(new RegExp("\\s+[-–—]\\s+" + s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$"), ""); } }
+    const t = Date.parse(tx(el, "pubDate") || tx(el, "published") || tx(el, "updated") || tx(el, "dc:date"));
+    if (!title || !safeUrl(link) || !ok(t)) continue;
+    const rawDesc = tx(el, "description") || tx(el, "summary") || "";
+    let img = at(el, "media:content", "url") || at(el, "media:thumbnail", "url") || (/^image/.test(at(el, "enclosure", "type")) ? at(el, "enclosure", "url") : "");
+    if (!img) { const m = /<img[^>]+src="([^"]+)"/i.exec(rawDesc + tx(el, "content:encoded").slice(0, 3000)); if (m) img = m[1]; }
+    let desc = f.agg ? "" : htmlText(rawDesc).replace(/\s+/g, " ");
+    if (desc.length > 240) desc = desc.slice(0, 230).replace(/\s+\S*$/, "") + "…";
+    const cats = [...el.getElementsByTagName("category")].map((c) => (c.textContent || "").trim()).filter(Boolean).slice(0, 8);
+    out.push({ title, link, t, outlet, via: f.agg ? f.name : "", desc, img: safeUrl(img), cats });
+  }
+  if (!out.length) throw new Error("Feed returned no stories");
+  return out;
+}
+NEWS_FEEDS.forEach((f) => def(f.id, `News: ${f.name}`, "News tab, Overview headlines", NEWS_MS, async () => ({ items: parseFeed(await getFeed(f), f) }), true));
+
+/* ---------- scoring (rules, not AI) ---------- */
+const NTOP = [
+  ["macro", "Macro", /\b(fed|fomc|powell|rate (cut|hike)s?|interest rates?|cpi|inflation|jobs report|payrolls|nfp|pce|gdp|treasur(y|ies)|bond yields?|recession|tariffs?|dxy|federal reserve)\b/i, 3],
+  ["reg", "Regulation", /\b(sec|cftc|doj|regulat\w*|lawsuit|sues|sued|court|judge|congress|senate|lawmakers?|legislation|bill|clarity act|genius act|executive order|white house|ban(s|ned)?|sanction\w*)\b/i, 3],
+  ["etf", "ETFs & treasuries", /\b(etfs?|etps?|inflows?|outflows?|blackrock|ibit|fidelity|grayscale|gbtc|microstrategy|mstr|saylor|strategy (inc|buys|adds|acquires|purchases)|metaplanet|treasury compan\w*|strategic (bitcoin )?reserve)\b/i, 3],
+  ["risk", "Hacks & risk", /\b(hack(ed|er|ers|s)?|exploit(ed|s)?|drain(ed)?|stolen|breach|scam|rug ?pull|insolven\w*|bankrupt\w*|depeg\w*|withdrawals? (halt|paused|suspend)\w*|halts? withdrawals|outage|collapse\w*)\b/i, 4],
+  ["mkt", "Markets", /\b(rall(y|ies|ied)|surg(e|es|ed)|soar\w*|plung\w*|crash\w*|tumbl\w*|sell-?off|record high|all-time high|ath|liquidat\w*|short squeeze|open interest|funding rates?|options expir\w*|whales?|volatil\w*|\$\d{2,3}(,\d{3}|k))\b/i, 2],
+];
+const NBTC = /\b(bitcoin|btc)\b/i, NALT = /\b(ether(eum)?|eth|solana|sol|xrp|doge(coin)?|memecoins?|nfts?|cardano|altcoins?|tokens?)\b/i;
+const NLOW = /\b(price predictions?|predicts?|could|might|here'?s why|what to expect|top \d+|best \w+|how to|guide|explained|podcast|sponsored|press release|op-ed|opinion|recap|newsletter|quiz|giveaway|review)\b/i;
+const NTIER = /^(reuters|bloomberg|the wall street journal|wsj|financial times|cnbc|associated press|ap news|the new york times|barron'?s|marketwatch|axios|forbes|fortune|yahoo finance)/i;
+const NUP = /\b(surg\w*|rall\w*|soar\w*|jump\w*|gain\w*|climb\w*|record high|all-time high|inflows?|approv\w*|adopt\w*|buys|bought|accumulat\w*|bull\w*|rebound\w*|recover\w*|breakout)\b/i;
+const NDN = /\b(plung\w*|crash\w*|drop\w*|fall(s|ing)?|fell|slid\w*|slump\w*|tumbl\w*|sell-?off|outflows?|hack\w*|exploit\w*|lawsuit|sued|ban(s|ned)?|bear\w*|fear\w*|reject\w*|delay\w*|liquidat\w*|dump\w*|lows?)\b/i;
+const NSTOP = new Set("the a an and or of to in on for with as at by from is are be its it this that after amid over into new says said say will could may than more why how what who has have had about up down vs".split(" "));
+const ntok = (s) => [...new Set(s.toLowerCase().replace(/[’']s\b/g, "").replace(/[^a-z0-9$%.]+/g, " ").split(" ").filter((w) => w.length > 2 && !NSTOP.has(w)))];
+function sameStory(a, b) {
+  let c = 0; for (const w of a) if (b.includes(w)) c++;
+  const mn = Math.min(a.length, b.length); return mn >= 3 && (c / mn >= 0.6 || c / (a.length + b.length - c) >= 0.45) && c >= 3;
+}
+let NEWS_MEMO = { key: "", v: null };
+function newsAll() {
+  const live0 = NEWS_FEEDS.filter((f) => live(f.id)), key = live0.map((f) => f.id + SRC[f.id].st.okAt).join() + "|" + Math.floor(Date.now() / 60000);
+  if (NEWS_MEMO.key === key) return NEWS_MEMO.v;
+  const now = Date.now(), seen = new Set(), raw = [];
+  for (const f of live0) for (const it of D[f.id].items) {
+    if (it.t > now + 6e5 || now - it.t > 48 * 36e5) continue;
+    const k = it.link.replace(/[?#].*$/, "").replace(/\/$/, ""); if (seen.has(k)) continue; seen.add(k);
+    raw.push({ ...it, tok: ntok(it.title) });
+  }
+  raw.sort((a, b) => a.t - b.t);
+  const clusters = [];
+  for (const it of raw) {
+    const c = clusters.find((c) => Math.abs(c.t - it.t) < 30 * 36e5 && c.items.some((x) => sameStory(x.tok, it.tok)));
+    if (c) c.items.push(it); else clusters.push({ t: it.t, items: [it] });
+  }
+  const out = clusters.map((c) => {
+    const lead = c.items.find((x) => x.desc) || c.items[0];
+    const head = c.items.find((x) => !NTIER.test(x.outlet) && !x.via) || c.items[0];
+    const outlets = [...new Set([head.outlet, ...c.items.map((x) => x.outlet)])]; // prefer a crypto outlet's headline/link (Google links are redirects)
+    const text = c.items.map((x) => x.title + " " + x.cats.join(" ")).join(" ");
+    const topics = NTOP.filter(([, , rx]) => rx.test(text));
+    const btc = NBTC.test(text), alt = !btc && NALT.test(head.title), low = NLOW.test(head.title) || /\?$/.test(head.title);
+    const tier = outlets.some((o) => NTIER.test(o));
+    let score = Math.min(7, topics.reduce((s, [, , , w]) => s + w, 0)) + (btc ? 2 : 0) - (alt ? 2.5 : 0) + Math.min(4, outlets.length - 1) * 2 + (tier ? 1.5 : 0) - (low ? 3 : 0);
+    const tone = (NUP.test(head.title) ? 1 : 0) - (NDN.test(head.title) ? 1 : 0);
+    const ageH = (now - c.t) / 36e5;
+    return { title: head.title, link: head.link, t: c.t, last: c.items[c.items.length - 1].t, outlets, desc: lead.desc, img: c.items.map((x) => x.img).find(Boolean) || "", items: c.items,
+      topics: topics.map(([k, l]) => ({ k, l })), btc, score, lvl: score >= 9 ? 2 : score >= 5.5 ? 1 : 0, tone, rank: score / (1 + ageH / 8) };
+  }).sort((a, b) => b.t - a.t);
+  NEWS_MEMO = { key, v: out }; return out;
+}
+
+/* ---------- UI ---------- */
+ST.newsScope = LS.get("newsScope", "imp"); ST.newsTopic = LS.get("newsTopic", ""); ST.newsSeen = LS.get("newsSeen", 0);
+let NEWS_PREV_SEEN = ST.newsSeen;
+const newsAgo = (t) => { const m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? `${m}m ago` : m < 1440 ? `${Math.floor(m / 60)}h ${m % 60 ? (m % 60) + "m " : ""}ago`.replace(/ (\d+)m ago/, " ago") : `${Math.floor(m / 1440)}d ago`; };
+const newsOutlets = (s) => `<b>${esc(s.outlets[0])}</b>${s.outlets.length > 1 ? ` <span class="mut" title="${esc(s.outlets.slice(1).join(", "))}">+${s.outlets.length - 1} more outlet${s.outlets.length > 2 ? "s" : ""}</span>` : ""}`;
+const newsTags = (s) => `${s.lvl === 2 ? `<span class="ntag nmaj">Major</span>` : s.lvl === 1 ? `<span class="ntag nimp">Important</span>` : ""}${s.topics.map((x) => `<span class="ntag">${x.l}</span>`).join("")}${s.btc ? `<span class="ntag nbtc">BTC</span>` : ""}`;
+const toneCls = (s) => (s.tone > 0 ? " nup" : s.tone < 0 ? " ndn" : "");
+const isNew = (s) => NEWS_PREV_SEEN && s.t > NEWS_PREV_SEEN;
+function newsCard(s, big) {
+  return `<article class="ncard${toneCls(s)}">${big && s.img ? `<img class="nimg" src="${esc(s.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+    <div class="nbody"><div class="ntags">${isNew(s) ? `<span class="ntag nnew">New</span>` : ""}${newsTags(s)}</div>
+    <a class="ntitle" href="${esc(s.link)}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a>
+    ${big && s.desc ? `<div class="ndesc">${esc(s.desc)}</div>` : ""}
+    <div class="nmeta">${newsOutlets(s)} · ${newsAgo(s.t)}</div></div></article>`;
+}
+function newsFeedStatus() {
+  return NEWS_FEEDS.map((f) => { const st = status(f.id); return `<span class="nfs ${st === "ok" || st === "stale" ? "ok" : st === "wait" ? "wait" : "down"}" title="${esc(SRC[f.id].st.err || st)}">${f.name}</span>`; }).join("");
+}
+function drawNews() {
+  const el = $("#newsTop"); if (!el) return;
+  const all = newsAll(), nLive = NEWS_FEEDS.filter((f) => live(f.id)).length;
+  $("#newsFeeds").innerHTML = newsFeedStatus();
+  if (!nLive) { const any = NEWS_FEEDS.some((f) => status(f.id) === "wait"); el.innerHTML = `<div class="unavail">${any ? "Loading headlines…" : "No news feed reachable right now. Check the Sources tab for details."}</div>`; $("#newsList").innerHTML = ""; $("#newsPulse").innerHTML = ""; return; }
+  const day = all.filter((s) => Date.now() - s.t < 24 * 36e5);
+  const top = day.filter((s) => s.lvl > 0).sort((a, b) => b.rank - a.rank).slice(0, 5);
+  el.innerHTML = top.length ? `<div class="ntop">${top.map((s, i) => newsCard(s, true)).join("")}</div>` : `<div class="unavail">No major stories in the last 24 hours. Quiet tape.</div>`;
+  $("#newsPulse").innerHTML = pulseHTML(day);
+  // filters
+  $("#newsSeg").innerHTML = [["imp", "Important"], ["btc", "Bitcoin"], ["all", "All"]].map(([v, l]) => `<button data-nscope="${v}" aria-pressed="${ST.newsScope === v}">${l}</button>`).join("");
+  $("#newsChips").innerHTML = NTOP.map(([k, l]) => `<button class="chip" data-ntopic="${k}" aria-pressed="${ST.newsTopic === k}">${l}</button>`).join("");
+  let list = all.filter((s) => (ST.newsScope === "imp" ? s.lvl > 0 : ST.newsScope === "btc" ? s.btc : true) && (!ST.newsTopic || s.topics.some((x) => x.k === ST.newsTopic)));
+  const groups = [["Last hour", 36e5], ["Last 6 hours", 6 * 36e5], ["Last 24 hours", 24 * 36e5], ["Older", Infinity]];
+  let html = "", from = 0;
+  for (const [lab, lim] of groups) {
+    const g = list.filter((s) => { const a = Date.now() - s.t; return a >= from && a < lim; }); from = lim;
+    if (g.length) html += `<div class="calday">${lab} · ${g.length}</div>` + g.map((s) => `<div class="nrow${toneCls(s)}"><span class="ntime">${new Date(s.t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span><span class="imp ${s.lvl === 2 ? "hi" : s.lvl === 1 ? "md" : "lo"}"></span><span style="min-width:0"><a class="nlink" href="${esc(s.link)}" target="_blank" rel="noopener noreferrer">${isNew(s) ? `<span class="ntag nnew">New</span>` : ""}${esc(s.title)}</a><span class="nmeta">${newsOutlets(s)}${s.topics.length ? " · " + s.topics.map((x) => x.l).join(", ") : ""}</span></span></div>`).join("");
+  }
+  $("#newsList").innerHTML = html || `<div class="unavail">Nothing matches this filter in the last 48 hours.</div>`;
+}
+function pulseHTML(day) {
+  const imp = day.filter((s) => s.lvl > 0), up = imp.filter((s) => s.tone > 0).length, dn = imp.filter((s) => s.tone < 0).length, n = imp.length || 1;
+  const lastH = day.filter((s) => s.lvl > 0 && Date.now() - s.t < 36e5).length;
+  const byT = NTOP.map(([k, l]) => [l, imp.filter((s) => s.topics.some((x) => x.k === k)).length]).filter((x) => x[1]).sort((a, b) => b[1] - a[1]);
+  const lean = up > dn * 1.5 && up >= 2 ? `<b class="up">Leaning positive</b>` : dn > up * 1.5 && dn >= 2 ? `<b class="dn">Leaning negative</b>` : `<b>Mixed</b>`;
+  return `<div class="npulse"><div><i>Important, 24h</i><b>${imp.length}</b><i>${lastH} in the last hour</i></div>
+    <div><i>Headline tone</i>${lean}<span class="ntone"><span class="up" style="width:${(up / n) * 100}%"></span><span class="mid" style="width:${((n - up - dn) / n) * 100}%"></span><span class="dn" style="width:${(dn / n) * 100}%"></span></span><i>${up} positive · ${dn} negative</i></div>
+    <div><i>Main themes</i><b style="font-size:13.5px">${byT.slice(0, 3).map((x) => `${x[0]} <span class="mut">${x[1]}</span>`).join("<br>") || "–"}</b></div></div>`;
+}
+function drawNewsOverview() {
+  const el = $("#ovNews"); if (!el) return;
+  const nLive = NEWS_FEEDS.filter((f) => live(f.id)).length;
+  if (!nLive) { el.innerHTML = `<div class="unavail">${NEWS_FEEDS.some((f) => status(f.id) === "wait") ? "Loading headlines…" : "News feeds unreachable right now."}</div>`; return; }
+  const day = newsAll().filter((s) => Date.now() - s.t < 24 * 36e5), top = day.filter((s) => s.lvl > 0).sort((a, b) => b.rank - a.rank).slice(0, 3);
+  el.innerHTML = (top.length ? top.map((s) => newsCard(s, false)).join("") : `<div class="unavail">No major crypto stories in the last 24 hours.</div>`) + `<button class="btn" data-gonews style="margin-top:8px">All news →</button>`;
+}
+function newsBadge() {
+  const b = document.querySelector('.tab[data-tab="news"]'); if (!b) return;
+  const n = ST.tab === "news" ? 0 : newsAll().filter((s) => s.lvl > 0 && s.t > ST.newsSeen && Date.now() - s.t < 24 * 36e5).length;
+  const want = n ? `News <span class="nbadge">${n > 9 ? "9+" : n}</span>` : "News"; if (b.innerHTML !== want) b.innerHTML = want;
+}
+document.addEventListener("click", (e) => {
+  const s = e.target.closest("[data-nscope]"); if (s) { ST.newsScope = s.dataset.nscope; LS.set("newsScope", ST.newsScope); drawNews(); return; }
+  const t = e.target.closest("[data-ntopic]"); if (t) { ST.newsTopic = ST.newsTopic === t.dataset.ntopic ? "" : t.dataset.ntopic; LS.set("newsTopic", ST.newsTopic); drawNews(); return; }
+  if (e.target.closest("[data-gonews]")) { setTab("news"); window.scrollTo({ top: 0 }); }
+});
+// "New" marks: stories newer than your previous visit to the News tab.
+let newsWasOpen = false;
+const _d4 = drawStage2;
+drawStage2 = function (tab) {
+  _d4(tab);
+  try {
+    if (tab === "news") { if (!newsWasOpen) { NEWS_PREV_SEEN = ST.newsSeen; newsWasOpen = true; } ST.newsSeen = Date.now(); LS.set("newsSeen", ST.newsSeen); drawNews(); }
+    else newsWasOpen = false;
+    if (tab === "overview") drawNewsOverview();
+    newsBadge();
+  } catch (e) { console.error(e); }
+};
+render(); NEWS_FEEDS.forEach((f) => tick(f.id));
+
+</script>
+<script>
+"use strict";
+/* ===================== GEX: options gamma exposure (Deribit) =====================
+   Computed locally from the Deribit options book summary that `dbOpt` already loads (open interest, mark IV,
+   underlying price per instrument). Gamma from Black-Scholes. Convention (same as most GEX tools): dealers are
+   long calls (+ gamma) and short puts (− gamma). GEX = gamma × OI × S² × 1%, in $ per 1% move. No AI, no keys. */
+const SQ2PI = Math.sqrt(2 * Math.PI);
+function bsGamma(S, K, T, s) { if (!(T > 0 && s > 0 && S > 0 && K > 0)) return 0; const v = s * Math.sqrt(T), d1 = (Math.log(S / K) + 0.5 * s * s * T) / v; return Math.exp(-0.5 * d1 * d1) / SQ2PI / (S * v); }
+ST.gexExp = LS.get("gexExp", "all"); ST.gexl = LS.get("gexl", true);
+let GEXM = { key: "", v: null };
+function gexCalc(exp) {
+  if (!live("dbOpt")) return null; const S = curPx() || (D.dbOpt.rows.find((r) => ok(r.u)) || {}).u; if (!ok(S)) return null;
+  const key = exp + "|" + SRC.dbOpt.st.okAt + "|" + Math.round(S / 50); if (GEXM.key === key) return GEXM.v;
+  const now = Date.now(), Y = 365 * 864e5;
+  const rows = D.dbOpt.rows.filter((r) => r.ms > now + 6e4 && r.oi > 0 && (exp === "all" || r.exp === exp)).map((r) => ({ ...r, T: (r.ms - now) / Y, s: ok(r.iv) && r.iv > 1 ? r.iv / 100 : 0.5 }));
+  if (!rows.length) return null;
+  const at = (P) => { let n = 0; for (const r of rows) n += (r.cp === "C" ? 1 : -1) * bsGamma(P, r.k, r.T, r.s) * r.oi * P * P * 0.01; return n; };
+  // per strike at today's price
+  const by = new Map();
+  for (const r of rows) { const g = bsGamma(S, r.k, r.T, r.s) * r.oi * S * S * 0.01, o = by.get(r.k) || { k: r.k, c: 0, p: 0, oiC: 0, oiP: 0 }; if (r.cp === "C") { o.c += g; o.oiC += r.oi; } else { o.p -= g; o.oiP += r.oi; } by.set(r.k, o); }
+  const ks = [...by.values()].map((o) => ({ ...o, net: o.c + o.p, abs: o.c - o.p })).sort((a, b) => a.k - b.k);
+  // profile: total GEX if price moved to P; the flip is where it crosses zero (nearest to price)
+  const prof = []; for (let f = 0.8; f <= 1.2001; f += 0.0025) prof.push({ p: S * f, g: at(S * f) });
+  let flip = null;
+  for (let i = 1; i < prof.length; i++) { const a = prof[i - 1], b = prof[i]; if ((a.g <= 0) !== (b.g <= 0)) { const x = a.p + (b.p - a.p) * (-a.g / (b.g - a.g)); if (flip === null || Math.abs(x - S) < Math.abs(flip - S)) flip = x; } }
+  const net = ks.reduce((s, o) => s + o.net, 0), callG = ks.reduce((s, o) => s + o.c, 0), putG = ks.reduce((s, o) => s + o.p, 0);
+  const near = (pct) => ks.filter((o) => Math.abs(o.k - S) / S <= pct);
+  const pos = near(0.25).filter((o) => o.net > 0 && o.k > S).sort((a, b) => b.net - a.net), neg = near(0.25).filter((o) => o.net < 0 && o.k < S).sort((a, b) => a.net - b.net);
+  const mag = near(0.06).slice().sort((a, b) => b.abs - a.abs);
+  // expected move from ATM IV of the nearest expiry at least ~1 day out
+  const exps = [...new Set(rows.map((r) => r.exp))].map((e) => rows.find((r) => r.exp === e)).sort((a, b) => a.ms - b.ms);
+  const ref = exps.find((r) => r.T > 0.8 / 365) || exps[0], atm = rows.filter((r) => r.exp === ref.exp).sort((a, b) => Math.abs(a.k - S) - Math.abs(b.k - S)).slice(0, 4), iv = atm.reduce((s, r) => s + r.s, 0) / atm.length;
+  const v = { S, ks, prof, flip, net, callG, putG, regime: net >= 0 ? 1 : -1, above: flip === null ? net >= 0 : S >= flip,
+    P: pos.slice(0, 2), N: neg.slice(0, 2), A: mag.slice(0, 2), iv, em1: S * iv * Math.sqrt(1 / 365), em7: S * iv * Math.sqrt(7 / 365), mp: TA.maxPain(rows.filter((r) => r.exp === exps[0].exp)), mpExp: exps[0], n: rows.length };
+  GEXM = { key, v }; return v;
+}
+const gexUsd = (v) => (ok(v) ? (v < 0 ? "−" : "+") + usd(Math.abs(v)) : "–");
+const distTxt = (p, S) => { const d = ((p - S) / S) * 100; return `${d >= 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}%`; };
+function gexLevels(g) {
+  const L = [];
+  if (ok(g.flip)) L.push({ id: "FLIP", name: "GEX flip", p: g.flip, cls: "gflip", why: "Above it dealers dampen moves (positive gamma). Below it they chase moves (negative gamma)." });
+  g.P.forEach((o, i) => L.push({ id: "P" + (i + 1), name: i ? "Call wall 2" : "Call wall", p: o.k, cls: "gp", why: `Biggest positive gamma above price (${gexUsd(o.net)}). Dealers sell into rallies here, so expect resistance or a slow grind.` }));
+  g.N.forEach((o, i) => L.push({ id: "N" + (i + 1), name: i ? "Put wall 2" : "Put wall · vol trigger", p: o.k, cls: "gn", why: `Biggest negative gamma below price (${gexUsd(o.net)}). Losing it can speed up selling as dealers hedge.` }));
+  g.A.forEach((o, i) => L.push({ id: "A" + (i + 1), name: "Magnet", p: o.k, cls: "ga", why: `Most total gamma near price (${usd(o.abs)}). Price often gets pulled toward and pinned around it, especially into expiry.` }));
+  if (ok(g.mp)) L.push({ id: "MP", name: `Max pain · ${new Date(g.mpExp.ms).toLocaleDateString([], { month: "short", day: "numeric" })}`, p: g.mp, cls: "gm", why: "Strike where the most option value expires worthless at the nearest expiry." });
+  return L;
+}
+function gexRead(g) {
+  const S = g.S, f = g.flip, out = [];
+  if (ok(f)) out.push(S >= f ? `<b class="up">Positive gamma.</b> Price is ${distTxt(S, f).replace("+", "")} above the flip (${n0(f)}). Dealers buy dips and sell rips, so expect tighter ranges, mean reversion and pinning toward magnets. Breakouts tend to stall at call walls.`
+    : `<b class="dn">Negative gamma.</b> Price is ${distTxt(S, f).replace("−", "")} below the flip (${n0(f)}). Dealers sell into drops and buy into rallies, so moves extend and wicks run further. Don't blindly fade breakdowns.`);
+  else out.push(g.net >= 0 ? `<b class="up">Positive gamma</b> across the whole ±20% range: dealers dampen moves.` : `<b class="dn">Negative gamma</b> across the whole ±20% range: dealers amplify moves.`);
+  const n1 = g.N[0], p1 = g.P[0], a1 = g.A[0];
+  if (n1) out.push(`Downside trigger: <b>${n0(n1.k)}</b> (${distTxt(n1.k, S)}). A 30m close below it raises the odds of a fast leg${g.N[1] ? ` toward <b>${n0(g.N[1].k)}</b>` : ""}.`);
+  if (ok(f) && S < f) out.push(`Upside: reclaiming <b>${n0(f)}</b> on a 4h close flips the regime to positive gamma, where vol calms down${a1 ? ` and <b>${n0(a1.k)}</b> acts as a magnet` : ""}.`);
+  else if (p1) out.push(`Upside cap: <b>${n0(p1.k)}</b> (${distTxt(p1.k, S)}) is the call wall. Expect selling into it unless spot flow is strong.`);
+  out.push(`Options imply about <b>±$${n0(g.em1)}</b> a day (±$${n0(g.em7)} a week) from ${(g.iv * 100).toFixed(0)}% ATM IV.`);
+  return out.map((x) => `<li>${x}</li>`).join("");
+}
+function drawGex() {
+  const el = $("#gexTop"); if (!el) return;
+  const exps = live("dbOpt") ? [...new Set(D.dbOpt.rows.filter((r) => r.ms > Date.now()).map((r) => r.exp))].map((e) => ({ e, ms: D.dbOpt.rows.find((r) => r.exp === e).ms })).sort((a, b) => a.ms - b.ms).slice(0, 6) : [];
+  if (ST.gexExp !== "all" && !exps.some((x) => x.e === ST.gexExp)) ST.gexExp = "all";
+  $("#gexSeg").innerHTML = `<button data-gexp="all" aria-pressed="${ST.gexExp === "all"}">Total</button>` + exps.map((x) => `<button data-gexp="${x.e}" aria-pressed="${ST.gexExp === x.e}">${new Date(x.ms).toLocaleDateString([], { month: "short", day: "numeric" })}</button>`).join("");
+  const g = gexCalc(ST.gexExp);
+  if (!g) { el.innerHTML = unavail("dbOpt", "Loading Deribit options…"); $("#gexLv").innerHTML = ""; $("#gexBars").innerHTML = ""; $("#gexRead").innerHTML = ""; return; }
+  const pos = ok(g.flip) ? g.S >= g.flip : g.net >= 0;
+  el.innerHTML = `<div class="gkpi"><div class="${pos ? "gpos" : "gneg"}"><i>Regime</i><b>${pos ? "Positive gamma" : "Negative gamma"}</b><i>${pos ? "dampened · mean-reverting" : "amplified · trending"}</i></div>
+    <div><i>GEX flip</i><b>${ok(g.flip) ? n0(g.flip) : "none in ±20%"}</b><i>${ok(g.flip) ? `price ${distTxt(g.S, g.flip)} from it` : ""}</i></div>
+    <div><i>Net GEX per 1%</i><b class="${cls(g.net)}">${gexUsd(g.net)}</b><i>calls ${gexUsd(g.callG)} · puts ${gexUsd(g.putG)}</i></div>
+    <div><i>Expected move</i><b>±$${n0(g.em1)}</b><i>1 day · ±$${n0(g.em7)} 1 week</i></div></div>`;
+  $("#gexRead").innerHTML = `<ul class="gread">${gexRead(g)}</ul>`;
+  $("#gexLv").innerHTML = gexLevels(g).sort((a, b) => b.p - a.p).map((l) => `<div class="glv ${l.cls}"><span class="gid">${l.id}</span><span><b>${l.name}</b><i>${l.why}</i></span><span class="gp2"><b>${n0(l.p)}</b><i>${distTxt(l.p, g.S)}</i></span></div>`).join("");
+  drawGexBars(g);
+}
+function drawGexBars(g) {
+  const S = g.S, ks = g.ks.filter((o) => Math.abs(o.k - S) / S <= (ST.gexWide ? 0.25 : 0.12) && (Math.abs(o.net) > 0 || o.abs > 0)).sort((a, b) => b.k - a.k);
+  const mx = Math.max(1, ...ks.map((o) => Math.max(Math.abs(o.net), ST.gexSplit ? Math.max(o.c, -o.p) : 0))), tags = new Map();
+  gexLevels(g).forEach((l) => { if (l.id !== "FLIP") tags.set(l.p, (tags.get(l.p) || []).concat(l.id)); });
+  const ent = ks.map((o) => ({ p: o.k, o })).concat([{ p: S, m: ["Price", "gmp"] }], ok(g.flip) ? [{ p: g.flip, m: ["GEX flip", "gmf"] }] : []).sort((a, b) => b.p - a.p);
+  const w = (v) => Math.min(50, (Math.abs(v) / mx) * 50).toFixed(2);
+  const html = ent.map(({ p, o, m }) => {
+    if (m) return `<div class="gmark ${m[1]}"><span>${m[0]} ${n0(p)}</span></div>`;
+    const bar = ST.gexSplit ? `<i class="gb gbn" style="width:${w(o.p)}%;right:50%"></i><i class="gb gbp" style="width:${w(o.c)}%;left:50%"></i>`
+      : o.net >= 0 ? `<i class="gb gbp" style="width:${w(o.net)}%;left:50%"></i>` : `<i class="gb gbn" style="width:${w(o.net)}%;right:50%"></i>`;
+    const t = tags.get(o.k) || [];
+    return `<div class="grow" title="calls ${gexUsd(o.c)} · puts ${gexUsd(o.p)} · OI ${n0(o.oiC)} C / ${n0(o.oiP)} P"><span class="gk">${kfmt(o.k)}</span><span class="gbar">${bar}</span><span class="gv ${cls(o.net)}">${t.map((x) => `<em class="gt ${x[0] === "P" ? "gp" : x[0] === "N" ? "gn" : x[0] === "A" ? "ga" : "gm"}">${x}</em>`).join("")}${usd(Math.abs(o.net)).replace("$", o.net < 0 ? "−$" : "$")}</span></div>`;
+  }).join("");
+  $("#gexCtl").innerHTML = `<span class="seg"><button data-gsplit="0" aria-pressed="${!ST.gexSplit}">Net</button><button data-gsplit="1" aria-pressed="${!!ST.gexSplit}">Calls vs puts</button></span><span class="seg"><button data-gwide="0" aria-pressed="${!ST.gexWide}">±12%</button><button data-gwide="1" aria-pressed="${!!ST.gexWide}">±25%</button></span>`;
+  $("#gexBars").innerHTML = html || `<div class="unavail">No open interest near price for this expiry.</div>`;
+}
+// main chart layer (Layers → GEX levels), always the Total view
+function gexHlines(L, C) {
+  const g = gexCalc("all"); if (!g) return;
+  for (const l of gexLevels(g)) {
+    const col = l.cls === "gp" ? C.up : l.cls === "gn" ? C.dn : l.cls === "ga" ? C.purple : l.cls === "gflip" ? "#e8c547" : C.fg3;
+    L.hlines.push({ p: l.p, color: col, w: l.id === "FLIP" ? 1.8 : 1.3, dash: l.id === "FLIP" ? [7, 4] : l.id === "MP" ? [1, 4] : [3, 3], alpha: 0.9, tag: `${l.id === "FLIP" ? "GEX flip" : l.id} ${kfmt(l.p)}`, prio: l.id === "FLIP" ? 66 : l.id === "MP" ? 30 : 60 });
+  }
+}
+function drawGexOverview() {
+  const el = $("#ovGex"); if (!el) return; const g = gexCalc("all");
+  if (!g) { el.innerHTML = unavail("dbOpt", "Loading Deribit options…"); return; }
+  const pos = ok(g.flip) ? g.S >= g.flip : g.net >= 0, n1 = g.N[0], p1 = g.P[0], a1 = g.A[0];
+  el.innerHTML = `<div class="govr"><b class="${pos ? "up" : "dn"}">${pos ? "Positive gamma · dampened" : "Negative gamma · moves extend"}</b>
+    <span>Flip <b>${ok(g.flip) ? n0(g.flip) : "–"}</b></span>${a1 ? `<span>Magnet <b>${n0(a1.k)}</b></span>` : ""}${n1 ? `<span>Put wall <b class="dn">${n0(n1.k)}</b></span>` : ""}${p1 ? `<span>Call wall <b class="up">${n0(p1.k)}</b></span>` : ""}<span>1-day move <b>±$${n0(g.em1)}</b></span></div>
+    <button class="btn" data-gogex style="margin-top:8px">GEX detail →</button>`;
+}
+document.addEventListener("click", (e) => {
+  const x = e.target.closest("[data-gexp]"); if (x) { ST.gexExp = x.dataset.gexp; LS.set("gexExp", ST.gexExp); drawGex(); return; }
+  const s = e.target.closest("[data-gsplit]"); if (s) { ST.gexSplit = s.dataset.gsplit === "1"; drawGex(); return; }
+  const w = e.target.closest("[data-gwide]"); if (w) { ST.gexWide = w.dataset.gwide === "1"; drawGex(); return; }
+  if (e.target.closest("[data-gogex]")) { setTab("gex"); window.scrollTo({ top: 0 }); }
+});
+const _d5 = drawStage2;
+drawStage2 = function (tab) {
+  _d5(tab);
+  try { if (tab === "gex") drawGex(); if (tab === "overview") drawGexOverview(); } catch (e) { console.error(e); }
+};
+if (typeof syncCtl === "function") syncCtl();
+render();
 
 </script>
 <script>new MutationObserver(()=>{try{recolorCharts();render();}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});</script>

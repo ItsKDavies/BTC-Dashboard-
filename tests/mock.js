@@ -3,6 +3,16 @@ const now = Math.floor(Date.now()/1000);
 function kl(interval, limit){ const sec={ '5m':300,'15m':900,'30m':1800,'1h':3600,'4h':14400,'1d':86400 }[interval]; const out=[]; let p=80000; const start=(Math.floor(now/sec)-limit+1)*sec;
   for(let i=0;i<limit;i++){ const o=p, c=p+(Math.sin(i/7)*60)+(Math.random()-0.5)*80; const h=Math.max(o,c)+30, l=Math.min(o,c)-30, v=50+Math.random()*100; out.push([ (start+i*sec)*1000, o.toFixed(2), h.toFixed(2), l.toFixed(2), c.toFixed(2), v.toFixed(4), (start+i*sec+sec)*1000-1, (v*c).toFixed(2), 1000, (v*(0.4+Math.random()*0.2)).toFixed(4), '0','0']); p=c; } return out; }
 const rub = (n, f, sec=300) => Array.from({length:n}, (_,i)=>[String((Math.floor(now/sec)*sec - i*sec)*1000), ...f(i)]);
+function sampleRss(host) {
+  const H = [["Sample: Spot bitcoin ETFs log $480M net inflows as BTC holds near $78K", 0.4], ["Sample: SEC delays decision on staking in ether ETFs", 2.2], ["Sample: Fed's Powell signals patience on rate cuts after hot CPI print", 1.1],
+    ["Sample: DeFi lender drained of $40M in bridge exploit", 3.5], ["Sample: Bitcoin options worth $5B expire Friday; max pain near $80K", 5], ["Sample: Bitcoin slides as $300M in longs liquidated", 0.9],
+    ["Sample: Strategy buys another 2,000 BTC", 7], ["Sample: Senate committee advances crypto market structure bill", 9], ["Sample: Top 5 altcoins to watch this week", 4], ["Sample: Solana memecoin volume jumps", 12], ["Sample: Ethereum developers set date for next upgrade", 20]];
+  const n = { "www.coindesk.com": "CoinDesk", "cointelegraph.com": "Cointelegraph", "www.theblock.co": "The Block", "decrypt.co": "Decrypt", "bitcoinmagazine.com": "Bitcoin Magazine", "news.google.com": "Google News" }[host];
+  const k = Object.keys({ "www.coindesk.com": 0, "cointelegraph.com": 1, "www.theblock.co": 2, "decrypt.co": 3, "bitcoinmagazine.com": 4, "news.google.com": 5 }).indexOf(host);
+  const items = H.filter((_, i) => (i + k) % 3 !== 0).map(([t, h], i) => `<item><title>${t}${host === "news.google.com" ? " - Reuters" : ""}</title><link>https://example.com/${k}/${i}</link><pubDate>${new Date(Date.now() - (h + k * 0.1) * 36e5).toUTCString()}</pubDate><description>Sample article text for the preview. Real headlines load on the live site.</description>${host === "news.google.com" ? "<source>Reuters</source>" : ""}</item>`).join("");
+  return `<?xml version="1.0"?><rss version="2.0"><channel><title>${n}</title>${items}</channel></rss>`;
+}
+const NEWS_HOSTS = ["www.coindesk.com", "cointelegraph.com", "www.theblock.co", "decrypt.co", "bitcoinmagazine.com", "news.google.com"];
 module.exports = function(url, method){
   const u = new URL(url); const q = Object.fromEntries(u.searchParams);
   if (u.host==='data-api.binance.vision'){
@@ -29,13 +39,14 @@ module.exports = function(url, method){
   if (u.host==='api.bitget.com') return u.pathname.includes('/spot/') ? {code:'00000',data:[{lastPr:'80268',open:'80850',baseVolume:'3100',high24h:'81580',low24h:'79230'}]} : {code:'00000',data:[{lastPr:'80275',fundingRate:'0.00005',holdingAmount:'42000'}]};
   if (u.host==='www.deribit.com') {
     if (u.pathname.includes('book_summary') && q.kind==='future') return {result:[{instrument_name:'BTC-PERPETUAL',mark_price:80290,open_interest:9e8,volume_usd:1e9},{instrument_name:'BTC-31OCT26',mark_price:80330,open_interest:1e8,volume_usd:2e7},{instrument_name:'BTC-25DEC26',mark_price:81200,open_interest:3e8,volume_usd:5e7},{instrument_name:'BTC-26MAR27',mark_price:82400,open_interest:2e8,volume_usd:3e7}]};
-    if (u.pathname.includes('book_summary')) { const r=[]; for (const e of ['30OCT26','27NOV26','25DEC26']) for (let k=64000;k<=100000;k+=2000) for (const cp of ['C','P']) r.push({instrument_name:`BTC-${e}-${k}-${cp}`, open_interest: Math.max(0, 900-Math.abs(k-(cp==='C'?86000:76000))/30)*(e==='25DEC26'?3:1), volume: 10}); return {result:r}; }
+    if (u.pathname.includes('book_summary')) { const r=[]; const E = [1, 3, 8, 29, 57].map((d) => { const x = new Date(Date.now() + d * 864e5); return x.getUTCDate() + ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][x.getUTCMonth()] + String(x.getUTCFullYear()).slice(2); }); for (const e of E) for (let k=64000;k<=100000;k+=1000) for (const cp of ['C','P']) r.push({instrument_name:`BTC-${e}-${k}-${cp}`, open_interest: Math.max(0, 900-Math.abs(k-(cp==='C'?86000:76000))/30)*(e===E[3]?3:1)*(k%2000?0.4:1), volume: 10, mark_iv: 42+Math.abs(k-80000)/1500, underlying_price: 80250}); return {result:r}; }
     return {result:{mark_price:80290,funding_8h:0.00002,open_interest:900000000}}; }
   if (u.host==='futures.kraken.com') return {result:'success',ticker:{markPrice:80280,last:80280,fundingRate:0.8,openInterest:3000}};
   if (u.host==='contract.mexc.com') return {success:true,data:{lastPrice:80279,fundingRate:0.0001,holdVol:120000000}};
   if (u.host==='open-api.bingx.com') return {code:0,data:{markPrice:'80282',lastFundingRate:'0.00008'}};
   if (u.host==='api.alternative.me') return {data:[{value:'38',value_classification:'Fear'},{value:'44',value_classification:'Fear'}]};
   if (u.host==='nfs.faireconomy.media') return [{title:'Federal Funds Rate',country:'USD',date:new Date(Date.now()+864e5).toISOString(),impact:'High',forecast:'3.75%',previous:'4.00%'},{title:'JOLTS Job Openings',country:'USD',date:new Date(Date.now()-36e5).toISOString(),impact:'Medium'}];
+  if (NEWS_HOSTS.includes(u.host)) return { __xml: sampleRss(u.host) };
   if (u.host==='api.bybit.com') return {__status:403};
   if (u.host==='fapi.binance.com') return {__status:451};
   return null;

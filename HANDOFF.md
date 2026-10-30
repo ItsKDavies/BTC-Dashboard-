@@ -40,6 +40,8 @@ btc-dashboard-handoff/
 │   ├── app2.js                    stage 2: more sources, liquidations, sockets, Markets, TA/Setups/CVD/Liquidations tabs (595 lines, 63 KB)
 │   ├── chart2.js                  stage 3: canvas chart engine (replaces the old chart library), layers, big trades, sessions, My levels, Fear & Greed (381 lines, 37 KB)
 │   ├── stage4.js                  stage 4: pattern cards, mood bars, OI/longs/shorts stack, economic calendar (179 lines, 20 KB)
+│   ├── news.js                    News tab: RSS feeds via /px, story merging, rule-based importance and tone (Oct 30)
+│   ├── gex.js                     GEX tab: Black-Scholes gamma exposure from Deribit OI + mark IV, flip/walls/magnets, chart layer (Oct 30)
 │   └── _redirects                 Netlify proxy rules (the only "backend")
 ├── preview/
 │   ├── shim.js                    demo mode: fakes fetch() and WebSocket with generated sample data
@@ -78,7 +80,7 @@ There is no server application, database, queue, cron job or API key. All state 
 
 ### 1.3 Load order and the override pattern (important)
 
-Scripts load in this order at the end of `index.html`: `ta.js → app.js → app2.js → chart2.js → stage4.js`. They are classic scripts (not ES modules) sharing one global scope. Later stages **replace** earlier functions by declaring functions with the same name, and wrap `drawStage2` to add behavior:
+Scripts load in this order at the end of `index.html`: `ta.js → app.js → app2.js → chart2.js → stage4.js → news.js → gex.js`. They are classic scripts (not ES modules) sharing one global scope. Later stages **replace** earlier functions by declaring functions with the same name, and wrap `drawStage2` to add behavior:
 
 | Name | First defined | Replaced by | Effect |
 |---|---|---|---|
@@ -165,6 +167,8 @@ Status legend: **Verified** = seen working against live exchange data on the use
 | Markets | Spot BTC on 8 exchanges with spread vs Binance and volume share; Deribit futures basis (annualized); options put/call, max pain (next and biggest expiry), OI by strike; US economic calendar (high/medium impact, countdowns) | Mock-tested |
 | Derivatives | OI · longs vs shorts stack (Price, OI, Longs, Shorts; 5m/1h/1d; tap for values); perp venues table (price, funding/8h, APR, OI BTC/$, share, status); funding and OI-share bars; OKX OI, long/short and taker charts | Venues table verified (stage 1); stack mock-tested |
 | Sources | Per-source status, last OK, latency, error detail, turn on/off, Copy status report | Verified |
+| News | Top stories, news pulse (count, headline tone, themes), 48 h headline list with Important/Bitcoin/All and topic filters, "New" marks since last visit, tab badge, top 3 on Overview. Six RSS feeds (CoinDesk, Cointelegraph, The Block, Decrypt, Bitcoin Magazine, Google News search) through `/px`; same story from several outlets merged; importance = topic keywords + outlet count + BTC relevance − low-value patterns | Mock-tested |
+| GEX | Gamma exposure from Deribit options (Black-Scholes gamma × OI × S² × 1%, dealers long calls / short puts): regime, GEX flip (zero crossing of the ±20% profile), call walls, put walls, magnets, max pain, 1-day/1-week expected move from ATM IV, per-expiry selector, strike bars (net or calls vs puts), plain-language read, Overview summary, chart layer "GEX levels" | Mock-tested |
 | Trading signals | Bias score, flow read, setups, pattern bias, divergences. Display only; no orders are placed | Mock-tested |
 | Alerts | **None** (not built; offered, not selected) | — |
 
@@ -215,6 +219,7 @@ All sources are **free public endpoints with no API key**. No paid service is in
 | `wsOkT` | OKX | Big-trade bubbles<br>`wss://ws.okx.com:8443/ws/v5/public` | live | — | WebSocket | Yes |  |
 | `fng` | alternative.me | Mood gauges<br>`https://api.alternative.me/fng/?limit=30` | 600 s | 0.1 | Netlify proxy | Yes |  |
 | `pos` | OKX | Positioning charts<br>`https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BTC&period={5m/1H/1D}`<br>`https://www.okx.com/api/v5/rubik/stat/contracts/open-interest-volume?ccy=BTC&period={5m/1H/1D}` | 60 s | 2.0 | Netlify proxy | Yes |  |
+| `nwCd` `nwCt` `nwTb` `nwDc` `nwBm` `nwGn` | CoinDesk, Cointelegraph, The Block, Decrypt, Bitcoin Magazine, Google News | News tab, Overview headlines (RSS) | 300 s each | 1.2 total | Cloudflare/Netlify proxy | Yes | optional; edge-cached 5 min |
 | `cal` | ForexFactory | US events this week<br>`https://nfs.faireconomy.media/ff_calendar_thisweek.json` | 1800 s | 0.03 | Netlify proxy | Yes |  |
 
 "Netlify proxy" = requested as `/px/<name>/…` on the site and passed through by `_redirects` (counts toward Netlify credits). `getJSONp` tries the proxy first and falls back to direct.

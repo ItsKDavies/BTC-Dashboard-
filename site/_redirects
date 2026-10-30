@@ -12,3 +12,10 @@
 /px/mexcs/*    https://api.mexc.com/:splat         200
 /px/fng/*      https://api.alternative.me/:splat   200
 /px/ff/*       https://nfs.faireconomy.media/:splat 200
+# News feeds (RSS)
+/px/coindesk/* https://www.coindesk.com/:splat     200
+/px/ctg/*      https://cointelegraph.com/:splat     200
+/px/theblock/* https://www.theblock.co/:splat       200
+/px/decrypt/*  https://decrypt.co/:splat            200
+/px/btcmag/*   https://bitcoinmagazine.com/:splat   200
+/px/gnews/*    https://news.google.com/:splat       200

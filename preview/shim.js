@@ -51,7 +51,7 @@
     if (h === "api.bitget.com") return path.includes("/spot/") ? { code: "00000", data: [{ lastPr: P(-15), open: "80850", baseVolume: "3100", high24h: "81580", low24h: "79230" }] } : { code: "00000", data: [{ lastPr: P(-8), fundingRate: "0.00005", holdingAmount: "42000" }] };
     if (h === "www.deribit.com") {
       if (path.includes("book_summary") && q.kind === "future") return { result: [{ instrument_name: "BTC-PERPETUAL", mark_price: px(), open_interest: 9e8, volume_usd: 1e9 }, { instrument_name: "BTC-27NOV26", mark_price: px() * 1.004, open_interest: 1e8, volume_usd: 2e7 }, { instrument_name: "BTC-25DEC26", mark_price: px() * 1.011, open_interest: 3e8, volume_usd: 5e7 }, { instrument_name: "BTC-26MAR27", mark_price: px() * 1.027, open_interest: 2e8, volume_usd: 3e7 }] };
-      if (path.includes("book_summary")) { const r = []; for (const e of ["30OCT26", "27NOV26", "25DEC26"]) for (let k = 64000; k <= 100000; k += 2000) for (const cp of ["C", "P"]) r.push({ instrument_name: `BTC-${e}-${k}-${cp}`, open_interest: Math.max(0, 900 - Math.abs(k - (cp === "C" ? 86000 : 76000)) / 30) * (e === "25DEC26" ? 3 : 1), volume: 10 }); return { result: r }; }
+      if (path.includes("book_summary")) { const r = []; const E = [1, 3, 8, 29, 57].map((d) => { const x = new Date(Date.now() + d * 864e5); return x.getUTCDate() + ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][x.getUTCMonth()] + String(x.getUTCFullYear()).slice(2); }); for (const e of E) for (let k = 64000; k <= 100000; k += 1000) for (const cp of ["C", "P"]) r.push({ instrument_name: `BTC-${e}-${k}-${cp}`, open_interest: Math.max(0, 900 - Math.abs(k - (cp === "C" ? 86000 : 76000)) / 30) * (e === E[3] ? 3 : 1) * (k % 2000 ? 0.4 : 1) * (k === 80000 ? 2.2 : 1), volume: 10, mark_iv: 42 + Math.abs(k - 80000) / 1500, underlying_price: px() }); return { result: r }; }
       return { result: { mark_price: px() + 7, funding_8h: 0.00002, open_interest: 9e8 } };
     }
     if (h === "futures.kraken.com") return { result: "success", ticker: { markPrice: px() - 3, last: px() - 3, fundingRate: 0.8, openInterest: 3000 } };
@@ -71,10 +71,21 @@
     if (h === "fapi.binance.com") return { __status: 451 };
     return null;
   }
-  const PXMAP = { okx: "https://www.okx.com", kraken: "https://futures.kraken.com", mexc: "https://contract.mexc.com", bingx: "https://open-api.bingx.com", bybit: "https://api.bybit.com", bnf: "https://fapi.binance.com", krakens: "https://api.kraken.com", bitstamp: "https://www.bitstamp.net", gemini: "https://api.gemini.com", mexcs: "https://api.mexc.com", fng: "https://api.alternative.me", ff: "https://nfs.faireconomy.media" };
+  const PXMAP = { okx: "https://www.okx.com", kraken: "https://futures.kraken.com", mexc: "https://contract.mexc.com", bingx: "https://open-api.bingx.com", bybit: "https://api.bybit.com", bnf: "https://fapi.binance.com", krakens: "https://api.kraken.com", bitstamp: "https://www.bitstamp.net", gemini: "https://api.gemini.com", mexcs: "https://api.mexc.com", fng: "https://api.alternative.me", ff: "https://nfs.faireconomy.media", coindesk: "https://www.coindesk.com", ctg: "https://cointelegraph.com", theblock: "https://www.theblock.co", decrypt: "https://decrypt.co", btcmag: "https://bitcoinmagazine.com", gnews: "https://news.google.com" };
+  function sampleRss(host) {
+    const H = [["Sample: Spot bitcoin ETFs log $480M net inflows as BTC holds near $78K", 0.4], ["Sample: SEC delays decision on staking in ether ETFs", 2.2], ["Sample: Fed's Powell signals patience on rate cuts after hot CPI print", 1.1],
+      ["Sample: DeFi lender drained of $40M in bridge exploit", 3.5], ["Sample: Bitcoin options worth $5B expire Friday; max pain near $80K", 5], ["Sample: Bitcoin slides as $300M in longs liquidated", 0.9],
+      ["Sample: Strategy buys another 2,000 BTC", 7], ["Sample: Senate committee advances crypto market structure bill", 9], ["Sample: Top 5 altcoins to watch this week", 4], ["Sample: Solana memecoin volume jumps", 12], ["Sample: Ethereum developers set date for next upgrade", 20]];
+    const n = { "www.coindesk.com": "CoinDesk", "cointelegraph.com": "Cointelegraph", "www.theblock.co": "The Block", "decrypt.co": "Decrypt", "bitcoinmagazine.com": "Bitcoin Magazine", "news.google.com": "Google News" }[host];
+    const k = Object.keys({ "www.coindesk.com": 0, "cointelegraph.com": 1, "www.theblock.co": 2, "decrypt.co": 3, "bitcoinmagazine.com": 4, "news.google.com": 5 }).indexOf(host);
+    const items = H.filter((_, i) => (i + k) % 3 !== 0).map(([t, h], i) => `<item><title>${t}${host === "news.google.com" ? " - Reuters" : ""}</title><link>https://example.com/${k}/${i}</link><pubDate>${new Date(Date.now() - (h + k * 0.1) * 36e5).toUTCString()}</pubDate><description>Sample article text for the preview. Real headlines load on the live site.</description>${host === "news.google.com" ? "<source>Reuters</source>" : ""}</item>`).join("");
+    return `<?xml version="1.0"?><rss version="2.0"><channel><title>${n}</title>${items}</channel></rss>`;
+  }
+  const NEWS_HOSTS = ["www.coindesk.com", "cointelegraph.com", "www.theblock.co", "decrypt.co", "bitcoinmagazine.com", "news.google.com"];
   window.fetch = async function (input, opt) {
     let url = typeof input === "string" ? input : input.url; const m = /^\/px\/(\w+)(\/.*)$/.exec(url); if (m) url = PXMAP[m[1]] + m[2];
     await new Promise((r) => setTimeout(r, 60 + rnd() * 120));
+    if (NEWS_HOSTS.includes(new URL(url).host)) return new Response(sampleRss(new URL(url).host), { status: 200, headers: { "content-type": "application/rss+xml" } });
     const d = answer(url); if (d === null) throw new TypeError("Failed to fetch");
     return new Response(JSON.stringify(d), { status: d.__status || 200, headers: { "content-type": "application/json" } });
   };

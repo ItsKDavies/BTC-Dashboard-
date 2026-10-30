@@ -1,5 +1,5 @@
 const { chromium } = require('playwright'); const fs = require('fs'); const mock = require('./mock.js');
-const PX = { okx:'https://www.okx.com', kraken:'https://futures.kraken.com', mexc:'https://contract.mexc.com', bingx:'https://open-api.bingx.com', bybit:'https://api.bybit.com', bnf:'https://fapi.binance.com', krakens:'https://api.kraken.com', bitstamp:'https://www.bitstamp.net', gemini:'https://api.gemini.com', mexcs:'https://api.mexc.com', fng:'https://api.alternative.me', ff:'https://nfs.faireconomy.media' };
+const PX = { okx:'https://www.okx.com', kraken:'https://futures.kraken.com', mexc:'https://contract.mexc.com', bingx:'https://open-api.bingx.com', bybit:'https://api.bybit.com', bnf:'https://fapi.binance.com', krakens:'https://api.kraken.com', bitstamp:'https://www.bitstamp.net', gemini:'https://api.gemini.com', mexcs:'https://api.mexc.com', fng:'https://api.alternative.me', ff:'https://nfs.faireconomy.media', coindesk: 'https://www.coindesk.com', ctg: 'https://cointelegraph.com', theblock: 'https://www.theblock.co', decrypt: 'https://decrypt.co', btcmag: 'https://bitcoinmagazine.com', gnews: 'https://news.google.com' };
 const CORS_BLOCK = [/futures\.kraken\.com/, /contract\.mexc\.com/, /open-api\.bingx\.com/, /okx\.com\/api\/v5\/rubik/];
 (async () => {
   const [w,h,scheme,out] = [+process.argv[2], +process.argv[3], process.argv[4], process.argv[5]];
@@ -13,6 +13,7 @@ const CORS_BLOCK = [/futures\.kraken\.com/, /contract\.mexc\.com/, /open-api\.bi
     let target=u; const m=u.match(/^http:\/\/dash\.test\/px\/(\w+)(\/.*)$/); if (m) { target = PX[m[1]] + m[2]; proxied.add(m[1]); }
     else if (CORS_BLOCK.some(rx=>rx.test(u))) return r.abort();
     let res = null; try { res = mock(target); } catch (e) {}
+    if (res && res.__xml) return r.fulfill({ body: res.__xml, contentType:'application/rss+xml' });
     if (res && res.__status) return r.fulfill({ status: res.__status, body:'{}', headers:{'access-control-allow-origin':'*'} });
     if (res) return r.fulfill({ body: JSON.stringify(res), contentType:'application/json', headers:{'access-control-allow-origin':'*','access-control-allow-headers':'content-type'} });
     return r.abort(); });
@@ -24,7 +25,7 @@ const CORS_BLOCK = [/futures\.kraken\.com/, /contract\.mexc\.com/, /open-api\.bi
   await p.click('#bLayers');
   for (const sel of ['[data-tog="fib"]','[data-tog="avwap"]','[data-tog="sma"]','[data-tog="zones"]','[data-tog="liq"]']) { await p.click(sel); await p.waitForTimeout(150); }
   await p.waitForTimeout(400); await p.screenshot({ path: out.replace('.png','-over.png'), fullPage: true });
-  for (const t of ['ta','pat','setups','flow','liq','mkts','derivs','sources']) { await p.click(`[data-tab="${t}"]`); await p.waitForTimeout(900);
+  for (const t of ['news','gex','ta','pat','setups','flow','liq','mkts','derivs','sources']) { await p.click(`[data-tab="${t}"]`); await p.waitForTimeout(900);
     const ov = await p.evaluate(()=>{ const v=document.querySelector('.view:not([hidden])'); return { sw: document.documentElement.scrollWidth, txt: v.innerText.length, unav: [...v.querySelectorAll('.unavail')].map(x=>x.innerText.slice(0,60)) }; });
     full[t]=ov; await p.screenshot({ path: out.replace('.png',`-${t}.png`), fullPage: true }); }
   await p.click('[data-tab="overview"]');

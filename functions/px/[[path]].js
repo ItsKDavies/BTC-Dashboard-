@@ -13,9 +13,17 @@ const UP = {
   mexcs: "https://api.mexc.com",
   fng: "https://api.alternative.me",
   ff: "https://nfs.faireconomy.media",
+  // news RSS feeds
+  coindesk: "https://www.coindesk.com",
+  ctg: "https://cointelegraph.com",
+  theblock: "https://www.theblock.co",
+  decrypt: "https://decrypt.co",
+  btcmag: "https://bitcoinmagazine.com",
+  gnews: "https://news.google.com",
 };
+const NEWS = new Set(["coindesk", "ctg", "theblock", "decrypt", "btcmag", "gnews"]);
 // Seconds Cloudflare's edge may reuse a successful response (cuts repeat calls to the exchanges).
-const TTL = { fng: 3600, ff: 1800 };
+const TTL = { fng: 3600, ff: 1800, coindesk: 300, ctg: 300, theblock: 300, decrypt: 300, btcmag: 300, gnews: 300 };
 const DEFAULT_TTL = 15;
 
 export async function onRequest({ request }) {
@@ -26,7 +34,11 @@ export async function onRequest({ request }) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type", "access-control-allow-methods": "GET, POST, OPTIONS" } });
   if (request.method !== "GET" && request.method !== "POST") return new Response("Method not allowed", { status: 405 });
   const target = base + (m[2] || "/") + url.search, ttl = m[1] === "okx" && (m[2] || "").includes("/rubik/") ? 60 : TTL[m[1]] ?? DEFAULT_TTL; // OKX stats only change every 5 min
-  const init = { method: request.method, headers: { accept: "application/json", "user-agent": "Mozilla/5.0 (compatible; BTC-Dashboard)" } };
+  const news = NEWS.has(m[1]);
+  if (news && request.method !== "GET") return new Response("Method not allowed", { status: 405 });
+  const init = { method: request.method, headers: news
+    ? { accept: "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.9, */*;q=0.5", "user-agent": "Mozilla/5.0 (compatible; BTC-Dashboard/2.0 RSS reader)" }
+    : { accept: "application/json", "user-agent": "Mozilla/5.0 (compatible; BTC-Dashboard)" } };
   if (request.method === "POST") { init.body = await request.text(); init.headers["content-type"] = request.headers.get("content-type") || "application/json"; }
   else init.cf = { cacheEverything: true, cacheTtlByStatus: { "200-299": ttl, "300-599": 0 } }; // never cache errors such as 429
   let r;

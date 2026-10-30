@@ -116,9 +116,9 @@ def("dbFut", "Deribit futures", "Basis term structure", 60000, async () => {
   const j = await getJSON("https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=future");
   return { rows: (j.result || []).map((r) => ({ name: r.instrument_name, exp: expMs(r.instrument_name.split("-")[1]), mark: +r.mark_price, oi: +r.open_interest, vol: +r.volume_usd })) };
 });
-def("dbOpt", "Deribit options", "Put/call, max pain, OI by strike", 300000, async () => {
+def("dbOpt", "Deribit options", "Put/call, max pain, OI by strike, GEX", 300000, async () => {
   const j = await getJSON("https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=option");
-  const rows = (j.result || []).map((r) => { const p = r.instrument_name.split("-"); return { exp: p[1], ms: expMs(p[1]), k: +p[2], cp: p[3], oi: +r.open_interest, vol: +r.volume }; }).filter((r) => ok(r.k) && r.ms);
+  const rows = (j.result || []).map((r) => { const p = r.instrument_name.split("-"); return { exp: p[1], ms: expMs(p[1]), k: +p[2], cp: p[3], oi: +r.open_interest, vol: +r.volume, iv: +r.mark_iv, u: +r.underlying_price }; }).filter((r) => ok(r.k) && r.ms);
   if (!rows.length) throw new Error("no options"); return { rows };
 });
 
