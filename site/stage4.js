@@ -305,6 +305,86 @@ drawFlow = function () {
 };
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-fv]"); if (!b) return; ST.flowView = b.dataset.fv; LS.set("flowView", ST.flowView); drawFlow(); });
 
+
+/* ---------- Sessions tab: how Asia / London / New York sessions have traded (last ~30 days, weekdays) ---------- */
+ST.sessPick = LS.get("sessPick", "Asia");
+def("sess30", "Binance spot 30m · 31 days", "Sessions tab", 600000, async () => {
+  const a = (await getJSON(`${BN}/klines?symbol=BTCUSDT&interval=30m&limit=1000`)).map(pk);
+  const b = (await getJSON(`${BN}/klines?symbol=BTCUSDT&interval=30m&limit=500&endTime=${a[0].t * 1000 - 1}`)).map(pk);
+  const m = new Map(); [...b, ...a].forEach((x) => m.set(x.t, x)); const k = [...m.values()].sort((x, y) => x.t - y.t);
+  if (k.length < 200) throw new Error("too few candles"); return { k };
+});
+let SESC = { key: "", v: null };
+function sessStats() {
+  if (!live("sess30")) return null; const k = D.sess30.k, last = k[k.length - 1], key = SRC.sess30.st.okAt + ":" + last.t + ":" + last.c; if (SESC.key === key) return SESC.v;
+  const now = Date.now() / 1000, list = sessions(k[0].t, now + 86400), out = {};
+  for (const sd of SESS) out[sd.name] = { name: sd.name, key: sd.key, days: [], today: null };
+  for (const s of list) {
+    const tz = SESS.find((x) => x.name === s.name).tz, at = new Date((s.t0 + 60) * 1000), wd = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" }).format(at), date = new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(at);
+    if (wd === "Sat" || wd === "Sun") continue;
+    const bars = k.filter((x) => x.t >= s.t0 && x.t < s.t1); if (!bars.length || s.t0 < k[0].t) { if (s.t0 > now) out[s.name].next = s; continue; }
+    const o = bars[0].o, c = bars[bars.length - 1].c, h = Math.max(...bars.map((x) => x.h)), l = Math.min(...bars.map((x) => x.l)), done = s.t1 <= now;
+    const path = [{ m: 0, v: 0 }, ...bars.map((x) => ({ m: (x.t + 1800 - s.t0) / 60, v: ((x.c - o) / o) * 100 }))];
+    const f2 = bars.filter((x) => x.t < s.t0 + 7200), first2 = f2.length ? ((f2[f2.length - 1].c - o) / o) * 100 : null;
+    const d = { t0: s.t0, t1: s.t1, wd, date, chg: ((c - o) / o) * 100, rng: ((h - l) / o) * 100, first2, path, vol: bars.reduce((a2, x) => a2 + x.v * x.c, 0), done };
+    if (done) out[s.name].days.push(d); else out[s.name].today = d;
+  }
+  for (const o of Object.values(out)) {
+    const D2 = o.days.slice(-22), n = D2.length, up = D2.filter((x) => x.chg > 0).length, srt = D2.map((x) => x.chg).sort((a2, b2) => a2 - b2);
+    const f2 = D2.filter((x) => ok(x.first2));
+    o.n = n; o.up = up; o.dn = n - up; o.avg = n ? D2.reduce((a2, x) => a2 + x.chg, 0) / n : null; o.med = n ? srt[n >> 1] : null; o.rng = n ? D2.reduce((a2, x) => a2 + x.rng, 0) / n : null;
+    o.f2dn = f2.filter((x) => x.first2 < 0).length; o.f2n = f2.length; o.f2avg = f2.length ? f2.reduce((a2, x) => a2 + x.first2, 0) / f2.length : null; o.recent = D2;
+    o.byWd = ["Mon", "Tue", "Wed", "Thu", "Fri"].map((w) => { const x = D2.filter((d) => d.wd === w); return { w, n: x.length, up: x.filter((d) => d.chg > 0).length, avg: x.length ? x.reduce((a2, d) => a2 + d.chg, 0) / x.length : null }; });
+    let st = 0; for (let i = D2.length - 1; i >= 0; i--) { const s2 = Math.sign(D2[i].chg); if (!st) st = s2; else if (s2 !== Math.sign(st)) break; else st += s2; } o.streak = st;
+  }
+  SESC = { key, v: out }; return out;
+}
+function sessSpark(path, w, h, C, dur) {
+  if (!path || path.length < 2) return ""; const mx = Math.max(0.05, ...path.map((p) => Math.abs(p.v))), X = (m) => (m / dur) * (w - 2) + 1, Y = (v) => h / 2 - (v / mx) * (h / 2 - 2), col = path[path.length - 1].v >= 0 ? C.up : C.dn;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block"><line x1="0" x2="${w}" y1="${h / 2}" y2="${h / 2}" stroke="${C.line}" stroke-dasharray="2 2"/><polyline fill="none" stroke="${col}" stroke-width="1.6" points="${path.map((p) => `${X(p.m).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ")}"/></svg>`;
+}
+function drawSessions() {
+  const box = $("#sessCards"); if (!box) return; const C = chartColors(), S = sessStats();
+  if (!S) { box.innerHTML = unavail("sess30", "Loading a month of 30m candles…"); $("#sessPaths").innerHTML = ""; $("#sessDays").innerHTML = ""; return; }
+  const fmtD = (t) => fmtT(t, { weekday: "short", month: "short", day: "numeric" });
+  box.innerHTML = Object.values(S).map((o) => {
+    const col = C[o.key], redPct = o.n ? Math.round((o.dn / o.n) * 100) : 0, lean = o.n < 5 ? "Not enough days yet" : o.dn / o.n >= 0.6 ? "Leans red" : o.up / o.n >= 0.6 ? "Leans green" : "Coin flip";
+    const t = o.today, now = Date.now() / 1000, status = t ? `<span class="mut">Live now</span> <b class="${cls(t.chg)}">${pct(t.chg)}</b>` : o.next ? `<span class="mut">Opens ${fmtT(o.next.t0, { weekday: "short", hour: "numeric", minute: "2-digit" })}</span>` : "";
+    const dots = o.recent.slice(-10).map((d) => `<i title="${fmtD(d.t0)} ${pct(d.chg)}" style="background:${d.chg >= 0 ? C.up : C.dn}"></i>`).join("");
+    return `<div class="panel scard" style="border-top:3px solid ${col}">
+      <div class="ph"><span class="pt" style="color:${col}">${o.name}</span><span class="ftag ${lean === "Leans red" ? "dn" : lean === "Leans green" ? "up" : "mut"}" style="margin-left:auto">${lean}</span></div>
+      <div class="big"><span class="dn">Red ${o.dn}</span> <span class="mut" style="font-size:15px">of ${o.n} days</span></div>
+      <div class="sbar"><i style="width:${100 - redPct}%;background:${C.up}"></i><i style="width:${redPct}%;background:${C.dn}"></i></div>
+      <div class="sgrid"><div><span>Average</span><b class="${cls(o.avg)}">${pct(o.avg)}</b></div><div><span>Median</span><b class="${cls(o.med)}">${pct(o.med)}</b></div><div><span>Avg range</span><b>${ok(o.rng) ? o.rng.toFixed(2) + "%" : "–"}</b></div>
+        <div><span>First 2h red</span><b>${o.f2dn} of ${o.f2n}</b></div><div><span>First 2h avg</span><b class="${cls(o.f2avg)}">${pct(o.f2avg)}</b></div><div><span>Streak</span><b class="${o.streak > 0 ? "up" : "dn"}">${Math.abs(o.streak)} ${o.streak > 0 ? "green" : "red"}</b></div></div>
+      <div class="sdots" title="Last 10 sessions, oldest left">${dots}</div>
+      <div class="sub">${status}</div></div>`;
+  }).join("");
+  // paths for one session
+  const pick = S[ST.sessPick] || S.Asia, sd = SESS.find((x) => x.name === pick.name), dur = Math.max(...pick.recent.map((d) => (d.t1 - d.t0) / 60), 60);
+  $("#sessSeg").innerHTML = SESS.map((x) => `<button data-sesp="${x.name}" aria-pressed="${x.name === pick.name}">${x.name}</button>`).join("");
+  const W = cw("#sessPaths"), H = 220, pl = 6, pr = 62, all = [...pick.recent.flatMap((d) => d.path.map((p) => p.v)), ...(pick.today ? pick.today.path.map((p) => p.v) : [])], mx = Math.max(0.2, ...all.map(Math.abs)) * 1.08;
+  const X = (m) => pl + (m / dur) * (W - pl - pr), Y = (v) => H / 2 - (v / mx) * (H / 2 - 12);
+  const avgPath = []; for (let m = 0; m <= dur + 1; m += 30) { const vs = pick.recent.map((d) => { const p = d.path.find((q) => Math.abs(q.m - m) < 1); return p ? p.v : null; }).filter(ok); if (vs.length) avgPath.push({ m, v: vs.reduce((a2, b2) => a2 + b2, 0) / vs.length }); }
+  const pl2 = (path) => path.map((p) => `${X(p.m).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ");
+  let s = `<svg width="100%" viewBox="0 0 ${W} ${H + 18}" style="display:block">`;
+  for (let v = -Math.floor(mx); v <= Math.floor(mx); v += mx > 3 ? 1 : 0.5) { if (Math.abs(v) < 1e-9) continue; s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="${C.grid}"/><text x="${W - pr + 6}" y="${Y(v) + 4}" font-size="10.5" fill="${C.fg3}">${v > 0 ? "+" : ""}${v}%</text>`; }
+  s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(0)}" y2="${Y(0)}" stroke="${C.fg3}" stroke-dasharray="3 3"/><text x="${W - pr + 6}" y="${Y(0) + 4}" font-size="10.5" fill="${C.fg3}">open</text>`;
+  for (let hh = 1; hh * 60 < dur; hh++) s += `<text x="${X(hh * 60)}" y="${H + 14}" text-anchor="middle" font-size="10" fill="${C.fg3}">${hh}h</text>`;
+  pick.recent.forEach((d) => (s += `<polyline fill="none" stroke="${rgba(d.chg >= 0 ? C.up : C.dn, 0.28)}" stroke-width="1.2" points="${pl2(d.path)}"/>`));
+  if (avgPath.length > 1) s += `<polyline fill="none" stroke="${C.fg}" stroke-width="2.6" points="${pl2(avgPath)}"/><text x="${X(avgPath[avgPath.length - 1].m) - 4}" y="${Y(avgPath[avgPath.length - 1].v) - 8}" text-anchor="end" font-size="11.5" font-weight="700" fill="${C.fg}" stroke="${C.bg}" stroke-width="4" paint-order="stroke">avg ${pct(avgPath[avgPath.length - 1].v)}</text>`;
+  if (pick.today) { const tp = pick.today.path, lv = tp[tp.length - 1]; s += `<polyline fill="none" stroke="${C[pick.key]}" stroke-width="3" points="${pl2(tp)}"/><circle cx="${X(lv.m)}" cy="${Y(lv.v)}" r="4" fill="${C[pick.key]}"/><text x="${X(lv.m) + (X(lv.m) > W * 0.6 ? -8 : 8)}" y="${Y(lv.v) + (lv.v >= 0 ? -10 : 18)}" text-anchor="${X(lv.m) > W * 0.6 ? "end" : "start"}" font-size="11.5" font-weight="700" fill="${C[pick.key]}" stroke="${C.bg}" stroke-width="4" paint-order="stroke">today ${pct(lv.v)}</text>`; }
+  $("#sessPaths").innerHTML = s + `</svg><div class="src">Each thin line is one ${pick.name} session (${sd.a[0]}:${String(sd.a[1]).padStart(2, "0")}–${sd.b[0]}:${String(sd.b[1]).padStart(2, "0")} ${sd.tz.split("/")[1].replace("_", " ")} time), % from its open. Green finished up, red finished down. The thick neutral line is the average path${pick.today ? `, the bold colored line is today` : ""}.</div>`;
+  // weekday grid + day-by-day
+  const wdRow = (o) => `<tr><td class="l" style="color:${C[o.key]}">${o.name}</td>${o.byWd.map((x) => { const r = x.n ? x.up / x.n : 0.5, c = r >= 0.5 ? C.up : C.dn, a = x.n ? 0.08 + Math.abs(r - 0.5) * 0.9 : 0; return `<td style="background:${rgba(c, a)}"><b class="${x.n ? (r >= 0.5 ? "up" : "dn") : "mut"}">${x.n ? `${x.up}/${x.n}` : "–"}</b><div class="mut" style="font-size:10.5px">${pct(x.avg)}</div></td>`; }).join("")}</tr>`;
+  const days = new Map(); Object.values(S).forEach((o) => o.recent.forEach((d) => { const key = d.date; const r = days.get(key) || { t: Date.parse(d.date + "T12:00:00Z") / 1000, s: {} }; r.s[o.name] = d; days.set(key, r); }));
+  const rows = [...days.values()].sort((a2, b2) => b2.t - a2.t).slice(0, 22);
+  $("#sessDays").innerHTML = `<div class="tw"><table class="fgrid"><thead><tr><th></th>${["Mon", "Tue", "Wed", "Thu", "Fri"].map((w) => `<th>${w}</th>`).join("")}</tr></thead><tbody>${Object.values(S).map(wdRow).join("")}</tbody></table></div>
+    <div class="src" style="margin:2px 0 10px">Green sessions out of days traded, by weekday, and the average move.</div>
+    <div class="tw"><table class="sdays"><thead><tr><th class="l">Day</th>${SESS.map((x) => `<th style="color:${C[x.key]}">${x.name}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr><td class="l">${new Date(r.t * 1000).toLocaleDateString([], { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" })}</td>${SESS.map((x) => { const d = r.s[x.name]; if (!d) return `<td class="mut">–</td>`; const dd = (d.t1 - d.t0) / 60; return `<td><div class="sday">${sessSpark(d.path, 58, 20, C, dd)}<b class="${cls(d.chg)}">${pct(d.chg)}</b></div></td>`; }).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-sesp]"); if (!b) return; ST.sessPick = b.dataset.sesp; LS.set("sessPick", ST.sessPick); drawSessions(); });
+
 /* ---------- wiring ---------- */
 const _d3 = drawStage2;
 drawStage2 = function (tab) {
@@ -314,6 +394,7 @@ drawStage2 = function (tab) {
     if (tab === "derivs") drawPos();
     if (tab === "flow") drawPf();
     if (tab === "mkts") drawCal();
+    if (tab === "sess") drawSessions();
   } catch (e) { console.error(e); }
 };
-render(); ["pos", "cal", "pf"].forEach((id) => tick(id));
+render(); ["pos", "cal", "pf", "sess30"].forEach((id) => tick(id));
