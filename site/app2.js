@@ -11,9 +11,9 @@ const ATFS = ["15m", "30m", "1h", "4h", "1d"];
 const blockedErr = (msg) => { const e = new Error(msg); e.blocked = true; return e; };
 
 /* ---------- more polled sources ---------- */
-def("taK", "Binance spot 15m–1D", "TA, patterns, setups, liquidation model", 60000, async () => {
+def("taK", "Binance spot 5m–1D", "TA, patterns, setups, liquidation model", 60000, async () => {
   const lim = { "15m": 300, "30m": 300, "1h": 300, "4h": 300, "1d": 250 }, out = {};
-  await Promise.all(ATFS.map(async (tf) => { out[tf] = (await getJSON(`${BN}/klines?symbol=BTCUSDT&interval=${tf}&limit=${lim[tf]}`)).map(pk); }));
+  await Promise.all([...ATFS, "5m"].map(async (tf) => { out[tf] = (await getJSON(`${BN}/klines?symbol=BTCUSDT&interval=${tf}&limit=${lim[tf] || 300}`)).map(pk); })); // 5m is for patterns and fib only, not the TA score
   return out;
 });
 def("okxOI1h", "OKX OI hourly", "Liquidation map model", 300000, async () => {
@@ -166,7 +166,7 @@ function analysis() {
   const bias = ok(mtf) ? Math.round(0.7 * mtf + 0.3 * flow) : flow;
   const at = tfm["30m"] ? tfm["30m"].atr : null, S = TA.setups(px, Z, at, bias);
   const lv = Z.map((z) => ({ p: z.c, name: z.names[0] }));
-  const pats = { "30m": TA.candlePatterns(K["30m"], lv), "4h": TA.candlePatterns(K["4h"], lv) };
+  const pats = { "5m": K["5m"] && K["5m"].length > 30 ? TA.candlePatterns(K["5m"], lv) : [], "30m": TA.candlePatterns(K["30m"], lv), "4h": TA.candlePatterns(K["4h"], lv) };
   const cps = [...TA.chartPatterns(K["30m"], "30m"), ...TA.chartPatterns(K["1h"], "1h"), ...TA.chartPatterns(K["4h"], "4h")];
   ["30m", "4h"].forEach((tf) => { const f = pats[tf].find((p) => p.ago === 0 && p.dir); if (f) R(`${tf} ${f.name} on the last closed candle`, f.dir); });
   cps.filter((p) => p.name.startsWith("Double")).forEach((p) => R(`${p.tf} ${p.name.toLowerCase()} ${p.status}`, p.dir));
@@ -575,7 +575,7 @@ function drawStage2(tab) {
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
       if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
         const swi = ST.fibSrc !== "vis" && typeof fibSwing === "function" ? fibSwing(ST.fibSrc) : null;
-        fs.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-basis:100%"><span class="mut" style="font-size:12px">Measure from</span><span class="seg">${[["30m", "30m move"], ["1h", "1h move"], ["4h", "4h move"], ["vis", "Screen"]].map(([v2, l]) => `<button data-fibsrc="${v2}" aria-pressed="${ST.fibSrc === v2}" style="${sm}">${l}</button>`).join("")}</span>${swi ? `<span class="mut" style="font-size:11.5px">${swi.up ? "▲" : "▼"} ${n0(swi.up ? swi.lo : swi.hi)} → ${n0(swi.up ? swi.hi : swi.lo)} (${pct(((swi.up ? swi.hi / swi.lo : swi.lo / swi.hi) - 1) * 100, 1)}) since ${fmtT(swi.t0, { weekday: "short", hour: "numeric" })}</span>` : ""}</div><span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="false" style="${sm}">${ST.fibOpen ? "Hide levels ▴" : "Show levels ▾"}</button></span>` +
+        fs.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-basis:100%"><span class="mut" style="font-size:12px">Measure from</span><span class="seg">${[["5m", "5m move"], ["30m", "30m move"], ["1h", "1h move"], ["4h", "4h move"], ["vis", "Screen"]].map(([v2, l]) => `<button data-fibsrc="${v2}" aria-pressed="${ST.fibSrc === v2}" style="${sm}">${l}</button>`).join("")}</span>${swi ? `<span class="mut" style="font-size:11.5px">${swi.up ? "▲" : "▼"} ${n0(swi.up ? swi.lo : swi.hi)} → ${n0(swi.up ? swi.hi : swi.lo)} (${pct(((swi.up ? swi.hi / swi.lo : swi.lo / swi.hi) - 1) * 100, 1)}) since ${fmtT(swi.t0, { weekday: "short", hour: "numeric" })}</span>` : ""}</div><span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="false" style="${sm}">${ST.fibOpen ? "Hide levels ▴" : "Show levels ▾"}</button></span>` +
           (ST.fibOpen ? `<div style="display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%">` + FIBS.map((r) => `<button class="chip" data-fib="${r}" aria-pressed="${!ST.fibOff[r]}" style="${sm};${!ST.fibOff[r] ? `border-color:${fibColor(r)};color:${fibColor(r)}` : ""}">${r}</button>`).join("") + `</div>` : ""); }
     }
     if (tab === "ta") need("#taAssess", drawTA);

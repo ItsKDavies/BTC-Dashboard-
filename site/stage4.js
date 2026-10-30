@@ -27,13 +27,13 @@ function cardW() { const w = cw("#patGeo"); return Math.max(280, Math.floor(w >=
 let GEO = { key: "", v: null };
 function geoAll() {
   const key = SRC.taK.st.okAt; if (GEO.key === key) return GEO.v;
-  const v = []; ["30m", "1h", "4h"].forEach((tf) => TA.geoPatterns(D.taK[tf], tf).forEach((p) => v.push(p)));
+  const v = []; ["5m", "30m", "1h", "4h"].forEach((tf) => { if (D.taK[tf] && D.taK[tf].length > 60) TA.geoPatterns(D.taK[tf], tf).forEach((p) => v.push(p)); });
   GEO = { key, v }; return v;
 }
 function drawPatterns(a) {
   const C = chartColors(), W = cardW(), geo = geoAll();
   // summary strip
-  $("#patSum").innerHTML = ["30m", "1h", "4h"].map((tf) => {
+  $("#patSum").innerHTML = ["5m", "30m", "1h", "4h"].map((tf) => {
     const g = geo.filter((p) => p.tf === tf), c = (a.pats[tf] || []).filter((p) => p.ago <= 2 && p.dir && p.strength >= 2);
     const items = [...g.map((p) => `<span class="${vcls(p.dir)}">${p.name}</span>`), ...c.slice(0, 2).map((p) => `<span class="${vcls(p.dir)}">${p.name}</span>`)];
     return `<div class="psum"><b>${tf}</b><span>${items.length ? items.join(" · ") : '<span class="mut">No clear pattern</span>'}</span></div>`;
@@ -53,9 +53,9 @@ function drawPatterns(a) {
       ${miniChart(k, a0, b, { W, h: 190, segs: p.lines, dots: p.touches, hl })}
       <div class="note" style="margin-top:6px">${p.why}</div>
       <div class="pplan">${plan.join("<br>")}</div></div>`;
-  }).join("") : `<div class="panel unavail">No triangle, wedge, channel, flag or head and shoulders on 30m, 1h or 4h right now. Price isn't respecting clean trendlines.</div>`;
+  }).join("") : `<div class="panel unavail">No triangle, wedge, channel, flag or head and shoulders on 5m, 30m, 1h or 4h right now. Price isn't respecting clean trendlines.</div>`;
   // candle patterns: only meaningful, recent ones
-  const cdl = []; ["30m", "4h"].forEach((tf) => (a.pats[tf] || []).filter((p) => p.ago <= 5 && (p.dir !== 0 || p.strength >= 2) && !(p.name === "Doji" && p.strength < 2)).slice(0, 4).forEach((p) => cdl.push({ ...p, tf })));
+  const cdl = []; ["5m", "30m", "4h"].forEach((tf) => (a.pats[tf] || []).filter((p) => p.ago <= 5 && (p.dir !== 0 || p.strength >= 2) && !(p.name === "Doji" && p.strength < 2)).slice(0, 4).forEach((p) => cdl.push({ ...p, tf })));
   $("#patCdl").innerHTML = cdl.length ? cdl.map((p) => {
     const k = D.taK[p.tf].slice(0, -1), b = k.length - 1, a0 = Math.max(0, p.i - 12), hl = [];
     if (ok(p.confirm)) hl.push({ p: p.confirm, label: p.dir > 0 ? `Go ${kfmt(p.confirm)}` : p.dir < 0 ? `Go ${kfmt(p.confirm)}` : `H ${kfmt(p.confirm)}`, color: p.dir < 0 ? C.dn : C.up });
@@ -65,7 +65,7 @@ function drawPatterns(a) {
       ${miniChart(k, a0, Math.min(b, p.i + 4), { W, h: 160, pad: 3, box: { a: p.i - p.n + 1, b: p.i }, hl })}
       <div class="note" style="margin-top:6px">${esc(p.note)}.</div>
       <div class="pplan">${p.dir ? `Confirms on a close ${p.dir > 0 ? "above" : "below"} <b>${n0(p.confirm)}</b> · wrong if price ${p.dir > 0 ? "falls below" : "rises above"} <b>${n0(p.invalid)}</b>` : `Watch for a break of <b>${n0(p.lo)}–${n0(p.hi)}</b>`}</div></div>`;
-  }).join("") : `<div class="panel unavail">No meaningful candle pattern on the last few 30m or 4h candles.</div>`;
+  }).join("") : `<div class="panel unavail">No meaningful candle pattern on the last few 5m, 30m or 4h candles.</div>`;
   const dv = a.cps;
   $("#chartPats").innerHTML = dv.length ? `<div class="tw"><table><thead><tr><th>Signal</th><th class="l">TF</th><th class="l">Bias</th><th class="l">Detail</th><th>Level</th></tr></thead><tbody>${dv.map((p) => `<tr><td><b>${p.name}</b></td><td class="l">${p.tf}</td><td class="l">${biasTag(p.dir)}</td><td class="wrap">${esc(p.status)}</td><td>${n0(p.level)}</td></tr>`).join("")}</tbody></table></div>` : `<div class="unavail">No double tops/bottoms or RSI/CVD divergences right now.</div>`;
 }
