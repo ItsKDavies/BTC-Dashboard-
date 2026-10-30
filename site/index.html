@@ -121,6 +121,11 @@ body.locked{position:fixed;left:0;right:0;overflow:hidden}
 .scard .big{font-size:24px}.sbar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:8px 0 10px;opacity:.9}
 .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 10px}.sgrid div{display:flex;flex-direction:column;font-size:11.5px;color:var(--fg3)}.sgrid b{font-size:14.5px;color:var(--fg)}.sgrid b.up{color:var(--up)}.sgrid b.dn{color:var(--dn)}
 .sleg{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--fg3);margin:4px 0 2px}.sleg i{flex:1;max-width:220px;height:7px;border-radius:4px}
+.lhero{border:1px solid;border-radius:12px;padding:10px 12px;margin-bottom:10px}.lhb{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:2px 0}.lhb b{font-size:28px;font-weight:700;letter-spacing:-.5px}.lhb span{font-size:14px;color:var(--fg2)}
+.lsplit{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--weak)}.lsplitl{display:flex;justify-content:space-between;font-size:12px;margin-top:4px;gap:8px;flex-wrap:wrap}
+.lzones{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.lzones div{background:var(--bg);border:1px solid var(--weak);border-radius:9px;padding:6px 8px;display:flex;flex-direction:column;font-size:11.5px;color:var(--fg3)}.lzones b{color:var(--fg);font-size:13px}.lzones i{font-style:normal}
+.lrank{display:grid;gap:6px}.lr{display:flex;gap:8px;align-items:center}.lrn{width:22px;height:22px;border-radius:50%;background:var(--weak);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--fg2);flex:none}.lrm{flex:1;min-width:0}.lrt{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;font-size:13px}.lrt span{font-size:11.5px}.lrb{height:5px;border-radius:3px;background:var(--weak);margin-top:3px;overflow:hidden}.lrb i{display:block;height:100%;border-radius:3px}
+@media (max-width:520px){.lzones{grid-template-columns:1fr 1fr 1fr}.lzones div{padding:5px 6px}}
 .sdots{display:flex;gap:4px;margin:10px 0 4px}.sdots i{flex:1;height:10px;border-radius:3px}
 .sdays{width:100%;border-collapse:collapse}.sdays td,.sdays th{padding:5px 6px;border-top:1px solid var(--weak);font-size:12.5px;text-align:center}.sdays .l{text-align:left;white-space:nowrap;color:var(--fg2)}.sday{display:flex;align-items:center;gap:6px;justify-content:center}.sday b{min-width:52px;text-align:right}
 @media (max-width:520px){.sday svg{width:40px}.sdays td,.sdays th{padding:5px 3px;font-size:11.5px}.sday b{min-width:44px}}
@@ -339,7 +344,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
     <div class="panel"><div class="ph"><span class="pt">Liquidations over time · 15m buckets</span></div><div id="liqBars"></div></div>
     <div class="two">
       <div class="panel"><div class="ph"><span class="pt">Liquidation map · estimated</span></div><div class="ctl" id="liqCtl"></div><div id="liqTip" class="note" hidden style="border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin-bottom:6px;font-size:13px"></div><div id="liqMap"></div><div class="src">Model: new open interest each hour is spread over 5×–100× leverage; levels price has already crossed are removed. OKX hourly OI scaled to all venues. An estimate, like Coinglass's.</div></div>
-      <div class="panel"><div class="ph"><span class="pt">Biggest liquidations · 24h</span></div><div id="liqList"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Biggest liquidations</span></div><div id="liqList"></div><div class="src">Real liquidations from OKX history plus the live feeds while this page is open.</div></div>
     </div>
   </section>
 

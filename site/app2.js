@@ -415,9 +415,49 @@ function drawLiq(a) {
       <div class="tw" style="margin-top:6px"><table><thead><tr><th class="l">Biggest pools</th><th>Price</th><th>Distance</th><th>Est. size</th></tr></thead><tbody>${[...L.shorts.slice(0, 3).map((c) => [c, "Shorts", 1]), ...L.longs.slice(0, 3).map((c) => [c, "Longs", -1])].map(([c, n, d]) => `<tr><td class="l ${vcls(d)}">${n}</td><td>${n0(c.p)}</td><td>${pct(c.dist)}</td><td>${usd(c.usd)}</td></tr>`).join("")}</tbody></table></div>`;
   }
   if (L && !$("#liqTip").hidden && LSEL !== null) liqTip(LSEL);
-  const big = ev.filter((e) => e.t >= now - 86400e3).sort((x, y) => y.usd - x.usd).slice(0, 12);
-  $("#liqList").innerHTML = big.length ? `<div class="tw"><table><thead><tr><th class="l">Time</th><th class="l">Venue</th><th class="l">Side</th><th>Price</th><th>Size</th></tr></thead><tbody>${big.map((e) => `<tr><td class="l">${fmtT(e.t / 1000, { weekday: "short", hour: "numeric", minute: "2-digit" })}</td><td class="l">${e.src}</td><td class="l ${e.side === "long" ? "dn" : "up"}">${e.side === "long" ? "Long rekt" : "Short rekt"}</td><td>${n0(e.px)}</td><td><b>${usd(e.usd)}</b></td></tr>`).join("")}</tbody></table></div>` : `<div class="unavail">No liquidations recorded yet. Keep the page open; the live feed fills this in.</div>`;
+  drawLiqBig(ev, now, C);
 }
+
+/* ---------- Biggest liquidations: hero, price-and-bubbles map, price clusters, ranked list ---------- */
+ST.lbSide = LS.get("lbSide", "all"); ST.lbWin = LS.get("lbWin", 24);
+function drawLiqBig(ev, now, C) {
+  const box = $("#liqList"); if (!box) return;
+  const ms = ST.lbWin * 3600e3, inWin = ev.filter((e) => e.t >= now - ms), pick = inWin.filter((e) => ST.lbSide === "all" || e.side === ST.lbSide), px = curPx() || (inWin.length ? inWin[inWin.length - 1].px : 0);
+  const ctl = `<div class="ctl" style="margin:0 0 8px"><span class="seg">${[1, 4, 24].map((h) => `<button data-lbw="${h}" aria-pressed="${ST.lbWin === h}">${h}h</button>`).join("")}</span><span class="seg">${[["all", "All"], ["long", "Longs rekt"], ["short", "Shorts rekt"]].map(([k, l]) => `<button data-lbs="${k}" aria-pressed="${ST.lbSide === k}">${l}</button>`).join("")}</span></div>`;
+  if (!pick.length) { box.innerHTML = ctl + `<div class="unavail">No liquidations recorded in this window yet. Keep the page open; the live feed fills this in.</div>`; return; }
+  const top = pick.slice().sort((x, y) => y.usd - x.usd), big = top[0], col = (e) => (e.side === "long" ? C.dn : C.up), ago = (t) => { const m = Math.round((now - t) / 60000); return m < 60 ? `${m}m ago` : `${Math.floor(m / 60)}h ${m % 60}m ago`; };
+  const tot = pick.reduce((a2, e) => a2 + e.usd, 0), L = pick.filter((e) => e.side === "long").reduce((a2, e) => a2 + e.usd, 0), S2 = tot - L;
+  // hero: the single biggest one
+  const hero = `<div class="lhero" style="background:linear-gradient(135deg,${rgba(col(big), 0.22)},${rgba(col(big), 0.04)});border-color:${rgba(col(big), 0.45)}">
+    <div class="mut" style="font-size:11.5px;letter-spacing:.06em;text-transform:uppercase">Biggest in ${ST.lbWin}h</div>
+    <div class="lhb"><b style="color:${col(big)}">${usd(big.usd)}</b><span>${big.side === "long" ? "long" : "short"} wiped at <b>${n0(big.px)}</b></span></div>
+    <div class="mut" style="font-size:12.5px">${big.src} · ${ago(big.t)} · ${px ? `${pct(((px - big.px) / big.px) * 100)} from here` : ""}</div></div>`;
+  // split bar
+  const split = `<div class="lsplit"><div style="width:${((L / tot) * 100).toFixed(1)}%;background:linear-gradient(90deg,${rgba(C.dn, 0.9)},${rgba(C.dn, 0.55)})"></div><div style="width:${((S2 / tot) * 100).toFixed(1)}%;background:linear-gradient(90deg,${rgba(C.up, 0.55)},${rgba(C.up, 0.9)})"></div></div>
+    <div class="lsplitl"><span class="dn">Longs ${usd(L)}</span><span class="mut">${pick.length} liquidations · ${usd(tot)}</span><span class="up">Shorts ${usd(S2)}</span></div>`;
+  // map: price line with a bubble at every liquidation (time × price, size = $)
+  const W = cw("#liqList"), H = 170, pr = 58, k5 = live("k5") ? D.k5.k.filter((x) => x.t * 1000 >= now - ms) : [], t0 = now - ms, X = (t) => ((t - t0) / ms) * (W - pr);
+  const ps = [...k5.map((x) => x.h), ...k5.map((x) => x.l), ...pick.map((e) => e.px)], lo = Math.min(...ps), hi = Math.max(...ps), pad = (hi - lo) * 0.08 || 50, Y = (p) => 8 + (1 - (p - lo + pad) / (hi - lo + 2 * pad)) * (H - 16);
+  const mx = big.usd;
+  let svg = `<svg viewBox="0 0 ${W} ${H + 14}" width="100%" style="display:block;margin:10px 0 4px"><defs><radialGradient id="lbG"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>`;
+  [lo, (lo + hi) / 2, hi].forEach((p) => (svg += `<line x1="0" x2="${W - pr}" y1="${Y(p)}" y2="${Y(p)}" stroke="${C.grid}"/><text x="${W - pr + 6}" y="${Y(p) + 4}" font-size="10.5" fill="${C.fg3}">${n0(p)}</text>`));
+  if (k5.length > 1) svg += `<polyline fill="none" stroke="${C.fg3}" stroke-width="1.4" points="${k5.map((x) => `${X(x.t * 1000 + 150000).toFixed(1)},${Y(x.c).toFixed(1)}`).join(" ")}"/>`;
+  pick.slice().sort((x, y) => x.usd - y.usd).forEach((e) => { const r = Math.max(2.5, Math.sqrt(e.usd / mx) * 16), c = col(e);
+    svg += `<circle cx="${X(e.t).toFixed(1)}" cy="${Y(e.px).toFixed(1)}" r="${r.toFixed(1)}" fill="${rgba(c, 0.35)}" stroke="${c}" stroke-width="1.2"/>`; if (r > 9) svg += `<circle cx="${X(e.t).toFixed(1)}" cy="${Y(e.px).toFixed(1)}" r="${(r * 0.6).toFixed(1)}" fill="url(#lbG)"/>`; });
+  if (px) svg += `<line x1="0" x2="${W - pr}" y1="${Y(px)}" y2="${Y(px)}" stroke="${C.acc}" stroke-dasharray="3 3"/><text x="${W - pr + 6}" y="${Y(px) + 4}" font-size="10.5" font-weight="700" fill="${C.acc}">now</text>`;
+  svg += `<text x="2" y="${H + 12}" font-size="10" fill="${C.fg3}">${ST.lbWin}h ago</text><text x="${W - pr}" y="${H + 12}" font-size="10" fill="${C.fg3}" text-anchor="end">now</text></svg>`;
+  // hot zones: where the most got liquidated (price buckets)
+  const step = px > 0 ? (ST.lbWin <= 1 ? 50 : ST.lbWin <= 4 ? 100 : 250) : 100, zb = new Map();
+  pick.forEach((e) => { const b = Math.floor(e.px / step) * step, o = zb.get(b) || { p: b, L: 0, S: 0, n: 0 }; if (e.side === "long") o.L += e.usd; else o.S += e.usd; o.n++; zb.set(b, o); });
+  const zones = [...zb.values()].sort((x, y) => y.L + y.S - (x.L + x.S)).slice(0, 3);
+  const zhtml = `<div class="lzones">${zones.map((z) => `<div><b>${n0(z.p)}–${n0(z.p + step)}</b><span>${usd(z.L + z.S)} · ${z.n} hits</span><span><i class="dn">${usd(z.L)}</i> / <i class="up">${usd(z.S)}</i></span></div>`).join("")}</div>`;
+  // ranked list with size bars
+  const list = `<div class="lrank">${top.slice(0, 12).map((e, i) => `<div class="lr"><span class="lrn">${i + 1}</span><div class="lrm"><div class="lrt"><b style="color:${col(e)}">${e.side === "long" ? "Long" : "Short"} ${usd(e.usd)}</b><span class="mut">@ ${n0(e.px)} · ${e.src} · ${ago(e.t)}</span></div>
+    <div class="lrb"><i style="width:${Math.max(3, (e.usd / mx) * 100).toFixed(1)}%;background:linear-gradient(90deg,${rgba(col(e), 0.35)},${col(e)})"></i></div></div></div>`).join("")}</div>`;
+  box.innerHTML = ctl + hero + split + svg + `<div class="mut" style="font-size:11.5px;margin:-2px 0 6px">Each bubble is one liquidation at the price and time it hit; bigger bubble, bigger position. <span class="dn">Red = longs</span>, <span class="up">green = shorts</span>.</div>` +
+    `<div class="pt" style="margin:10px 0 6px">Hot zones</div>` + zhtml + `<div class="pt" style="margin:12px 0 6px">Top 12</div>` + list;
+}
+document.addEventListener("click", (e) => { const w = e.target.closest("[data-lbw]"), sd = e.target.closest("[data-lbs]"); if (!w && !sd) return; if (w) { ST.lbWin = +w.dataset.lbw; LS.set("lbWin", ST.lbWin); } if (sd) { ST.lbSide = sd.dataset.lbs; LS.set("lbSide", ST.lbSide); } render(); });
 
 let LMAP = null, LSEL = null, LKEY = "";
 function liqTip(i) {
