@@ -75,6 +75,7 @@ canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:
 .panel.full canvas.cc{touch-action:none}
 .layers{display:grid;gap:6px;margin:2px 0 8px;padding:8px 10px;border:1px solid var(--weak);border-radius:10px;background:var(--bg)}
 .lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.rng{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--fg2);min-height:30px;margin-right:6px}.rng span{min-width:56px}.rng input{width:120px;accent-color:var(--acc);margin:0}.rng b{font:600 12px var(--mono);min-width:34px;color:var(--fg)}
 .lgt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3);font-weight:600;width:84px}
 .moodg{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 .moodg .panel{background:var(--bg)}
@@ -393,6 +394,8 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       </div>
       <div id="layers" hidden class="layers">
         <div class="lg"><span class="lgt">Candles</span><button class="chip" data-tog="mono">Mono</button><button class="chip" data-tog="sess">Sessions</button></div>
+        <div class="lg"><span class="lgt">Opacity</span><label class="rng"><span>Candles</span><input type="range" id="opCdl" min="15" max="100" step="5"><b id="opCdlV"></b></label></div>
+        <div class="lg"><span class="lgt"></span><label class="rng"><span>Bubbles</span><input type="range" id="opBub" min="10" max="100" step="5"><b id="opBubV"></b></label></div>
         <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
         <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button><button class="chip" data-tog="lineLbl">Labels on lines</button></div>
         <div class="ctl" id="fibSel" hidden style="padding-left:90px;margin:-2px 0 2px"></div>
@@ -2155,7 +2158,7 @@ syncCtl(); setTab(ST.tab);
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
 Object.assign(ST, {
   heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), tlN: LS.get("tlN", "more"), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
-  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false,
+  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60),
 });
 
 /* ---------- engine ---------- */
@@ -2293,10 +2296,10 @@ class CChart {
     for (const e of Ls.bubbles || []) {
       const i = this.ti(e.t); if (i < a - 1 || i > b + 1) continue; const X = this.X(i), Yv = this.Y(e.p), r = Math.max(3, Math.min(24, Math.sqrt(e.usd / 2.5e5) * 6)), col = e.side === "buy" ? C.up : C.dn;
       bubs.push({ X, Y: Yv, r, usd: e.usd });
-      g.beginPath(); g.arc(X, Yv, r, 0, Math.PI * 2); g.fillStyle = rgba(col, 0.6); g.fill(); g.strokeStyle = col; g.lineWidth = 1.6; g.stroke();
+      g.beginPath(); g.arc(X, Yv, r, 0, Math.PI * 2); const bo = (ST.opBub ?? 60) / 100; g.fillStyle = rgba(col, bo); g.fill(); g.strokeStyle = rgba(col, Math.min(1, bo + 0.35)); g.lineWidth = 1.6; g.stroke();
     }
     // candles
-    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null, halo = bubs.length > 0;
+    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null, halo = bubs.length > 0; const ca = (ST.opCdl ?? 100) / 100; g.globalAlpha = ca;
     if (HL) for (let i = a; i <= b; i++) { const hc = HL.get(i); if (!hc) continue; const x = this.k[i], X = this.X(i), y1 = this.Y(x.h) - 6, y2 = this.Y(x.l) + 6;
       g.fillStyle = rgba(hc, 0.13); g.fillRect(X - bw / 2, y1, bw, y2 - y1); }
     for (let i = a; i <= b; i++) {
@@ -2312,6 +2315,7 @@ class CChart {
       }
       if (hc) g.restore();
     }
+    g.globalAlpha = 1;
     // indicator lines
     for (const s of Ls.lines || []) {
       g.strokeStyle = s.color; g.lineWidth = s.w || 1.2; g.setLineDash(s.dash || []); g.beginPath(); let on = false;
@@ -2842,6 +2846,10 @@ syncLow(); $("#tfSeg").addEventListener("click", () => setTimeout(() => { if (D.
 if ($("#bClean")) $("#bClean").setAttribute("aria-pressed", ST.clean);
 drawMyLevels(); initChart(); if (CC) { CC.subAdj = ST.subAdj; CC.onSplit = (v) => { ST.subAdj = v; LS.set("subAdj", v); }; } syncCtl(); render();
 ["wsBnT", "wsOkT", "fng"].forEach((id) => tick(id));
+
+/* ---------- chart opacity sliders (candles, whale bubbles) ---------- */
+[["opCdl", 100], ["opBub", 60]].forEach(([k, d]) => { const el = $("#" + k), v = $("#" + k + "V"); if (!el) return; const show = () => (v.textContent = `${ST[k]}%`);
+  el.value = ST[k] ?? d; show(); el.addEventListener("input", () => { ST[k] = +el.value; show(); if (CC) CC.dirty(); }); el.addEventListener("change", () => LS.set(k, ST[k])); });
 
 </script>
 <script>

@@ -77,6 +77,7 @@ canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:
 .panel.full canvas.cc{touch-action:none}
 .layers{display:grid;gap:6px;margin:2px 0 8px;padding:8px 10px;border:1px solid var(--weak);border-radius:10px;background:var(--bg)}
 .lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.rng{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--fg2);min-height:30px;margin-right:6px}.rng span{min-width:56px}.rng input{width:120px;accent-color:var(--acc);margin:0}.rng b{font:600 12px var(--mono);min-width:34px;color:var(--fg)}
 .lgt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3);font-weight:600;width:84px}
 .moodg{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 .moodg .panel{background:var(--bg)}
@@ -283,6 +284,8 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       </div>
       <div id="layers" hidden class="layers">
         <div class="lg"><span class="lgt">Candles</span><button class="chip" data-tog="mono">Mono</button><button class="chip" data-tog="sess">Sessions</button></div>
+        <div class="lg"><span class="lgt">Opacity</span><label class="rng"><span>Candles</span><input type="range" id="opCdl" min="15" max="100" step="5"><b id="opCdlV"></b></label></div>
+        <div class="lg"><span class="lgt"></span><label class="rng"><span>Bubbles</span><input type="range" id="opBub" min="10" max="100" step="5"><b id="opBubV"></b></label></div>
         <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
         <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button><button class="chip" data-tog="lineLbl">Labels on lines</button></div>
         <div class="ctl" id="fibSel" hidden style="padding-left:90px;margin:-2px 0 2px"></div>

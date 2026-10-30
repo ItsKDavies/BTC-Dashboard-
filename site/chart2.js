@@ -3,7 +3,7 @@
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
 Object.assign(ST, {
   heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), tlN: LS.get("tlN", "more"), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
-  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false,
+  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60),
 });
 
 /* ---------- engine ---------- */
@@ -141,10 +141,10 @@ class CChart {
     for (const e of Ls.bubbles || []) {
       const i = this.ti(e.t); if (i < a - 1 || i > b + 1) continue; const X = this.X(i), Yv = this.Y(e.p), r = Math.max(3, Math.min(24, Math.sqrt(e.usd / 2.5e5) * 6)), col = e.side === "buy" ? C.up : C.dn;
       bubs.push({ X, Y: Yv, r, usd: e.usd });
-      g.beginPath(); g.arc(X, Yv, r, 0, Math.PI * 2); g.fillStyle = rgba(col, 0.6); g.fill(); g.strokeStyle = col; g.lineWidth = 1.6; g.stroke();
+      g.beginPath(); g.arc(X, Yv, r, 0, Math.PI * 2); const bo = (ST.opBub ?? 60) / 100; g.fillStyle = rgba(col, bo); g.fill(); g.strokeStyle = rgba(col, Math.min(1, bo + 0.35)); g.lineWidth = 1.6; g.stroke();
     }
     // candles
-    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null, halo = bubs.length > 0;
+    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null, halo = bubs.length > 0; const ca = (ST.opCdl ?? 100) / 100; g.globalAlpha = ca;
     if (HL) for (let i = a; i <= b; i++) { const hc = HL.get(i); if (!hc) continue; const x = this.k[i], X = this.X(i), y1 = this.Y(x.h) - 6, y2 = this.Y(x.l) + 6;
       g.fillStyle = rgba(hc, 0.13); g.fillRect(X - bw / 2, y1, bw, y2 - y1); }
     for (let i = a; i <= b; i++) {
@@ -160,6 +160,7 @@ class CChart {
       }
       if (hc) g.restore();
     }
+    g.globalAlpha = 1;
     // indicator lines
     for (const s of Ls.lines || []) {
       g.strokeStyle = s.color; g.lineWidth = s.w || 1.2; g.setLineDash(s.dash || []); g.beginPath(); let on = false;
@@ -690,3 +691,7 @@ syncLow(); $("#tfSeg").addEventListener("click", () => setTimeout(() => { if (D.
 if ($("#bClean")) $("#bClean").setAttribute("aria-pressed", ST.clean);
 drawMyLevels(); initChart(); if (CC) { CC.subAdj = ST.subAdj; CC.onSplit = (v) => { ST.subAdj = v; LS.set("subAdj", v); }; } syncCtl(); render();
 ["wsBnT", "wsOkT", "fng"].forEach((id) => tick(id));
+
+/* ---------- chart opacity sliders (candles, whale bubbles) ---------- */
+[["opCdl", 100], ["opBub", 60]].forEach(([k, d]) => { const el = $("#" + k), v = $("#" + k + "V"); if (!el) return; const show = () => (v.textContent = `${ST[k]}%`);
+  el.value = ST[k] ?? d; show(); el.addEventListener("input", () => { ST[k] = +el.value; show(); if (CC) CC.dirty(); }); el.addEventListener("change", () => LS.set(k, ST[k])); });
