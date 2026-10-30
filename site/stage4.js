@@ -307,7 +307,7 @@ document.addEventListener("click", (e) => { const b = e.target.closest("[data-fv
 
 
 /* ---------- Sessions tab: how Asia / London / New York sessions have traded (last ~30 days, weekdays) ---------- */
-ST.sessPick = LS.get("sessPick", "Asia");
+ST.sessPick = LS.get("sessPick", "Asia"); ST.sessSort = LS.get("sessSort", "big");
 def("sess30", "Binance spot 30m · 31 days", "Sessions tab", 600000, async () => {
   const a = (await getJSON(`${BN}/klines?symbol=BTCUSDT&interval=30m&limit=1000`)).map(pk);
   const b = (await getJSON(`${BN}/klines?symbol=BTCUSDT&interval=30m&limit=500&endTime=${a[0].t * 1000 - 1}`)).map(pk);
@@ -326,7 +326,8 @@ function sessStats() {
     const o = bars[0].o, c = bars[bars.length - 1].c, h = Math.max(...bars.map((x) => x.h)), l = Math.min(...bars.map((x) => x.l)), done = s.t1 <= now;
     const path = [{ m: 0, v: 0 }, ...bars.map((x) => ({ m: (x.t + 1800 - s.t0) / 60, v: ((x.c - o) / o) * 100 }))];
     const f2 = bars.filter((x) => x.t < s.t0 + 7200), first2 = f2.length ? ((f2[f2.length - 1].c - o) / o) * 100 : null;
-    const d = { t0: s.t0, t1: s.t1, wd, date, chg: ((c - o) / o) * 100, rng: ((h - l) / o) * 100, first2, path, vol: bars.reduce((a2, x) => a2 + x.v * x.c, 0), done };
+    let sharp = null; for (const x of bars) { const v = ((x.c - x.o) / x.o) * 100; if (!sharp || Math.abs(v) > Math.abs(sharp.v)) sharp = { v, m: (x.t - s.t0) / 60 }; }
+    const d = { t0: s.t0, t1: s.t1, wd, date, sharp, chg: ((c - o) / o) * 100, rng: ((h - l) / o) * 100, first2, path, vol: bars.reduce((a2, x) => a2 + x.v * x.c, 0), done };
     if (done) out[s.name].days.push(d); else out[s.name].today = d;
   }
   for (const o of Object.values(out)) {
@@ -347,6 +348,64 @@ function sessSpark(path, w, h, C, dur) {
   if (!path || path.length < 2) return ""; const mx = Math.max(0.05, ...path.map((p) => Math.abs(p.v))), X = (m) => (m / dur) * (w - 2) + 1, Y = (v) => h / 2 - (v / mx) * (h / 2 - 2), col = path[path.length - 1].v >= 0 ? C.up : C.dn;
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block"><line x1="0" x2="${w}" y1="${h / 2}" y2="${h / 2}" stroke="${C.line}" stroke-dasharray="2 2"/><polyline fill="none" stroke="${col}" stroke-width="1.6" points="${path.map((p) => `${X(p.m).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ")}"/></svg>`;
 }
+
+let SPV = null;
+function drawSessPaths() {
+  const el = $("#spSvg"); if (!el || !SPV) return; const { pick, C, dur } = SPV, { m0, m1, vc, vs } = SPV;
+  const W = cw("#sessPaths"), H = W < 600 ? 340 : 380, pl = 6, pr = 62, pw = W - pl - pr;
+  const X = (m) => pl + ((m - m0) / (m1 - m0)) * pw, Y = (v) => H / 2 - ((v - vc) / vs) * (H / 2 - 12);
+  SPV.geo = { W, H, pl, pr, pw };
+  const avgPath = []; for (let m = 0; m <= dur + 1; m += 30) { const vals = pick.recent.map((d) => { const p = d.path.find((q) => Math.abs(q.m - m) < 1); return p ? p.v : null; }).filter(ok); if (vals.length) avgPath.push({ m, v: vals.reduce((a2, b2) => a2 + b2, 0) / vals.length }); }
+  const pl2 = (path) => path.map((p) => `${X(p.m).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ");
+  const nx = Math.max(18, Math.round(pw / 14)), ny = 30, grid = new Float32Array(nx * ny), cxw = pw / nx, chh = (H - 24) / ny;
+  let s = `<svg width="100%" viewBox="0 0 ${W} ${H + 18}" style="display:block"><defs><filter id="spBlur" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="${Math.max(3, cxw * 0.45).toFixed(1)}"/></filter><clipPath id="spClip"><rect x="${pl}" y="2" width="${pw}" height="${H - 4}"/></clipPath></defs>`;
+  // density: how many sessions passed through each cell of the current view
+  { const cx = (m) => Math.floor(((m - m0) / (m1 - m0)) * nx), cy = (v) => Math.floor(((vc + vs - v) / (2 * vs)) * ny);
+    pick.recent.forEach((d) => { const seen = new Set(); for (let i = 1; i < d.path.length; i++) { const a2 = d.path[i - 1], b2 = d.path[i], steps = Math.max(4, Math.ceil(((b2.m - a2.m) / (m1 - m0)) * nx * 3)); for (let t = 0; t <= steps; t++) { const f = t / steps, x = cx(a2.m + (b2.m - a2.m) * f), y = cy(a2.v + (b2.v - a2.v) * f); if (x < 0 || x >= nx || y < 0 || y >= ny) continue; seen.add(x * ny + y); } } seen.forEach((j) => (grid[j] += 1)); });
+    const i0 = m0 <= 0 ? Math.ceil((-m0 / (m1 - m0)) * nx) + 2 : 0, nz = []; for (let i = i0; i < nx; i++) for (let j = 0; j < ny; j++) if (grid[i * ny + j] > 0) nz.push(grid[i * ny + j]); nz.sort((a2, b2) => a2 - b2);
+    const gm = Math.max(2, nz[Math.floor(nz.length * 0.97)] || 2); SPGM = gm;
+    s += `<g filter="url(#spBlur)" clip-path="url(#spClip)">`;
+    for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) { const v = grid[i * ny + j]; if (v < 1) continue; const tt = Math.pow(Math.min(1, (v - 1) / (gm - 1)), 0.8);
+      s += `<rect x="${(pl + i * cxw).toFixed(1)}" y="${(12 + j * chh).toFixed(1)}" width="${(cxw + 0.6).toFixed(1)}" height="${(chh + 0.6).toFixed(1)}" fill="${glowColor(tt)}" fill-opacity="${(0.12 + tt * 0.78).toFixed(3)}"/>`; }
+    s += `</g>`; }
+  const gst = [0.02, 0.05, 0.1, 0.25, 0.5, 1, 2].find((g2) => vs / g2 <= 5) || 2;
+  for (let v = Math.ceil((vc - vs) / gst) * gst; v <= vc + vs + 1e-9; v = Math.round((v + gst) * 1000) / 1000) { const y = Y(v); if (y < 6 || y > H - 6) continue; const z = Math.abs(v) < 1e-9;
+    s += `<line x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}" stroke="${z ? C.fg3 : C.grid}" ${z ? 'stroke-dasharray="3 3"' : ""}/><text x="${W - pr + 6}" y="${y + 4}" font-size="10.5" fill="${C.fg3}">${z ? "open" : (v > 0 ? "+" : "") + +v.toFixed(2) + "%"}</text>`; }
+  const span = m1 - m0, tst = [10, 15, 30, 60, 120].find((t) => (pw / span) * t >= 46) || 120, fm = (m) => `${Math.floor(m / 60)}h${m % 60 ? String(m % 60).padStart(2, "0") : ""}`;
+  for (let m = Math.ceil(Math.max(0, m0) / tst) * tst; m <= m1; m += tst) { if (m <= 0) continue; s += `<text x="${X(m)}" y="${H + 14}" text-anchor="middle" font-size="10" fill="${C.fg3}">${fm(m)}</text>`; }
+  s += `<g clip-path="url(#spClip)">`; pick.recent.forEach((d) => (s += `<polyline fill="none" stroke="${rgba(d.chg >= 0 ? C.up : C.dn, 0.55)}" stroke-width="1.1" stroke-linejoin="round" points="${pl2(d.path)}"/>`));
+  if (avgPath.length > 1) s += `<polyline fill="none" stroke="${C.fg}" stroke-width="2.6" points="${pl2(avgPath)}"/>`;
+  if (pick.today) s += `<polyline fill="none" stroke="${C[pick.key]}" stroke-width="3" points="${pl2(pick.today.path)}"/>`;
+  s += `</g>`;
+  const lab = (x, y, txt, col, right) => `<text x="${x}" y="${y}" text-anchor="${right ? "end" : "start"}" font-size="11.5" font-weight="700" fill="${col}" stroke="${C.bg}" stroke-width="4" paint-order="stroke">${txt}</text>`;
+  if (avgPath.length > 1) { const la = avgPath.filter((p) => p.m <= m1).pop() || avgPath[0], x = Math.min(W - pr - 4, X(la.m) - 4), y = Y(la.v) - 8; if (y > 8 && y < H) s += lab(x, y, `avg ${pct(la.v)}`, C.fg, true); }
+  if (pick.today) { const tp = pick.today.path, lv = tp[tp.length - 1], x = X(lv.m), y = Y(lv.v);
+    if (x >= pl && x <= W - pr && y > 0 && y < H) s += `<circle cx="${x}" cy="${y}" r="4" fill="${C[pick.key]}"/>` + lab(x + (x > W * 0.6 ? -8 : 8), y + (lv.v >= 0 ? -10 : 18), `today ${pct(lv.v)}`, C[pick.key], x > W * 0.6); }
+  el.innerHTML = s + `</svg>`;
+}
+function spClamp() { const V = SPV, span = Math.max(20, Math.min(V.dur * 1.2, V.m1 - V.m0)); let m0 = V.m0; m0 = Math.max(-V.dur * 0.1, Math.min(V.dur * 1.1 - span, m0)); V.m0 = m0; V.m1 = m0 + span; V.vs = Math.max(0.04, Math.min(V.mx * 5, V.vs)); V.vc = Math.max(-V.mx * 6, Math.min(V.mx * 6, V.vc)); }
+function spZoom(fx, fy, cxFrac, cyFrac) { const V = SPV; if (!V) return; const span = V.m1 - V.m0, at = V.m0 + span * (cxFrac ?? 1), ns = span * fx; V.m0 = at - ns * (cxFrac ?? 1); V.m1 = V.m0 + ns; if (fy) { const atv = V.vc + V.vs * (1 - 2 * (cyFrac ?? 0.5)); V.vs *= fy; V.vc = atv - V.vs * (1 - 2 * (cyFrac ?? 0.5)); } spClamp(); spDraw(); }
+let SPQ = 0; const spDraw = () => { if (SPQ) return; SPQ = requestAnimationFrame(() => { SPQ = 0; drawSessPaths(); }); };
+(() => {
+  const P = new Map(); let st = null, lastTap = 0;
+  const loc = (e) => { const el = $("#spSvg"), r = el.getBoundingClientRect(), g = SPV.geo, k = g.W / r.width; return { x: (e.clientX - r.left) * k, y: (e.clientY - r.top) * k }; };
+  document.addEventListener("pointerdown", (e) => { const el = e.target.closest && e.target.closest("#spSvg"); if (!el || !SPV || !SPV.geo) return; try { el.setPointerCapture(e.pointerId); } catch (er) {} P.set(e.pointerId, loc(e));
+    const V = SPV, pts = [...P.values()]; st = { m0: V.m0, m1: V.m1, vc: V.vc, vs: V.vs, pts: pts.map((p) => ({ ...p })), moved: false }; el.style.cursor = "grabbing"; });
+  document.addEventListener("pointermove", (e) => { if (!P.has(e.pointerId) || !st) return; P.set(e.pointerId, loc(e)); const V = SPV, g = V.geo, pts = [...P.values()];
+    if (pts.length >= 2 && st.pts.length >= 2) { const [a, b] = pts, [a0, b0] = st.pts, dx0 = Math.max(24, Math.abs(a0.x - b0.x)), dx = Math.max(24, Math.abs(a.x - b.x)), dy0 = Math.abs(a0.y - b0.y), dy = Math.abs(a.y - b.y);
+      const span = (st.m1 - st.m0) * (dx0 / dx), cf = ((a0.x + b0.x) / 2 - g.pl) / g.pw, at = st.m0 + (st.m1 - st.m0) * cf; V.m0 = at - span * cf; V.m1 = V.m0 + span;
+      if (dy0 > 40) V.vs = st.vs * (dy0 / Math.max(24, dy)); st.moved = true; spClamp(); spDraw(); return; }
+    const p = pts[0], p0 = st.pts[0], dx = p.x - p0.x, dy = p.y - p0.y; if (Math.abs(dx) + Math.abs(dy) > 4) st.moved = true;
+    const dm = (dx / g.pw) * (st.m1 - st.m0); V.m0 = st.m0 - dm; V.m1 = st.m1 - dm; if (e.pointerType === "mouse") V.vc = st.vc + (dy / (g.H / 2 - 12)) * st.vs; spClamp(); spDraw(); });
+  const up = (e) => { if (!P.has(e.pointerId)) return; P.delete(e.pointerId); const el = $("#spSvg"); if (el) el.style.cursor = "grab";
+    if (!P.size && st && !st.moved && e.type === "pointerup") { const now = performance.now(); if (now - lastTap < 320) { spReset(); lastTap = 0; } else lastTap = now; }
+    if (P.size) { const V = SPV; st = { m0: V.m0, m1: V.m1, vc: V.vc, vs: V.vs, pts: [...P.values()].map((p) => ({ ...p })), moved: true }; } else st = null; };
+  document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+  document.addEventListener("wheel", (e) => { const el = e.target.closest && e.target.closest("#spSvg"); if (!el || !SPV || !SPV.geo) return; e.preventDefault(); const p = loc(e), g = SPV.geo, f = Math.exp(e.deltaY * 0.0015);
+    if (e.shiftKey) spZoom(1, f, null, (p.y - 12) / (g.H - 24)); else spZoom(f, null, (p.x - g.pl) / g.pw); }, { passive: false });
+})();
+function spReset() { if (!SPV) return; Object.assign(SPV, { m0: 0, m1: SPV.dur, vc: 0, vs: SPV.mx }); spDraw(); }
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-spz]"); if (!b) return; const z = b.dataset.spz; if (z === "reset") spReset(); else spZoom(z === "in" ? 0.7 : 1.4, z === "in" ? 0.75 : 1.33, 0.5, 0.5); });
 function drawSessions() {
   const box = $("#sessCards"); if (!box) return; const C = chartColors(), S = sessStats();
   if (!S) { box.innerHTML = unavail("sess30", "Loading a month of 30m candles…"); $("#sessPaths").innerHTML = ""; $("#sessDays").innerHTML = ""; return; }
@@ -367,37 +426,24 @@ function drawSessions() {
   // paths for one session
   const pick = S[ST.sessPick] || S.Asia, sd = SESS.find((x) => x.name === pick.name), dur = Math.max(...pick.recent.map((d) => (d.t1 - d.t0) / 60), 60);
   $("#sessSeg").innerHTML = SESS.map((x) => `<button data-sesp="${x.name}" aria-pressed="${x.name === pick.name}">${x.name}</button>`).join("");
-  // scale to the 92nd percentile so typical moves fill the height (outliers run off the edge instead of flattening everything)
-  const W = cw("#sessPaths"), H = W < 600 ? 340 : 380, pl = 6, pr = 62, all = [...pick.recent.flatMap((d) => d.path.map((p) => Math.abs(p.v))), ...(pick.today ? pick.today.path.map((p) => Math.abs(p.v)) : [])].sort((a2, b2) => a2 - b2), mx = Math.max(0.15, all[Math.floor(all.length * 0.92)] || 0.2) * 1.05;
-  const X = (m) => pl + (m / dur) * (W - pl - pr), Y = (v) => H / 2 - (v / mx) * (H / 2 - 12);
-  const avgPath = []; for (let m = 0; m <= dur + 1; m += 30) { const vs = pick.recent.map((d) => { const p = d.path.find((q) => Math.abs(q.m - m) < 1); return p ? p.v : null; }).filter(ok); if (vs.length) avgPath.push({ m, v: vs.reduce((a2, b2) => a2 + b2, 0) / vs.length }); }
-  const pl2 = (path) => path.map((p) => `${X(p.m).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ");
-  let s = `<svg width="100%" viewBox="0 0 ${W} ${H + 18}" style="display:block"><defs><filter id="spBlur" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="${Math.max(3, (W - 68) / Math.max(18, Math.round(dur / 15)) * 0.45).toFixed(1)}"/></filter><clipPath id="spClip"><rect x="${pl}" y="2" width="${W - pl - pr}" height="${H - 4}"/></clipPath></defs>`;
-  // density: how many sessions passed through each little cell; busier cells are more solid
-  { const nx = Math.max(18, Math.round(dur / 15)), ny = 30, grid = new Float32Array(nx * ny), cx = (m) => Math.min(nx - 1, Math.max(0, Math.floor((m / dur) * nx))), cy = (v) => Math.floor(((mx - v) / (2 * mx)) * ny);
-    pick.recent.forEach((d) => { const seen = new Set(); for (let i = 1; i < d.path.length; i++) { const a2 = d.path[i - 1], b2 = d.path[i]; for (let t = 0; t <= 1; t += 0.05) { const m = a2.m + (b2.m - a2.m) * t, v = a2.v + (b2.v - a2.v) * t, y = cy(v); if (y < 0 || y >= ny) continue; seen.add(cx(m) * ny + y); } } seen.forEach((j) => (grid[j] += 1)); });
-    // scale to the busiest cells away from the open (where every line starts together)
-    const nz = []; for (let i = 2; i < nx; i++) for (let j = 0; j < ny; j++) if (grid[i * ny + j] > 0) nz.push(grid[i * ny + j]); nz.sort((a2, b2) => a2 - b2);
-    const gm = Math.max(2, nz[Math.floor(nz.length * 0.97)] || 2), cwid = (W - pl - pr) / nx, ch = (H - 24) / ny;
-    s += `<g filter="url(#spBlur)" clip-path="url(#spClip)">`;
-    for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) { const v = grid[i * ny + j]; if (v < 1) continue; const tt = Math.pow(Math.min(1, (v - 1) / (gm - 1)), 0.8), a2 = 0.12 + tt * 0.78;
-      s += `<rect x="${(pl + i * cwid).toFixed(1)}" y="${(12 + j * ch).toFixed(1)}" width="${(cwid + 0.6).toFixed(1)}" height="${(ch + 0.6).toFixed(1)}" fill="${glowColor(tt)}" fill-opacity="${a2.toFixed(3)}"/>`; } s += `</g>`; SPGM = gm; }
-  const gst = mx > 3 ? 1 : mx > 1.2 ? 0.5 : mx > 0.6 ? 0.25 : 0.1; for (let v = -Math.floor(mx / gst) * gst; v <= mx + 1e-9; v = Math.round((v + gst) * 100) / 100) { if (Math.abs(v) < 1e-9) continue; s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="${C.grid}"/><text x="${W - pr + 6}" y="${Y(v) + 4}" font-size="10.5" fill="${C.fg3}">${v > 0 ? "+" : ""}${v}%</text>`; }
-  s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(0)}" y2="${Y(0)}" stroke="${C.fg3}" stroke-dasharray="3 3"/><text x="${W - pr + 6}" y="${Y(0) + 4}" font-size="10.5" fill="${C.fg3}">open</text>`;
-  for (let hh = 1; hh * 60 < dur; hh++) s += `<text x="${X(hh * 60)}" y="${H + 14}" text-anchor="middle" font-size="10" fill="${C.fg3}">${hh}h</text>`;
-  s += `<g clip-path="url(#spClip)">`; pick.recent.forEach((d) => (s += `<polyline fill="none" stroke="${rgba(d.chg >= 0 ? C.up : C.dn, 0.55)}" stroke-width="1.1" stroke-linejoin="round" points="${pl2(d.path)}"/>`)); s += `</g>`;
-  if (avgPath.length > 1) s += `<polyline fill="none" stroke="${C.fg}" stroke-width="2.6" points="${pl2(avgPath)}"/><text x="${X(avgPath[avgPath.length - 1].m) - 4}" y="${Y(avgPath[avgPath.length - 1].v) - 8}" text-anchor="end" font-size="11.5" font-weight="700" fill="${C.fg}" stroke="${C.bg}" stroke-width="4" paint-order="stroke">avg ${pct(avgPath[avgPath.length - 1].v)}</text>`;
-  if (pick.today) { const tp = pick.today.path, lv = tp[tp.length - 1]; s += `<polyline fill="none" stroke="${C[pick.key]}" stroke-width="3" points="${pl2(tp)}"/><circle cx="${X(lv.m)}" cy="${Y(lv.v)}" r="4" fill="${C[pick.key]}"/><text x="${X(lv.m) + (X(lv.m) > W * 0.6 ? -8 : 8)}" y="${Y(lv.v) + (lv.v >= 0 ? -10 : 18)}" text-anchor="${X(lv.m) > W * 0.6 ? "end" : "start"}" font-size="11.5" font-weight="700" fill="${C[pick.key]}" stroke="${C.bg}" stroke-width="4" paint-order="stroke">today ${pct(lv.v)}</text>`; }
-  const leg = `<div class="sleg"><span>1 session</span><i style="background:linear-gradient(90deg,${[0, 0.25, 0.5, 0.75, 1].map((t) => glowColor(t)).join(",")})"></i><span>${Math.round(SPGM)}+ overlapping</span></div>`;
-  $("#sessPaths").innerHTML = s + `</svg>${leg}<div class="src">Each thin line is one ${pick.name} session (${sd.a[0]}:${String(sd.a[1]).padStart(2, "0")}–${sd.b[0]}:${String(sd.b[1]).padStart(2, "0")} ${sd.tz.split("/")[1].replace("_", " ")} time), % from its open. Green finished up, red finished down. The glow shows how many sessions passed through each spot, from cool blue (one) to hot yellow (the most); extreme days run off the edge so normal moves stay readable. The thick neutral line is the average path${pick.today ? `, the bold colored line is today` : ""}.</div>`;
+  const all = [...pick.recent.flatMap((d) => d.path.map((p) => Math.abs(p.v))), ...(pick.today ? pick.today.path.map((p) => Math.abs(p.v)) : [])].sort((a2, b2) => a2 - b2), mx = Math.max(0.15, all[Math.floor(all.length * 0.92)] || 0.2) * 1.05;
+  if (!SPV || SPV.name !== pick.name || SPV.dur !== dur) SPV = { name: pick.name, dur, mx, m0: 0, m1: dur, vc: 0, vs: mx };
+  SPV.pick = pick; SPV.sd = sd; SPV.C = C;
+  if (!$("#spSvg")) $("#sessPaths").innerHTML = `<div class="ctl" style="margin:0 0 4px"><span class="seg"><button data-spz="in" style="min-width:34px">+</button><button data-spz="out" style="min-width:34px">−</button><button data-spz="reset">Reset</button></span><span class="mut" style="font-size:11.5px">Drag to scroll · pinch or wheel to zoom · double-tap to reset</span></div><div id="spSvg" style="touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none"></div><div id="spLeg"></div>`;
+  drawSessPaths();
+  $("#spLeg").innerHTML = `<div class="sleg"><span>1 session</span><i style="background:linear-gradient(90deg,${[0, 0.25, 0.5, 0.75, 1].map((t) => glowColor(t)).join(",")})"></i><span>${Math.round(SPGM)}+ overlapping</span></div><div class="src">Each thin line is one ${pick.name} session (${sd.a[0]}:${String(sd.a[1]).padStart(2, "0")}–${sd.b[0]}:${String(sd.b[1]).padStart(2, "0")} ${sd.tz.split("/")[1].replace("_", " ")} time), % from its open. Green finished up, red finished down. The glow shows how many sessions passed through each spot, from cool blue (one) to hot yellow (the most); extreme days run off the edge so normal moves stay readable. The thick neutral line is the average path${pick.today ? `, the bold colored line is today` : ""}.</div>`;
   // weekday grid + day-by-day
   const wdRow = (o) => `<tr><td class="l" style="color:${C[o.key]}">${o.name}</td>${o.byWd.map((x) => { const r = x.n ? x.up / x.n : 0.5, c = r >= 0.5 ? C.up : C.dn, a = x.n ? 0.08 + Math.abs(r - 0.5) * 0.9 : 0; return `<td style="background:${rgba(c, a)}"><b class="${x.n ? (r >= 0.5 ? "up" : "dn") : "mut"}">${x.n ? `${x.up}/${x.n}` : "–"}</b><div class="mut" style="font-size:10.5px">${pct(x.avg)}</div></td>`; }).join("")}</tr>`;
   const days = new Map(); Object.values(S).forEach((o) => o.recent.forEach((d) => { const key = d.date; const r = days.get(key) || { t: Date.parse(d.date + "T12:00:00Z") / 1000, s: {} }; r.s[o.name] = d; days.set(key, r); }));
-  const rows = [...days.values()].sort((a2, b2) => b2.t - a2.t).slice(0, 22);
+  const rows = [...days.values()].sort((a2, b2) => b2.t - a2.t).slice(0, 22), hm = (m) => `${Math.floor(m / 60)}h${String(Math.round(m % 60)).padStart(2, "0")}`;
+  const dayTable = `<div class="tw"><table class="sdays"><thead><tr><th class="l">Day</th>${SESS.map((x) => `<th style="color:${C[x.key]}">${x.name}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr><td class="l">${new Date(r.t * 1000).toLocaleDateString([], { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" })}</td>${SESS.map((x) => { const d = r.s[x.name]; if (!d) return `<td class="mut">–</td>`; const dd = (d.t1 - d.t0) / 60; return `<td><div class="sday">${sessSpark(d.path, 58, 20, C, dd)}<b class="${cls(d.chg)}">${pct(d.chg)}</b></div></td>`; }).join("")}</tr>`).join("")}</tbody></table></div>`;
+  const big = Object.values(S).flatMap((o) => o.recent.map((d) => ({ ...d, name: o.name, key: o.key }))).sort((a2, b2) => Math.abs(b2.chg) - Math.abs(a2.chg)).slice(0, 15);
+  const bigTable = `<div class="tw"><table class="sdays"><thead><tr><th class="l">Session</th><th>Path</th><th>Move</th><th>Range</th><th>Sharpest 30m</th></tr></thead><tbody>${big.map((d) => `<tr><td class="l"><b style="color:${C[d.key]}">${d.name}</b><div class="mut" style="font-size:11px">${new Date(Date.parse(d.date + "T12:00:00Z")).toLocaleDateString([], { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" })}</div></td><td>${sessSpark(d.path, 64, 22, C, (d.t1 - d.t0) / 60)}</td><td><b class="${cls(d.chg)}">${pct(d.chg)}</b></td><td>${d.rng.toFixed(2)}%</td><td>${d.sharp ? `<b class="${cls(d.sharp.v)}">${pct(d.sharp.v)}</b><div class="mut" style="font-size:11px">${hm(d.sharp.m)} in</div>` : "–"}</td></tr>`).join("")}</tbody></table></div><div class="src">The 15 biggest session moves of the month, any session. "Sharpest 30m" is the single biggest half-hour candle inside that session and how long after the open it hit.</div>`;
   $("#sessDays").innerHTML = `<div class="tw"><table class="fgrid"><thead><tr><th></th>${["Mon", "Tue", "Wed", "Thu", "Fri"].map((w) => `<th>${w}</th>`).join("")}</tr></thead><tbody>${Object.values(S).map(wdRow).join("")}</tbody></table></div>
     <div class="src" style="margin:2px 0 10px">Green sessions out of days traded, by weekday, and the average move.</div>
-    <div class="tw"><table class="sdays"><thead><tr><th class="l">Day</th>${SESS.map((x) => `<th style="color:${C[x.key]}">${x.name}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr><td class="l">${new Date(r.t * 1000).toLocaleDateString([], { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" })}</td>${SESS.map((x) => { const d = r.s[x.name]; if (!d) return `<td class="mut">–</td>`; const dd = (d.t1 - d.t0) / 60; return `<td><div class="sday">${sessSpark(d.path, 58, 20, C, dd)}<b class="${cls(d.chg)}">${pct(d.chg)}</b></div></td>`; }).join("")}</tr>`).join("")}</tbody></table></div>`;
+    <div class="ctl" style="margin:0 0 6px"><span class="seg"><button data-ssort="big" aria-pressed="${ST.sessSort === "big"}">Largest moves</button><button data-ssort="day" aria-pressed="${ST.sessSort === "day"}">Day by day</button></span></div>` + (ST.sessSort === "big" ? bigTable : dayTable);
 }
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-ssort]"); if (!b) return; ST.sessSort = b.dataset.ssort; LS.set("sessSort", ST.sessSort); drawSessions(); });
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-sesp]"); if (!b) return; ST.sessPick = b.dataset.sesp; LS.set("sessPick", ST.sessPick); drawSessions(); });
 
 /* ---------- wiring ---------- */

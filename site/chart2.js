@@ -104,7 +104,7 @@ class CChart {
     const L = this.layout(); this.yRange(); const [a, b] = this.vis(), bw = this.bw();
     { const gr = g.createLinearGradient(0, 0, 0, L.mainH); gr.addColorStop(0, rgba(C.acc, 0.05)); gr.addColorStop(0.55, rgba(C.acc, 0)); gr.addColorStop(1, rgba(C.purple || C.acc, 0.05)); g.fillStyle = gr; g.fillRect(0, 0, L.r, L.mainH); }
     // grid
-    const ys = niceStep(this.yHi - this.yLo, Math.max(3, Math.round(L.mainH / 70))), yt = [];
+    const ys = niceStep(this.yHi - this.yLo, Math.max(4, Math.round(L.mainH / 46))), yt = [];
     g.strokeStyle = C.grid; g.lineWidth = 1; g.beginPath();
     for (let v = Math.ceil(this.yLo / ys) * ys; v <= this.yHi; v += ys) { const y = Math.round(this.Y(v)) + 0.5; g.moveTo(0, y); g.lineTo(L.r, y); yt.push([v, y]); }
     const secPx = this.sec / bw, cands = [300, 900, 1800, 3600, 7200, 14400, 21600, 43200, 86400, 172800, 604800, 1209600, 2592000], step = cands.find((s) => s / secPx >= 90) || 2592000;
@@ -275,8 +275,11 @@ class CChart {
     if (this.cross && this.cross.y < L.mainH) tags.push({ p: this.P(this.cross.y), text: n0(this.P(this.cross.y)), color: C.fg, prio: 2000, solid: true, cross: true });
     const placed = [];
     tags.sort((x, y) => y.prio - x.prio).forEach((t) => { const y = this.Y(t.p); if (y < 7 || y > L.mainH - 7) return; if (placed.some((q) => Math.abs(q.y - y) < 15)) return; placed.push({ ...t, y }); });
-    g.fillStyle = C.fg3; g.textAlign = "left";
-    for (const [v, y] of yt) if (y > 8 && y < L.mainH - 8 && !placed.some((q) => Math.abs(q.y - y) < 13)) g.fillText(n0(v), L.r + 6, y);
+    // price scale: evenly spaced round numbers with tick marks; the nearest one to price is brighter
+    g.textAlign = "left"; g.font = "500 12px IBM Plex Sans, system-ui, sans-serif"; g.strokeStyle = C.line; g.lineWidth = 1;
+    for (const [v, y] of yt) { if (y < 8 || y > L.mainH - 8) continue; g.beginPath(); g.moveTo(L.r, y); g.lineTo(L.r + 4, y); g.stroke();
+      if (placed.some((q) => Math.abs(q.y - y) < 13)) continue; g.fillStyle = Math.abs(v - last.c) < ys / 2 ? C.fg : C.fg2 || C.fg3; g.fillText(n0(v), L.r + 8, y); }
+    g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
     for (const t of placed) this.tag(g, L, t.y, t.text, t.color, t.solid, t.cross);
     // countdown to this candle's close, under the live price tag (like TradingView / CoinWise)
     { const pt = placed.find((t) => t.prio === 1000); if (pt) { const left = Math.max(0, last.t + this.sec - Date.now() / 1000), hh = Math.floor(left / 3600), mm = Math.floor((left % 3600) / 60), ss = Math.floor(left % 60);
@@ -372,14 +375,6 @@ function myAddBar() {
   el.innerHTML = MYADD ? `<button class="chip" id="bAddLv" style="border-color:var(--my);color:var(--my)">+ Add level ${n0(MYADD)}</button>${n ? `<span class="mut" style="font-size:12px">${n} on chart</span>` : ""}`
     : `<span class="mut" style="font-size:12px">${n ? `${n} of your levels on the chart (pink). ` : ""}Tap the chart, then “+ Add level” to mark a price.</span>`;
 }
-// richer price line: OHLC + change, range, volume, buyer share and net taker delta for the candle under the crosshair (or the live one)
-showOhlc = function (d) {
-  const el = $("#ohlc"); if (!el) return; if (!d) { const k = CC && CC.k.length ? CC.k : D.kl && D.kl.k; d = k && k[k.length - 1]; if (!d) { el.textContent = ""; return; } }
-  const o = d.open ?? d.o, h = d.high ?? d.h, l = d.low ?? d.l, c = d.close ?? d.c, ch = ((c - o) / o) * 100, rg = ((h - l) / l) * 100;
-  const v = d.v, tb = d.tb, buy = ok(v) && v > 0 && ok(tb) ? (tb / v) * 100 : null, dl = ok(v) && ok(tb) ? 2 * tb - v : null;
-  el.innerHTML = `<span>O ${n0(o)} H ${n0(h)} L ${n0(l)} C <span class="${cls(ch)}">${n0(c)} ${pct(ch)}</span></span>` +
-    `<span class="mut"> · <i class="nw">range ${rg.toFixed(2)}%</i>${ok(v) ? ` · <i class="nw">vol ${kfmt(v)} BTC (${usd(v * c)})</i>` : ""}${ok(buy) ? ` · <i class="nw">buy <b class="${buy >= 50 ? "up" : "dn"}">${buy.toFixed(0)}%</b></i>` : ""}${ok(dl) ? ` · <i class="nw">Δ <b class="${cls(dl)}">${sgn(dl, 0)} BTC</b></i>` : ""}</span>`;
-};
 setInterval(() => { if (CC && ST.tab === "overview" && !document.hidden) CC.dirty(); }, 1000);
 function drawMyLevels() { myAddBar();
   const box = $("#myList"); if (!box) return;
@@ -418,7 +413,7 @@ let CC = null;
 function initChart() {
   const host = $("#cMain"); if (!host || CC) return;
   CC = new CChart(host); CC.colors = chartColors; CC.onView = () => { CH.xKey = null; chartExtras(true); };
-  CC.onCross = (b) => { showOhlc(b || null); if (b && CC.cross && CC.cross.y < CC.layout().mainH) { MYADD = Math.round(CC.P(CC.cross.y)); } myAddBar(); };
+  CC.onCross = (b) => { showOhlc(b ? { o: b.o, h: b.h, l: b.l, c: b.c } : null); if (b && CC.cross && CC.cross.y < CC.layout().mainH) { MYADD = Math.round(CC.P(CC.cross.y)); } myAddBar(); };
   CH.ready = true;
 }
 function resetView() { if (CC) CC.reset(); }
@@ -497,7 +492,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -506,7 +501,14 @@ function chartExtras(fromView) {
   if (on(ST.avwap) && intra) { const av = avwapSeries(k), m = (arr) => arr.map((p) => ({ t: p.time, v: p.value })); L.lines.push({ pts: m(av.m), color: "#e8c547", w: 1.8 }, { pts: m(av.u1), color: C.acc }, { pts: m(av.l1), color: C.acc }, { pts: m(av.u2), color: C.acc, dash: [4, 4] }, { pts: m(av.l2), color: C.acc, dash: [4, 4] }); L.hlines.push({ p: lastOf(av.m) ? lastOf(av.m).value : NaN, color: "#e8c547", tag: "AVWAP", prio: 48, alpha: 0 }); }
   if (on(ST.lv)) levels().forEach((l) => L.hlines.push({ p: l.p, color: l.t.startsWith("PD") ? C.fg3 : C.acc, dash: [5, 4], tag: l.t.replace("Day open", "D open").replace("Week open", "W open").replace("Month open", "M open"), prio: 50 }));
   const [va, vb] = CC.vis(), vis = k.slice(va, vb + 1);
-  if (on(ST.fib) && vis.length > 4) { const lo = Math.min(...vis.map((x) => x.l)), hi = Math.max(...vis.map((x) => x.h)); FIBS.filter((r) => !ST.fibOff[r]).forEach((r) => L.hlines.push({ p: lo + r * (hi - lo), color: fibColor(r), dash: [1, 3], left: String(r), alpha: 0.95 })); }
+  if (on(ST.fib) && vis.length > 4) {
+    const sw = ST.fibSrc !== "vis" ? fibSwing(ST.fibSrc) : null;
+    if (sw) { // measured on the last large move of the chosen timeframe: 0 at the end of the move, 1 at its start
+      const P = (r) => (sw.up ? sw.hi - r * (sw.hi - sw.lo) : sw.lo + r * (sw.hi - sw.lo)), ti = (t) => (t - k[0].t) / TF_SEC[ST.tf];
+      FIBS.filter((r) => !ST.fibOff[r]).forEach((r) => L.hlines.push({ p: P(r), color: fibColor(r), dash: [1, 3], left: String(r), alpha: 0.95, x0: Math.max(k[0].t, sw.t0) }));
+      L.draw = L.draw || []; L.fibLeg = { i0: ti(sw.t0), p0: sw.up ? sw.lo : sw.hi, i1: ti(sw.t1), p1: sw.up ? sw.hi : sw.lo };
+    } else { const lo = Math.min(...vis.map((x) => x.l)), hi = Math.max(...vis.map((x) => x.h)); FIBS.filter((r) => !ST.fibOff[r]).forEach((r) => L.hlines.push({ p: lo + r * (hi - lo), color: fibColor(r), dash: [1, 3], left: String(r), alpha: 0.95 })); }
+  }
   const PF = (on(ST.prof) || on(ST.tpo)) && vis.length > 4 ? profile(vis) : null;
   if (PF && on(ST.prof)) { L.profile = { ...PF, poc: PF.vp.poc, vah: PF.vp.vah, val: PF.vp.val }; L.hlines.push({ p: PF.vp.poc, color: "#e8c547", w: 1.5, tag: "POC", prio: 70 }, { p: PF.vp.vah, color: C.fg2, dash: [5, 3], tag: "VAH", prio: 45 }, { p: PF.vp.val, color: C.fg2, dash: [5, 3], tag: "VAL", prio: 45 }); }
   if (PF && on(ST.tpo)) L.hlines.push({ p: PF.tp.poc, color: C.acc, dash: [2, 3], tag: "TPO POC", prio: 42 }, { p: PF.tp.vah, color: C.acc, dash: [2, 3], prio: 5 }, { p: PF.tp.val, color: C.acc, dash: [2, 3], prio: 5 });
@@ -525,6 +527,7 @@ function chartExtras(fromView) {
       const ab = s.name === "New York" ? "NY" : s.name === "London" ? "LDN" : "Asia"; L.hlines.push({ p: Math.max(...bars.map((x) => x.h)), color: s.color, dash: [3, 3], tag: `${ab} H`, prio: 35, x0: s.t0, alpha: 0.75 }, { p: Math.min(...bars.map((x) => x.l)), color: s.color, dash: [3, 3], tag: `${ab} L`, prio: 35, x0: s.t0, alpha: 0.75 }); });
   }
   L.draw = []; L.hl = new Map();
+  if (L.fibLeg) { const f = L.fibLeg; L.draw.push({ type: "dot", i: f.i0, p: f.p0, color: C.fg3 }, { type: "dot", i: f.i1, p: f.p1, color: C.fg3 }); }
   if (on(ST.trend) && k.length > 40) drawStructure(L, k, C);
   if (on(ST.pat) && k.length > 60) drawGeo(L, k, C);
   if (on(ST.cdl) && k.length > 30) drawCandles(L, k, C, a);
@@ -533,6 +536,26 @@ function chartExtras(fromView) {
   const nb = CC.nSub(); CC.L = L; if (nb !== L.subs.length) CC.resize(); CC.dirty();
   const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqb", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl"].filter((x) => ST[x]).length;
   const lb = $("#bLayers"); if (lb) lb.textContent = `Layers · ${ST.clean ? "clean" : n + " on"} ${ST.layersOpen ? "▴" : "▾"}`;
+}
+
+/* ---------- fib anchored to the last large move (zigzag swings on 30m / 1h / 4h) ---------- */
+let FIBSW = { key: "", v: null };
+function fibSwing(tf) {
+  if (!live("taK") || !D.taK[tf]) return null; const k = D.taK[tf].slice(-300), key = tf + ":" + k[k.length - 1].t + ":" + k[k.length - 1].c; if (FIBSW.key === key) return FIBSW.v;
+  const A = TA.atr(k), at = A[A.length - 1] || k[k.length - 1].c * 0.006, thr = at * 3.5, pts = [];
+  let dir = 0, ex = null, hiE = { p: k[0].h, t: k[0].t }, loE = { p: k[0].l, t: k[0].t };
+  for (const x of k) {
+    if (!dir) { if (x.h > hiE.p) hiE = { p: x.h, t: x.t }; if (x.l < loE.p) loE = { p: x.l, t: x.t };
+      if (hiE.p - loE.p >= thr) { if (hiE.t > loE.t) { pts.push({ ...loE, hi: false }); dir = 1; ex = hiE; } else { pts.push({ ...hiE, hi: true }); dir = -1; ex = loE; } } continue; }
+    if (dir > 0) { if (x.h >= ex.p) ex = { p: x.h, t: x.t }; else if (ex.p - x.l >= thr) { pts.push({ ...ex, hi: true }); dir = -1; ex = { p: x.l, t: x.t }; } }
+    else { if (x.l <= ex.p) ex = { p: x.l, t: x.t }; else if (x.h - ex.p >= thr) { pts.push({ ...ex, hi: false }); dir = 1; ex = { p: x.h, t: x.t }; } }
+  }
+  if (!ex) return null;
+  pts.push({ ...ex, hi: dir > 0 });
+  let a = pts[pts.length - 2], b = pts[pts.length - 1];
+  if (pts.length >= 3 && Math.abs(b.p - a.p) < thr * 1.5) { a = pts[pts.length - 3]; b = pts[pts.length - 2]; } // the swing in progress is still small: use the last full move
+  const v = a && b ? { up: b.p > a.p, hi: Math.max(a.p, b.p), lo: Math.min(a.p, b.p), t0: a.t, t1: b.t, tf } : null;
+  FIBSW = { key, v }; return v;
 }
 
 /* ---------- chart drawings: structure, trendlines, chart patterns, candle patterns ---------- */

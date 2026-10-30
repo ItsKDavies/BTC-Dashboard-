@@ -111,7 +111,7 @@ details summary{list-style:revert}
 body.locked{position:fixed;left:0;right:0;overflow:hidden}
 .subc{height:110px;margin-top:4px;position:relative}
 .subc .lab{position:absolute;left:6px;top:4px;z-index:3;font-size:11.5px;color:var(--fg3);pointer-events:none}
-.ohlc .nw{font-style:normal;white-space:nowrap}.ohlc{font-size:12.5px;color:var(--fg2);min-height:18px;margin:2px 0 4px;font-family:var(--mono)}
+.ohlc{font-size:12.5px;color:var(--fg2);min-height:18px;margin:2px 0 4px;font-family:var(--mono)}
 .chart-msg{padding:40px 10px;text-align:center;color:var(--fg3)}
 /* flow read */
 .flow{display:grid;gap:8px}
@@ -384,7 +384,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
     <div class="note" style="margin:0">How BTC traded during each stock-market session over the last month of weekdays (up to 22 days). A session counts as red if price closed below where it opened. Times follow each city's local clock, including daylight saving.</div>
     <div class="scards" id="sessCards"></div>
     <div class="panel"><div class="ph"><span class="pt">Session paths</span><span class="seg" id="sessSeg" style="margin-left:auto"></span></div><div id="sessPaths"></div></div>
-    <div class="panel"><div class="ph"><span class="pt">By weekday and day by day</span></div><div id="sessDays"></div><div class="src">Binance spot BTC/USDT 30m candles · refreshes every 10 minutes · history, not a prediction</div></div>
+    <div class="panel"><div class="ph"><span class="pt">By weekday · biggest moves</span></div><div id="sessDays"></div><div class="src">Binance spot BTC/USDT 30m candles · refreshes every 10 minutes · history, not a prediction</div></div>
   </section>
   <section data-view="sources" class="view" hidden style="display:grid;gap:14px">
     <div class="panel">
