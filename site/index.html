@@ -111,7 +111,7 @@ details summary{list-style:revert}
 body.locked{position:fixed;left:0;right:0;overflow:hidden}
 .subc{height:110px;margin-top:4px;position:relative}
 .subc .lab{position:absolute;left:6px;top:4px;z-index:3;font-size:11.5px;color:var(--fg3);pointer-events:none}
-.ohlc{font-size:12.5px;color:var(--fg2);min-height:18px;margin:2px 0 4px;font-family:var(--mono)}
+.ohlc[hidden]{display:none}.ohlc{font-size:12.5px;color:var(--fg2);min-height:18px;margin:2px 0 4px;font-family:var(--mono)}
 .chart-msg{padding:40px 10px;text-align:center;color:var(--fg3)}
 /* flow read */
 .flow{display:grid;gap:8px}
@@ -292,7 +292,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqb">Liq bands</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
         <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><button class="chip" data-low="cvdc">CVD candles</button><button class="chip" data-low="oic">OI candles</button><button class="chip" data-low="liq">Liquidations</button><button class="chip" data-low="vol">Buy / sell volume</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 4. Drag the bar above the panes to resize, double-tap it to reset. <button class="chip" data-lpre="cw" style="min-height:26px;font-size:12px">CoinWise-style stack</button> <button class="chip" data-lpre="simple" style="min-height:26px;font-size:12px">Simple</button></span></div>
       </div>
-      <div class="ohlc" id="ohlc"></div>
+      <div class="ohlc" id="ohlc" hidden></div>
       <div class="ctl" id="myAdd" style="margin:-2px 0 6px;min-height:0"></div>
       <div id="cMain" class="chartbox"></div>
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>

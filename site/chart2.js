@@ -493,7 +493,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -503,7 +503,7 @@ function chartExtras(fromView) {
   if (on(ST.lv)) levels().forEach((l) => L.hlines.push({ p: l.p, color: l.t.startsWith("PD") ? C.fg3 : C.acc, dash: [5, 4], tag: l.t.replace("Day open", "D open").replace("Week open", "W open").replace("Month open", "M open"), prio: 50 }));
   const [va, vb] = CC.vis(), vis = k.slice(va, vb + 1);
   if (on(ST.fib) && vis.length > 4) {
-    const sw = ST.fibSrc !== "vis" ? fibSwing(ST.fibSrc) : null;
+    const sw = ST.fibSrc === "auto" ? fibAuto(k, va, vb) : ST.fibSrc !== "vis" ? fibSwing(ST.fibSrc) : null;
     if (sw) { // measured on the last large move of the chosen timeframe: 0 at the end of the move, 1 at its start
       const P = (r) => (sw.up ? sw.hi - r * (sw.hi - sw.lo) : sw.lo + r * (sw.hi - sw.lo)), ti = (t) => (t - k[0].t) / TF_SEC[ST.tf];
       FIBS.filter((r) => !ST.fibOff[r]).forEach((r) => L.hlines.push({ p: P(r), color: fibColor(r), dash: [1, 3], left: String(r), alpha: 0.95, x0: Math.max(k[0].t, sw.t0) }));
@@ -539,6 +539,39 @@ function chartExtras(fromView) {
   const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqb", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl", "gexl"].filter((x) => ST[x]).length;
   const lb = $("#bLayers"); if (lb) lb.textContent = `Layers · ${ST.clean ? "clean" : n + " on"} ${ST.layersOpen ? "▴" : "▾"}`;
 }
+
+
+/* ---------- auto fib: the last big move on the chart's own candles ----------
+   Zigzag swings (reversal ≥ 3× ATR), then the most recent leg that is at least 60% the size of the biggest leg in the
+   window. Locked (default): window = the latest ~250 bars, so scrolling doesn't move it. Unlocked: window = the bars on
+   screen, so the fib re-anchors to the last big move in whatever part of the chart you're looking at. */
+let FIBA = { key: "", v: null };
+function fibLegs(k) {
+  const A = TA.atr(k), at = A[A.length - 1] || k[k.length - 1].c * 0.006, thr = at * 3, piv = [];
+  let dir = 0, hi = { p: k[0].h, t: k[0].t }, lo = { p: k[0].l, t: k[0].t }, ex = null;
+  for (const x of k) {
+    if (!dir) { if (x.h > hi.p) hi = { p: x.h, t: x.t }; if (x.l < lo.p) lo = { p: x.l, t: x.t };
+      if (hi.p - lo.p >= thr) { if (hi.t > lo.t) { piv.push(lo); dir = 1; ex = hi; } else { piv.push(hi); dir = -1; ex = lo; } } continue; }
+    if (dir > 0) { if (x.h >= ex.p) ex = { p: x.h, t: x.t }; else if (ex.p - x.l >= thr) { piv.push(ex); dir = -1; ex = { p: x.l, t: x.t }; } }
+    else { if (x.l <= ex.p) ex = { p: x.l, t: x.t }; else if (x.h - ex.p >= thr) { piv.push(ex); dir = 1; ex = { p: x.h, t: x.t }; } }
+  }
+  if (ex) piv.push(ex); // the leg still in progress counts too
+  const legs = []; for (let i = 1; i < piv.length; i++) legs.push({ a: piv[i - 1], b: piv[i], size: Math.abs(piv[i].p - piv[i - 1].p) });
+  return legs;
+}
+function fibAuto(k, va, vb) {
+  const n = k.length; if (n < 20) return null;
+  let a = Math.max(0, n - 250), b = n - 1;
+  if (!ST.fibLock) { a = Math.max(0, Math.floor(va)); b = Math.min(n - 1, Math.ceil(vb)); if (b - a < 20) { a = Math.max(0, b - 20); } }
+  const key = [ST.tf, a, b, k[n - 1].t, ST.fibLock ? k[n - 1].c : k[b].c].join(":"); if (FIBA.key === key) return FIBA.v;
+  const legs = fibLegs(k.slice(a, b + 1)); let v = null;
+  if (legs.length) { const mx = Math.max(...legs.map((l) => l.size)), L = [...legs].reverse().find((l) => l.size >= mx * 0.6);
+    v = { up: L.b.p > L.a.p, hi: Math.max(L.a.p, L.b.p), lo: Math.min(L.a.p, L.b.p), t0: L.a.t, t1: L.b.t, tf: ST.tf, auto: true }; }
+  const changed = !FIBA.v !== !v || (v && (FIBA.v.t0 !== v.t0 || FIBA.v.hi !== v.hi || FIBA.v.lo !== v.lo));
+  FIBA = { key, v }; if (changed) { const el = document.getElementById("fibInfo"); if (el) el.innerHTML = fibInfoHTML(v); }
+  return v;
+}
+function fibInfoHTML(s) { return s ? `${s.up ? "▲" : "▼"} ${n0(s.up ? s.lo : s.hi)} → ${n0(s.up ? s.hi : s.lo)} (${pct(((s.up ? s.hi / s.lo : s.lo / s.hi) - 1) * 100, 1)}) from ${fmtT(s.t0, Date.now() / 1000 - s.t0 > 5 * 86400 ? { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" } : { weekday: "short", hour: "numeric", minute: "2-digit" })}` : ""; }
 
 /* ---------- fib anchored to the last large move (zigzag swings on 30m / 1h / 4h) ---------- */
 let FIBSW = { key: "", v: null };

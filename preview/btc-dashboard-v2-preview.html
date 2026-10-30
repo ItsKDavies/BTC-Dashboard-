@@ -109,7 +109,7 @@ details summary{list-style:revert}
 body.locked{position:fixed;left:0;right:0;overflow:hidden}
 .subc{height:110px;margin-top:4px;position:relative}
 .subc .lab{position:absolute;left:6px;top:4px;z-index:3;font-size:11.5px;color:var(--fg3);pointer-events:none}
-.ohlc{font-size:12.5px;color:var(--fg2);min-height:18px;margin:2px 0 4px;font-family:var(--mono)}
+.ohlc[hidden]{display:none}.ohlc{font-size:12.5px;color:var(--fg2);min-height:18px;margin:2px 0 4px;font-family:var(--mono)}
 .chart-msg{padding:40px 10px;text-align:center;color:var(--fg3)}
 /* flow read */
 .flow{display:grid;gap:8px}
@@ -402,7 +402,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <div class="lg"><span class="lgt">Liquidity</span><button class="chip" data-tog="heat">Liq heatmap</button><button class="chip" data-tog="liq">Liq clusters</button><button class="chip" data-tog="liqb">Liq bands</button><button class="chip" data-tog="liqev">Liq events</button><button class="chip" data-tog="bub">Big trades</button></div>
         <div class="lg"><span class="lgt">Lower panes</span><button class="chip" data-low="bcvd">Spot CVD (Binance)</button><button class="chip" data-low="pos">Longs / shorts</button><span class="seg" style="margin-left:2px"><button data-lps="candles">Candles</button><button data-lps="lines">Lines</button></span><button class="chip" data-low="cvd">CVD spot vs perp</button><button class="chip" data-low="delta">Delta</button><button class="chip" data-low="oi">Open interest</button><button class="chip" data-low="cvdc">CVD candles</button><button class="chip" data-low="oic">OI candles</button><button class="chip" data-low="liq">Liquidations</button><button class="chip" data-low="vol">Buy / sell volume</button><span style="font-size:11px;color:var(--fg3);flex-basis:100%;padding-left:90px">Pick up to 4. Drag the bar above the panes to resize, double-tap it to reset. <button class="chip" data-lpre="cw" style="min-height:26px;font-size:12px">CoinWise-style stack</button> <button class="chip" data-lpre="simple" style="min-height:26px;font-size:12px">Simple</button></span></div>
       </div>
-      <div class="ohlc" id="ohlc"></div>
+      <div class="ohlc" id="ohlc" hidden></div>
       <div class="ctl" id="myAdd" style="margin:-2px 0 6px;min-height:0"></div>
       <div id="cMain" class="chartbox"></div>
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
@@ -1505,7 +1505,7 @@ Object.assign(ST, {
   mono: LS.get("mono", true), fib: LS.get("fib", false), prof: LS.get("prof", true), avwap: LS.get("avwap", false), sma: LS.get("sma", false),
   zones: LS.get("zones", false), liq: LS.get("liq", false), lev: LS.get("lev", 25), margin: LS.get("margin", 100),
   liqRange: LS.get("liqRange", 6), liqSide: LS.get("liqSide", "both"),
-  tpo: LS.get("tpo", true), fibOff: LS.get("fibOff", {}), fibOpen: LS.get("fibOpen", true), fibSrc: LS.get("fibSrc", "1h"), cvdOff: LS.get("cvdOff", {}),
+  tpo: LS.get("tpo", true), fibOff: LS.get("fibOff", {}), fibOpen: LS.get("fibOpen", true), fibSrc: LS.get("fibAutoV1", false) ? LS.get("fibSrc", "auto") : "auto", fibLock: LS.get("fibLock", true), cvdOff: LS.get("cvdOff", {}),
 });
 const lastOf = (a) => a[a.length - 1];
 const ATFS = ["15m", "30m", "1h", "4h", "1d"];
@@ -2118,8 +2118,8 @@ function drawStage2(tab) {
       need("#ovAssess", (x) => ($("#ovAssess").innerHTML = assessHTML(x, false)));
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
       if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
-        const swi = ST.fibSrc !== "vis" && typeof fibSwing === "function" ? fibSwing(ST.fibSrc) : null;
-        fs.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-basis:100%"><span class="mut" style="font-size:12px">Measure from</span><span class="seg">${[["5m", "5m move"], ["30m", "30m move"], ["1h", "1h move"], ["4h", "4h move"], ["vis", "Screen"]].map(([v2, l]) => `<button data-fibsrc="${v2}" aria-pressed="${ST.fibSrc === v2}" style="${sm}">${l}</button>`).join("")}</span>${swi ? `<span class="mut" style="font-size:11.5px">${swi.up ? "▲" : "▼"} ${n0(swi.up ? swi.lo : swi.hi)} → ${n0(swi.up ? swi.hi : swi.lo)} (${pct(((swi.up ? swi.hi / swi.lo : swi.lo / swi.hi) - 1) * 100, 1)}) since ${fmtT(swi.t0, { weekday: "short", hour: "numeric" })}</span>` : ""}</div><span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="false" style="${sm}">${ST.fibOpen ? "Hide levels ▴" : "Show levels ▾"}</button></span>` +
+        const swi = ST.fibSrc === "auto" ? (typeof FIBA !== "undefined" ? FIBA.v : null) : ST.fibSrc !== "vis" && typeof fibSwing === "function" ? fibSwing(ST.fibSrc) : null;
+        fs.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-basis:100%"><span class="mut" style="font-size:12px">Measure from</span><span class="seg">${[["auto", "Last big move"], ["30m", "30m"], ["1h", "1h"], ["4h", "4h"], ["vis", "Screen"]].map(([v2, l]) => `<button data-fibsrc="${v2}" aria-pressed="${ST.fibSrc === v2}" style="${sm}">${l}</button>`).join("")}</span>${ST.fibSrc === "auto" ? `<button class="chip" data-fiblock aria-pressed="${!!ST.fibLock}" style="${sm}" title="Locked: stays on the latest big move while you scroll. Unlocked: re-anchors to the last big move in what's on screen.">${ST.fibLock ? "🔒 Locked to latest" : "↔ Follows scroll"}</button>` : ""}<span class="mut" id="fibInfo" style="font-size:11.5px">${fibInfoHTML(swi)}</span></div><span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="false" style="${sm}">${ST.fibOpen ? "Hide levels ▴" : "Show levels ▾"}</button></span>` +
           (ST.fibOpen ? `<div style="display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%">` + FIBS.map((r) => `<button class="chip" data-fib="${r}" aria-pressed="${!ST.fibOff[r]}" style="${sm};${!ST.fibOff[r] ? `border-color:${fibColor(r)};color:${fibColor(r)}` : ""}">${r}</button>`).join("") + `</div>` : ""); }
     }
     if (tab === "ta") need("#taAssess", drawTA);
@@ -2132,7 +2132,8 @@ function drawStage2(tab) {
 }
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-lev]"); if (b) { ST.lev = +b.dataset.lev; LS.set("lev", ST.lev); render(); return; }
-  const fsrc = e.target.closest("[data-fibsrc]"); if (fsrc) { ST.fibSrc = fsrc.dataset.fibsrc; LS.set("fibSrc", ST.fibSrc); CH.xKey = null; render(); return; }
+  if (e.target.closest("[data-fiblock]")) { ST.fibLock = !ST.fibLock; LS.set("fibLock", ST.fibLock); CH.xKey = null; render(); return; }
+  const fsrc = e.target.closest("[data-fibsrc]"); if (fsrc) { LS.set("fibAutoV1", true); ST.fibSrc = fsrc.dataset.fibsrc; LS.set("fibSrc", ST.fibSrc); CH.xKey = null; render(); return; }
   const f = e.target.closest("[data-fib]");
   if (f) {
     const v = f.dataset.fib;
@@ -2644,7 +2645,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
+  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -2654,7 +2655,7 @@ function chartExtras(fromView) {
   if (on(ST.lv)) levels().forEach((l) => L.hlines.push({ p: l.p, color: l.t.startsWith("PD") ? C.fg3 : C.acc, dash: [5, 4], tag: l.t.replace("Day open", "D open").replace("Week open", "W open").replace("Month open", "M open"), prio: 50 }));
   const [va, vb] = CC.vis(), vis = k.slice(va, vb + 1);
   if (on(ST.fib) && vis.length > 4) {
-    const sw = ST.fibSrc !== "vis" ? fibSwing(ST.fibSrc) : null;
+    const sw = ST.fibSrc === "auto" ? fibAuto(k, va, vb) : ST.fibSrc !== "vis" ? fibSwing(ST.fibSrc) : null;
     if (sw) { // measured on the last large move of the chosen timeframe: 0 at the end of the move, 1 at its start
       const P = (r) => (sw.up ? sw.hi - r * (sw.hi - sw.lo) : sw.lo + r * (sw.hi - sw.lo)), ti = (t) => (t - k[0].t) / TF_SEC[ST.tf];
       FIBS.filter((r) => !ST.fibOff[r]).forEach((r) => L.hlines.push({ p: P(r), color: fibColor(r), dash: [1, 3], left: String(r), alpha: 0.95, x0: Math.max(k[0].t, sw.t0) }));
@@ -2690,6 +2691,39 @@ function chartExtras(fromView) {
   const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqb", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl", "gexl"].filter((x) => ST[x]).length;
   const lb = $("#bLayers"); if (lb) lb.textContent = `Layers · ${ST.clean ? "clean" : n + " on"} ${ST.layersOpen ? "▴" : "▾"}`;
 }
+
+
+/* ---------- auto fib: the last big move on the chart's own candles ----------
+   Zigzag swings (reversal ≥ 3× ATR), then the most recent leg that is at least 60% the size of the biggest leg in the
+   window. Locked (default): window = the latest ~250 bars, so scrolling doesn't move it. Unlocked: window = the bars on
+   screen, so the fib re-anchors to the last big move in whatever part of the chart you're looking at. */
+let FIBA = { key: "", v: null };
+function fibLegs(k) {
+  const A = TA.atr(k), at = A[A.length - 1] || k[k.length - 1].c * 0.006, thr = at * 3, piv = [];
+  let dir = 0, hi = { p: k[0].h, t: k[0].t }, lo = { p: k[0].l, t: k[0].t }, ex = null;
+  for (const x of k) {
+    if (!dir) { if (x.h > hi.p) hi = { p: x.h, t: x.t }; if (x.l < lo.p) lo = { p: x.l, t: x.t };
+      if (hi.p - lo.p >= thr) { if (hi.t > lo.t) { piv.push(lo); dir = 1; ex = hi; } else { piv.push(hi); dir = -1; ex = lo; } } continue; }
+    if (dir > 0) { if (x.h >= ex.p) ex = { p: x.h, t: x.t }; else if (ex.p - x.l >= thr) { piv.push(ex); dir = -1; ex = { p: x.l, t: x.t }; } }
+    else { if (x.l <= ex.p) ex = { p: x.l, t: x.t }; else if (x.h - ex.p >= thr) { piv.push(ex); dir = 1; ex = { p: x.h, t: x.t }; } }
+  }
+  if (ex) piv.push(ex); // the leg still in progress counts too
+  const legs = []; for (let i = 1; i < piv.length; i++) legs.push({ a: piv[i - 1], b: piv[i], size: Math.abs(piv[i].p - piv[i - 1].p) });
+  return legs;
+}
+function fibAuto(k, va, vb) {
+  const n = k.length; if (n < 20) return null;
+  let a = Math.max(0, n - 250), b = n - 1;
+  if (!ST.fibLock) { a = Math.max(0, Math.floor(va)); b = Math.min(n - 1, Math.ceil(vb)); if (b - a < 20) { a = Math.max(0, b - 20); } }
+  const key = [ST.tf, a, b, k[n - 1].t, ST.fibLock ? k[n - 1].c : k[b].c].join(":"); if (FIBA.key === key) return FIBA.v;
+  const legs = fibLegs(k.slice(a, b + 1)); let v = null;
+  if (legs.length) { const mx = Math.max(...legs.map((l) => l.size)), L = [...legs].reverse().find((l) => l.size >= mx * 0.6);
+    v = { up: L.b.p > L.a.p, hi: Math.max(L.a.p, L.b.p), lo: Math.min(L.a.p, L.b.p), t0: L.a.t, t1: L.b.t, tf: ST.tf, auto: true }; }
+  const changed = !FIBA.v !== !v || (v && (FIBA.v.t0 !== v.t0 || FIBA.v.hi !== v.hi || FIBA.v.lo !== v.lo));
+  FIBA = { key, v }; if (changed) { const el = document.getElementById("fibInfo"); if (el) el.innerHTML = fibInfoHTML(v); }
+  return v;
+}
+function fibInfoHTML(s) { return s ? `${s.up ? "▲" : "▼"} ${n0(s.up ? s.lo : s.hi)} → ${n0(s.up ? s.hi : s.lo)} (${pct(((s.up ? s.hi / s.lo : s.lo / s.hi) - 1) * 100, 1)}) from ${fmtT(s.t0, Date.now() / 1000 - s.t0 > 5 * 86400 ? { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" } : { weekday: "short", hour: "numeric", minute: "2-digit" })}` : ""; }
 
 /* ---------- fib anchored to the last large move (zigzag swings on 30m / 1h / 4h) ---------- */
 let FIBSW = { key: "", v: null };

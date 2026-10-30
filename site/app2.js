@@ -4,7 +4,7 @@ Object.assign(ST, {
   mono: LS.get("mono", true), fib: LS.get("fib", false), prof: LS.get("prof", true), avwap: LS.get("avwap", false), sma: LS.get("sma", false),
   zones: LS.get("zones", false), liq: LS.get("liq", false), lev: LS.get("lev", 25), margin: LS.get("margin", 100),
   liqRange: LS.get("liqRange", 6), liqSide: LS.get("liqSide", "both"),
-  tpo: LS.get("tpo", true), fibOff: LS.get("fibOff", {}), fibOpen: LS.get("fibOpen", true), fibSrc: LS.get("fibSrc", "1h"), cvdOff: LS.get("cvdOff", {}),
+  tpo: LS.get("tpo", true), fibOff: LS.get("fibOff", {}), fibOpen: LS.get("fibOpen", true), fibSrc: LS.get("fibAutoV1", false) ? LS.get("fibSrc", "auto") : "auto", fibLock: LS.get("fibLock", true), cvdOff: LS.get("cvdOff", {}),
 });
 const lastOf = (a) => a[a.length - 1];
 const ATFS = ["15m", "30m", "1h", "4h", "1d"];
@@ -617,8 +617,8 @@ function drawStage2(tab) {
       need("#ovAssess", (x) => ($("#ovAssess").innerHTML = assessHTML(x, false)));
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
       if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
-        const swi = ST.fibSrc !== "vis" && typeof fibSwing === "function" ? fibSwing(ST.fibSrc) : null;
-        fs.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-basis:100%"><span class="mut" style="font-size:12px">Measure from</span><span class="seg">${[["5m", "5m move"], ["30m", "30m move"], ["1h", "1h move"], ["4h", "4h move"], ["vis", "Screen"]].map(([v2, l]) => `<button data-fibsrc="${v2}" aria-pressed="${ST.fibSrc === v2}" style="${sm}">${l}</button>`).join("")}</span>${swi ? `<span class="mut" style="font-size:11.5px">${swi.up ? "▲" : "▼"} ${n0(swi.up ? swi.lo : swi.hi)} → ${n0(swi.up ? swi.hi : swi.lo)} (${pct(((swi.up ? swi.hi / swi.lo : swi.lo / swi.hi) - 1) * 100, 1)}) since ${fmtT(swi.t0, { weekday: "short", hour: "numeric" })}</span>` : ""}</div><span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="false" style="${sm}">${ST.fibOpen ? "Hide levels ▴" : "Show levels ▾"}</button></span>` +
+        const swi = ST.fibSrc === "auto" ? (typeof FIBA !== "undefined" ? FIBA.v : null) : ST.fibSrc !== "vis" && typeof fibSwing === "function" ? fibSwing(ST.fibSrc) : null;
+        fs.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-basis:100%"><span class="mut" style="font-size:12px">Measure from</span><span class="seg">${[["auto", "Last big move"], ["30m", "30m"], ["1h", "1h"], ["4h", "4h"], ["vis", "Screen"]].map(([v2, l]) => `<button data-fibsrc="${v2}" aria-pressed="${ST.fibSrc === v2}" style="${sm}">${l}</button>`).join("")}</span>${ST.fibSrc === "auto" ? `<button class="chip" data-fiblock aria-pressed="${!!ST.fibLock}" style="${sm}" title="Locked: stays on the latest big move while you scroll. Unlocked: re-anchors to the last big move in what's on screen.">${ST.fibLock ? "🔒 Locked to latest" : "↔ Follows scroll"}</button>` : ""}<span class="mut" id="fibInfo" style="font-size:11.5px">${fibInfoHTML(swi)}</span></div><span class="mut" style="font-size:12px">Fib · ${on.length} of ${FIBS.length}</span><span class="seg"><button data-fib="key" aria-pressed="${isKey}" style="${sm}">Key</button><button data-fib="all" aria-pressed="${isAll}" style="${sm}">All</button><button data-fib="edit" aria-pressed="false" style="${sm}">${ST.fibOpen ? "Hide levels ▴" : "Show levels ▾"}</button></span>` +
           (ST.fibOpen ? `<div style="display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%">` + FIBS.map((r) => `<button class="chip" data-fib="${r}" aria-pressed="${!ST.fibOff[r]}" style="${sm};${!ST.fibOff[r] ? `border-color:${fibColor(r)};color:${fibColor(r)}` : ""}">${r}</button>`).join("") + `</div>` : ""); }
     }
     if (tab === "ta") need("#taAssess", drawTA);
@@ -631,7 +631,8 @@ function drawStage2(tab) {
 }
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-lev]"); if (b) { ST.lev = +b.dataset.lev; LS.set("lev", ST.lev); render(); return; }
-  const fsrc = e.target.closest("[data-fibsrc]"); if (fsrc) { ST.fibSrc = fsrc.dataset.fibsrc; LS.set("fibSrc", ST.fibSrc); CH.xKey = null; render(); return; }
+  if (e.target.closest("[data-fiblock]")) { ST.fibLock = !ST.fibLock; LS.set("fibLock", ST.fibLock); CH.xKey = null; render(); return; }
+  const fsrc = e.target.closest("[data-fibsrc]"); if (fsrc) { LS.set("fibAutoV1", true); ST.fibSrc = fsrc.dataset.fibsrc; LS.set("fibSrc", ST.fibSrc); CH.xKey = null; render(); return; }
   const f = e.target.closest("[data-fib]");
   if (f) {
     const v = f.dataset.fib;
