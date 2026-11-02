@@ -9,7 +9,7 @@ const CORS_BLOCK = [/futures\.kraken\.com/, /contract\.mexc\.com/, /open-api\.bi
   await p.route('**/*', async r => { const u=r.request().url();
     if (u.includes('lightweight-charts')) return r.fulfill({ body: fs.readFileSync('lwstub.js'), contentType:'text/javascript' });
     if (u==='http://dash.test/' ) return r.fulfill({ body: fs.readFileSync('../site/index.html'), contentType:'text/html' });
-    const sf = u.match(/^http:\/\/dash\.test\/(\w+\.js)$/); if (sf) return r.fulfill({ body: fs.readFileSync('../site/'+sf[1]), contentType:'text/javascript' });
+    const sf = u.match(/^http:\/\/dash\.test\/(\w+\.js)(?:\?.*)?$/); if (sf) return r.fulfill({ body: fs.readFileSync('../site/'+sf[1]), contentType:'text/javascript' });
     let target=u; const m=u.match(/^http:\/\/dash\.test\/px\/(\w+)(\/.*)$/); if (m) { target = PX[m[1]] + m[2]; proxied.add(m[1]); }
     else if (CORS_BLOCK.some(rx=>rx.test(u))) return r.abort();
     let res = null; try { res = mock(target); } catch (e) {}

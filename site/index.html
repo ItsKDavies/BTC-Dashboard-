@@ -69,12 +69,14 @@ main{padding-block:14px 40px;display:grid;gap:14px}
 .chip{border:1px solid var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:12.5px;min-height:30px;color:var(--fg2)}
 .chip[aria-pressed="true"]{border-color:var(--acc);color:var(--acc)}
 #cMain{height:calc(clamp(420px,72vh,900px) + var(--subx,0px));position:relative}
-@media (max-width:520px){#chartPanel{padding-left:4px;padding-right:4px;border-radius:10px}#chartPanel>.ph,#chartPanel>.ctl,#chartPanel>.ohlc,#chartPanel>#myAdd,#chartPanel>.hint{padding-left:8px;padding-right:8px}}
+@media (max-width:520px){#chartPanel{padding-left:0;padding-right:0;border-radius:0;border-left:0;border-right:0;margin-left:calc(-1 * max(14px,env(safe-area-inset-left)));margin-right:calc(-1 * max(14px,env(safe-area-inset-right)))}#chartPanel>.layers{margin-left:8px;margin-right:8px}#chartPanel>.ph,#chartPanel>.ctl,#chartPanel>.ohlc,#chartPanel>#myAdd,#chartPanel>.hint{padding-left:8px;padding-right:8px}}
 .cgrip{position:absolute;left:0;height:12px;cursor:row-resize;touch-action:none;z-index:4;display:flex;align-items:center;justify-content:center}
 .cgrip[hidden]{display:none}.cgrip i{width:44px;height:5px;border-radius:3px;background:var(--fg3);opacity:.55;box-shadow:0 0 0 3px var(--panel)}.cgrip:hover i,.cgrip.on i{opacity:1;background:var(--acc)}
 .ov{position:absolute;left:0;top:0;pointer-events:none;z-index:3}
 canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:crosshair}
 .panel.full canvas.cc{touch-action:none}
+.cax{position:absolute;touch-action:none;cursor:ns-resize;z-index:2;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.cauto{position:absolute;z-index:3;font:600 12px var(--font);padding:5px 11px;border-radius:999px;border:1px solid var(--acc);background:color-mix(in srgb,var(--panel) 82%,transparent);color:var(--acc);min-height:28px}.cauto[hidden]{display:none}
 .layers{display:grid;gap:6px;margin:2px 0 8px;padding:8px 10px;border:1px solid var(--weak);border-radius:10px;background:var(--bg)}
 .lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .rng{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--fg2);min-height:30px;margin-right:6px}.rng span{min-width:56px}.rng input{width:120px;accent-color:var(--acc);margin:0}.rng b{font:600 12px var(--mono);min-width:34px;color:var(--fg)}
@@ -478,12 +480,12 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
 <footer>BTC Market Dashboard v2.0 · stage 4 + news + GEX · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
 </div>
 
-<script src="ta.js"></script>
-<script src="app.js"></script>
-<script src="app2.js"></script>
-<script src="chart2.js"></script>
-<script src="stage4.js"></script>
-<script src="news.js"></script>
-<script src="gex.js"></script>
+<script src="ta.js?v=20261102a"></script>
+<script src="app.js?v=20261102a"></script>
+<script src="app2.js?v=20261102a"></script>
+<script src="chart2.js?v=20261102a"></script>
+<script src="stage4.js?v=20261102a"></script>
+<script src="news.js?v=20261102a"></script>
+<script src="gex.js?v=20261102a"></script>
 </body>
 </html>

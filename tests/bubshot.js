@@ -9,7 +9,7 @@ const PX = { okx:'https://www.okx.com', kraken:'https://futures.kraken.com', mex
   await p.routeWebSocket(/./, ws => ws.close());
   await p.route('**/*', async r => { const u=r.request().url();
     if (u==='http://dash.test/') return r.fulfill({ body: fs.readFileSync('../site/index.html'), contentType:'text/html' });
-    const sf = u.match(/^http:\/\/dash\.test\/(\w+\.js)$/); if (sf) return r.fulfill({ body: fs.readFileSync('../site/'+sf[1]), contentType:'text/javascript' });
+    const sf = u.match(/^http:\/\/dash\.test\/(\w+\.js)(?:\?.*)?$/); if (sf) return r.fulfill({ body: fs.readFileSync('../site/'+sf[1]), contentType:'text/javascript' });
     let target=u; const m=u.match(/^http:\/\/dash\.test\/px\/(\w+)(\/.*)$/); if (m) { if (!PX[m[1]]) return r.abort(); target = PX[m[1]] + m[2]; }
     const res = mock(target); if (res && res.__status) return r.fulfill({ status: res.__status, body:'{}' });
     if (res) return r.fulfill({ body: JSON.stringify(res), contentType:'application/json', headers:{'access-control-allow-origin':'*'} });

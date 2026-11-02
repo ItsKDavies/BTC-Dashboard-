@@ -11,7 +11,7 @@ const PX = { okx:'https://www.okx.com', kraken:'https://futures.kraken.com', mex
   await p.routeWebSocket(/coinbase\.com|binance\.com|bybit\.com/, ws => { ws.close(); });
   await p.route('**/*', async r => { const u=r.request().url();
     if (u==='http://dash.test/') return r.fulfill({ body: fs.readFileSync('../site/index.html'), contentType:'text/html' });
-    const sf = u.match(/^http:\/\/dash\.test\/(\w+\.js)$/); if (sf) return r.fulfill({ body: fs.readFileSync('../site/'+sf[1]), contentType:'text/javascript' });
+    const sf = u.match(/^http:\/\/dash\.test\/(\w+\.js)(?:\?.*)?$/); if (sf) return r.fulfill({ body: fs.readFileSync('../site/'+sf[1]), contentType:'text/javascript' });
     let target=u; const m=u.match(/^http:\/\/dash\.test\/px\/(\w+)(\/.*)$/); if (m) target = PX[m[1]] + m[2];
     if (target.includes('alternative.me')) return r.fulfill({ body: JSON.stringify({data:[{value:'38',value_classification:'Fear'},{value:'44',value_classification:'Fear'}]}), contentType:'application/json' });
     const res = mock(target); if (res && res.__status) return r.fulfill({ status: res.__status, body:'{}' });

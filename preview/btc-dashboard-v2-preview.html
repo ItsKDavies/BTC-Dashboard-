@@ -67,12 +67,14 @@ main{padding-block:14px 40px;display:grid;gap:14px}
 .chip{border:1px solid var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:12.5px;min-height:30px;color:var(--fg2)}
 .chip[aria-pressed="true"]{border-color:var(--acc);color:var(--acc)}
 #cMain{height:calc(clamp(420px,72vh,900px) + var(--subx,0px));position:relative}
-@media (max-width:520px){#chartPanel{padding-left:4px;padding-right:4px;border-radius:10px}#chartPanel>.ph,#chartPanel>.ctl,#chartPanel>.ohlc,#chartPanel>#myAdd,#chartPanel>.hint{padding-left:8px;padding-right:8px}}
+@media (max-width:520px){#chartPanel{padding-left:0;padding-right:0;border-radius:0;border-left:0;border-right:0;margin-left:calc(-1 * max(14px,env(safe-area-inset-left)));margin-right:calc(-1 * max(14px,env(safe-area-inset-right)))}#chartPanel>.layers{margin-left:8px;margin-right:8px}#chartPanel>.ph,#chartPanel>.ctl,#chartPanel>.ohlc,#chartPanel>#myAdd,#chartPanel>.hint{padding-left:8px;padding-right:8px}}
 .cgrip{position:absolute;left:0;height:12px;cursor:row-resize;touch-action:none;z-index:4;display:flex;align-items:center;justify-content:center}
 .cgrip[hidden]{display:none}.cgrip i{width:44px;height:5px;border-radius:3px;background:var(--fg3);opacity:.55;box-shadow:0 0 0 3px var(--panel)}.cgrip:hover i,.cgrip.on i{opacity:1;background:var(--acc)}
 .ov{position:absolute;left:0;top:0;pointer-events:none;z-index:3}
 canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:crosshair}
 .panel.full canvas.cc{touch-action:none}
+.cax{position:absolute;touch-action:none;cursor:ns-resize;z-index:2;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.cauto{position:absolute;z-index:3;font:600 12px var(--font);padding:5px 11px;border-radius:999px;border:1px solid var(--acc);background:color-mix(in srgb,var(--panel) 82%,transparent);color:var(--acc);min-height:28px}.cauto[hidden]{display:none}
 .layers{display:grid;gap:6px;margin:2px 0 8px;padding:8px 10px;border:1px solid var(--weak);border-radius:10px;background:var(--bg)}
 .lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .rng{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--fg2);min-height:30px;margin-right:6px}.rng span{min-width:56px}.rng input{width:120px;accent-color:var(--acc);margin:0}.rng b{font:600 12px var(--mono);min-width:34px;color:var(--fg)}
@@ -2177,6 +2179,9 @@ class CChart {
     const gup = () => { if (!this.gdrag) return; this.gdrag = false; gr.classList.remove("on"); if (this.onSplit) this.onSplit(this.subAdj); };
     gr.addEventListener("pointerup", gup); gr.addEventListener("pointercancel", gup);
     gr.addEventListener("dblclick", () => { this.subAdj = 0; this.dirty(); if (this.onSplit) this.onSplit(0); });
+    const ax = (this.axEl = document.createElement("div")); ax.className = "cax"; ax.title = "Drag up/down to stretch price · double-tap to re-fix"; host.appendChild(ax);
+    const ab = (this.autoBtn = document.createElement("button")); ab.className = "cauto"; ab.type = "button"; ab.textContent = "Auto"; ab.title = "Fix the price scale to the candles again"; ab.hidden = true; host.appendChild(ab);
+    ab.addEventListener("click", (e) => { e.stopPropagation(); this.auto = true; this.dirty(); });
     this.resize(); this.bind();
   }
   nSub() { return this.L.subs ? this.L.subs.length : 0; }
@@ -2207,13 +2212,14 @@ class CChart {
   crossBar() { if (!this.cross || !this.k.length) return null; const i = Math.round(this.I(this.cross.x)); return this.k[Math.max(0, Math.min(this.k.length - 1, i))]; }
   bind() {
     const c = this.cv, pos = (e) => { const r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-    c.addEventListener("pointerdown", (e) => {
-      const p = pos(e); try { c.setPointerCapture(e.pointerId); } catch (er) {}
+    const el = [c, this.axEl], on = (ev, fn, o) => el.forEach((x) => x.addEventListener(ev, fn, o));
+    on("pointerdown", (e) => {
+      const p = pos(e); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) {}
       this.ptr.set(e.pointerId, { x: p.x, y: p.y, sx: p.x, sy: p.y }); this.vx = 0; cancelAnimationFrame(this.inert);
       if (this.ptr.size === 2) { const [a, b] = [...this.ptr.values()]; this.pinch = { d: Math.max(20, Math.abs(a.x - b.x)), bars: this.bars, idx: this.I((a.x + b.x) / 2) }; this.drag = null; }
       else if (this.ptr.size === 1) this.drag = { axis: p.x > this.layout().r, x0: this.x0, yLo: this.yLo, yHi: this.yHi, moved: false, full: !!this.host.closest(".full"), mouse: e.pointerType === "mouse" };
     });
-    c.addEventListener("pointermove", (e) => {
+    on("pointermove", (e) => {
       const p = pos(e), q = this.ptr.get(e.pointerId);
       if (!q) { if (e.pointerType === "mouse") { this.cross = p; this.dirty(); if (this.onCross) this.onCross(this.crossBar()); } return; }
       const lastX = q.x; q.x = p.x; q.y = p.y;
@@ -2226,7 +2232,7 @@ class CChart {
       if (!dr.moved && Math.abs(dx) + Math.abs(dy) > 6) dr.moved = true; if (!dr.moved) return;
       if (dr.axis) { const f = Math.exp(dy * 0.006), mid = (dr.yLo + dr.yHi) / 2, half = ((dr.yHi - dr.yLo) / 2) * f; this.auto = false; this.yLo = mid - half; this.yHi = mid + half; this.dirty(); return; }
       this.x0 = dr.x0 - dx / this.bw(); this.vx = p.x - lastX; this.clamp();
-      if (dr.full || (dr.mouse && !this.auto)) { const span = dr.yHi - dr.yLo, dp = (dy / (this.layout().mainH - 12)) * span; this.auto = false; this.yLo = dr.yLo + dp; this.yHi = dr.yHi + dp; }
+      if (dr.full || !this.auto) { const span = dr.yHi - dr.yLo, dp = (dy / (this.layout().mainH - 12)) * span; this.auto = false; this.yLo = dr.yLo + dp; this.yHi = dr.yHi + dp; }
       this.cross = null; this.dirty(); this.emit();
     });
     const up = (e) => {
@@ -2239,16 +2245,17 @@ class CChart {
         this.dirty();
       } else if (dr.moved && !dr.axis && Math.abs(this.vx) > 2) this.inertia();
     };
-    c.addEventListener("pointerup", up); c.addEventListener("pointercancel", up);
+    on("pointerup", up); on("pointercancel", up);
     c.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse" && !this.ptr.size) { this.cross = null; this.dirty(); if (this.onCross) this.onCross(null); } });
-    c.addEventListener("wheel", (e) => {
+    on("wheel", (e) => {
       e.preventDefault(); const p = pos(e);
+      if (p.x > this.layout().r && !e.shiftKey && Math.abs(e.deltaY) >= Math.abs(e.deltaX)) { const f = Math.exp(e.deltaY * 0.0015), mid = (this.yLo + this.yHi) / 2, half = ((this.yHi - this.yLo) / 2) * f; this.auto = false; this.yLo = mid - half; this.yHi = mid + half; this.dirty(); return; }
       if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) this.x0 += (e.deltaX || e.deltaY) / this.bw();
       else { const idx = this.I(p.x); this.bars *= Math.exp(e.deltaY * 0.0015); this.clamp(); this.x0 = idx - p.x / this.bw() + 0.5; }
       this.clamp(); this.dirty(); this.emit();
     }, { passive: false });
-    ["gesturestart", "gesturechange", "gestureend"].forEach((ev) => c.addEventListener(ev, (e) => e.preventDefault(), { passive: false }));
-    c.addEventListener("contextmenu", (e) => e.preventDefault());
+    ["gesturestart", "gesturechange", "gestureend"].forEach((ev) => on(ev, (e) => e.preventDefault(), { passive: false }));
+    on("contextmenu", (e) => e.preventDefault());
   }
   inertia() { let v = this.vx; const step = () => { v *= 0.88; if (Math.abs(v) < 0.4) { this.emit(); return; } this.x0 -= v / this.bw(); this.clamp(); this.draw(); this.inert = requestAnimationFrame(step); }; this.inert = requestAnimationFrame(step); }
 
@@ -2269,13 +2276,14 @@ class CChart {
     g.stroke();
     g.save(); g.beginPath(); g.rect(0, 0, L.pw, L.mainH); g.clip();
     // session bands
-    for (const s of Ls.sessions || []) { const xa = this.X(this.ti(s.t0) - 0.5), xb = this.X(this.ti(s.t1) - 0.5); if (xb < 0 || xa > L.pw) continue; g.fillStyle = rgba(s.color, 0.08); g.fillRect(xa, 0, xb - xa, L.mainH); if (xb - xa > 46) { g.fillStyle = rgba(s.color, 0.85); g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(s.name, Math.max(xa + 4, 4), 12); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
+    const tLast = this.k[this.k.length - 1].t;
+    for (const s of Ls.sessions || []) { const xa = this.X(this.ti(s.t0) - 0.5), xb = s.t1 >= tLast ? L.pw : this.X(this.ti(s.t1) - 0.5); /* ongoing session runs to the edge */ if (xb < 0 || xa > L.pw) continue; g.fillStyle = rgba(s.color, 0.08); g.fillRect(xa, 0, xb - xa, L.mainH); if (xb - xa > 46) { g.fillStyle = rgba(s.color, 0.85); g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(s.name, Math.max(xa + 4, 4), 12); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
     // liquidation heatmap
     const H = Ls.heat;
     if (H && H.max > 0) {
       const ca = Math.max(0, Math.floor(this.ti(t0) * this.sec / H.dt + (this.k[0].t - H.t0) / H.dt) - 1);
       for (let c = ca; c < H.cols; c++) {
-        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5), xb = this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.pw) break; if (xb < 0) continue;
+        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5), xb = c === H.cols - 1 ? Math.max(L.pw, this.X(this.ti(tA + H.dt) - 0.5)) : this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.pw) break; if (xb < 0) continue;
         for (let r = 0; r < H.rows; r++) {
           const v = H.grid[c * H.rows + r]; if (v < H.max * 0.06) continue; const pa = H.lo + r * H.step, y1 = this.Y(pa + H.step), y2 = this.Y(pa); if (y2 < 0 || y1 > L.mainH) continue;
           const t = Math.pow(v / H.max, 0.75); g.fillStyle = heatColor(t); g.fillRect(xa, y1, Math.max(1, xb - xa + 0.5), Math.max(1, y2 - y1 + 0.5));
@@ -2436,7 +2444,7 @@ class CChart {
       });
     }
     // price axis: tags first (priority, no overlaps), then tick labels in the gaps
-    { const fx = g.createLinearGradient(L.r - 14, 0, L.r + 18, 0); fx.addColorStop(0, rgba(C.bg, 0)); fx.addColorStop(1, rgba(C.bg, 0.45)); g.fillStyle = fx; g.fillRect(L.r - 14, 0, L.axW + 14, L.mainH); }
+    
     const tags = [{ p: last.c, text: n0(last.c), color: lc, prio: 1000, solid: true }];
     if (!Ls.lineLbl) for (const h of Ls.hlines || []) if (h.tag && ok(h.p)) tags.push({ p: h.p, text: h.tag, color: h.color, prio: h.prio || 10 });
     if (this.cross && this.cross.y < L.mainH) tags.push({ p: this.P(this.cross.y), text: n0(this.P(this.cross.y)), color: C.fg, prio: 2000, solid: true, cross: true });
@@ -2464,7 +2472,9 @@ class CChart {
       g.strokeStyle = C.fg2; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(X, 0); g.lineTo(X, L.tTop); if (this.cross.y < L.mainH) { g.moveTo(0, Math.round(this.cross.y) + 0.5); g.lineTo(L.pw, Math.round(this.cross.y) + 0.5); } g.stroke(); g.setLineDash([]);
       if (cb) { const lab = new Date(cb.t * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), w = g.measureText(lab).width + 12; g.fillStyle = C.fg; g.fillRect(Math.min(L.pw - w, Math.max(0, X - w / 2)), L.tTop + 1, w, 18); g.fillStyle = C.bg; g.textAlign = "center"; g.fillText(lab, Math.min(L.pw - w / 2, Math.max(w / 2, X)), L.tTop + 10); g.textAlign = "left"; }
     }
-    if (!this.auto) { g.fillStyle = C.acc; g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText("manual scale · double-tap axis", 6, L.mainH - 8); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
+    // fixed (auto) vs unfixed price scale: overlay strip, Auto button, and touch mode (unfixed = drag moves up/down too)
+    this.axEl.style.cssText = `top:0;right:0;width:${L.axW}px;height:${L.mainH}px`; this.autoBtn.hidden = this.auto; this.autoBtn.style.top = `${L.mainH - 36}px`; this.autoBtn.style.right = `${L.axW + 8}px`;
+    this.cv.style.touchAction = this.auto ? "" : "none";
   }
   tag(g, L, y, text, color, solid, cross) {
     const C = this.colors(); g.font = "600 11px IBM Plex Sans, system-ui, sans-serif"; let t = text; while (g.measureText(t).width > L.axW - 8 && t.length > 4) t = t.slice(0, -1);
