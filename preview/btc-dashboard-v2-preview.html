@@ -2298,11 +2298,11 @@ class CChart {
     const PF = Ls.profile; if (PF) { const y1 = this.Y(PF.vah), y2 = this.Y(PF.val); g.fillStyle = rgba(C.acc, 0.07); g.fillRect(0, y1, L.r, y2 - y1); }
     // volume profile histogram
     if (PF) {
-      const mx = Math.max(...PF.vol) || 1, maxW = L.r * 0.22;
+      const mx = Math.max(...PF.vol) || 1, maxW = L.pw * 0.22;
       for (let i = 0; i < PF.n; i++) {
         const pa = PF.lo + i * PF.step, ya = this.Y(pa + PF.step), yb = this.Y(pa), mid = pa + PF.step / 2;
         g.fillStyle = Math.abs(mid - PF.poc) < PF.step / 2 ? rgba("#e8c547", 0.75) : mid >= PF.val && mid <= PF.vah ? rgba(C.acc, 0.42) : rgba(C.fg3, 0.3);
-        const w = (PF.vol[i] / mx) * maxW; g.fillRect(L.r - w, ya + 0.5, w, Math.max(1, yb - ya - 1));
+        const w = (PF.vol[i] / mx) * maxW; g.fillRect(L.pw - w, ya + 0.5, w, Math.max(1, yb - ya - 1));
       }
     }
     // volume
