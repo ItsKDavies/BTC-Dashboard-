@@ -74,6 +74,7 @@ main{padding-block:14px 40px;display:grid;gap:14px}
 canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:crosshair}
 .panel.full canvas.cc{touch-action:none}
 .cax{position:absolute;touch-action:none;cursor:ns-resize;z-index:2;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.fibg{margin:8px 8px 4px;padding:10px 12px;border:1px solid var(--weak);border-radius:10px;background:var(--bg);font-size:13.5px}.fibg[hidden]{display:none}.fgh{font-size:13px}.fgtt{font-weight:600;margin:4px 0 2px}.fgz{color:var(--warn);font-size:13px}.fgl{margin:6px 0;padding-left:18px;color:var(--fg2)}.fgl li{margin:2px 0}.fgd summary{cursor:pointer;color:var(--fg3);font-size:12.5px}.fgr{display:grid;grid-template-columns:44px 64px 1fr;gap:6px;font-size:12.5px;padding:2px 4px;border-radius:6px}.fgr.on{background:color-mix(in srgb,var(--warn) 16%,transparent)}.fgk{font:600 12px var(--mono)}.fgp{font:12px var(--mono);color:var(--fg)}.fgt{color:var(--fg2)}.fgn{font-size:11.5px;margin-top:6px}
 .cauto{position:absolute;z-index:3;font:600 12px var(--font);padding:5px 11px;border-radius:999px;border:1px solid var(--acc);background:color-mix(in srgb,var(--panel) 82%,transparent);color:var(--acc);min-height:28px}.cauto[hidden]{display:none}
 .layers{display:grid;gap:6px;margin:2px 0 8px;padding:8px 10px;border:1px solid var(--weak);border-radius:10px;background:var(--bg)}
 .lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -399,7 +400,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <div class="lg"><span class="lgt">Opacity</span><label class="rng"><span>Candles</span><input type="range" id="opCdl" min="15" max="100" step="5"><b id="opCdlV"></b></label></div>
         <div class="lg"><span class="lgt"></span><label class="rng"><span>Bubbles</span><input type="range" id="opBub" min="10" max="100" step="5"><b id="opBubV"></b></label></div>
         <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
-        <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button><button class="chip" data-tog="lineLbl">Labels on lines</button></div>
+        <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="fibPlan">Fib plan</button><button class="chip" data-tog="zones">Zones</button><button class="chip" data-tog="lineLbl">Labels on lines</button></div>
         <div class="ctl" id="fibSel" hidden style="padding-left:90px;margin:-2px 0 2px"></div>
         <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><span class="seg"><button data-tln="few">Few</button><button data-tln="more">More</button><button data-tln="max">Max</button></span><button class="chip" data-tog="cdl">Candle patterns</button></div>
         <div class="lg"><span class="lgt">Options</span><button class="chip" data-tog="gexl">GEX levels</button></div>
@@ -410,6 +411,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       <div class="ohlc" id="ohlc" hidden></div>
       <div class="ctl" id="myAdd" style="margin:-2px 0 6px;min-height:0"></div>
       <div id="cMain" class="chartbox"></div>
+      <div id="fibGuide" class="fibg" hidden></div>
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
     </div>
     <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
@@ -2160,7 +2162,7 @@ syncCtl(); setTab(ST.tab);
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
 Object.assign(ST, {
   heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), tlN: LS.get("tlN", "more"), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
-  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60),
+  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60), fibPlan: LS.get("fibPlan", true),
 });
 
 /* ---------- engine ---------- */
@@ -2193,7 +2195,7 @@ class CChart {
   reset(n) { this.bars = n || this.defBars(); this.x0 = this.k.length + this.padB() - this.bars; this.auto = true; this.dirty(); this.emit(); }
   layout() { const axW = 56, tH = 20, n = this.nSub(), sub = n ? Math.round((this.H - tH) * Math.max(0.14, Math.min(0.72, this.subBase(n) + this.subAdj))) : 0, mainH = this.H - tH - (sub ? sub + 6 : 0); return { r: this.W - axW, pw: this.W, axW, mainH, subTop: mainH + 6, subH: sub, tTop: this.H - tH }; }
   bw() { return this.W / this.bars; }
-  padB() { return 2; } // newest candle runs right up into the price column (prices float over the candles)
+  padB() { return 2 + (this.padX || 0); } // newest candle runs right up into the price column (prices float over the candles)
   X(i) { return (i - this.x0 + 0.5) * this.bw(); }
   I(x) { return x / this.bw() + this.x0 - 0.5; }
   ti(t) { return this.k.length ? (t - this.k[0].t) / this.sec : 0; }
@@ -2201,7 +2203,7 @@ class CChart {
   yRange() {
     if (!this.auto) return; const [a, b] = this.vis(); let lo = Infinity, hi = -Infinity;
     for (let i = a; i <= b; i++) { const x = this.k[i]; if (x.l < lo) lo = x.l; if (x.h > hi) hi = x.h; }
-    if (!isFinite(lo)) { lo = 0; hi = 1; } const p = (hi - lo) * 0.08 || 1; this.yLo = lo - p; this.yHi = hi + p;
+    if (!isFinite(lo)) { lo = 0; hi = 1; } for (const v of this.L.yInc || []) { if (v < lo) lo = v; if (v > hi) hi = v; } const p = (hi - lo) * 0.08 || 1; this.yLo = lo - p; this.yHi = hi + p;
   }
   Y(p) { const L = this.layout(); return 6 + (1 - (p - this.yLo) / (this.yHi - this.yLo)) * (L.mainH - 12); }
   P(y) { const L = this.layout(); return this.yLo + (1 - (y - 6) / (L.mainH - 12)) * (this.yHi - this.yLo); }
@@ -2342,7 +2344,14 @@ class CChart {
     }
     // drawings: pattern shapes, trendlines, swing labels, pattern tags
     for (const d of Ls.draw || []) {
-      if (d.type === "poly") { g.beginPath(); d.pts.forEach(([i, p], j) => (j ? g.lineTo(this.X(i), this.Y(p)) : g.moveTo(this.X(i), this.Y(p)))); g.closePath(); g.fillStyle = rgba(d.color, d.alpha || 0.09); g.fill(); }
+      if (d.type === "rect") { const x0 = this.X(d.i0), x1 = this.X(d.i1), y0 = this.Y(d.p0), y1 = this.Y(d.p1); g.fillStyle = rgba(d.color, d.alpha || 0.14); g.fillRect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.max(2, Math.abs(y1 - y0)));
+        if (d.edge) { g.strokeStyle = rgba(d.color, 0.7); g.lineWidth = 1; g.setLineDash([3, 3]); g.strokeRect(Math.min(x0, x1) + 0.5, Math.min(y0, y1) + 0.5, Math.abs(x1 - x0), Math.max(2, Math.abs(y1 - y0))); g.setLineDash([]); }
+        if (d.label) { g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.fillStyle = d.color; g.textAlign = "left"; g.lineJoin = "round"; g.strokeStyle = rgba(C.bg, 0.85); g.lineWidth = 3; const ly = Math.min(y0, y1) - 6; g.strokeText(d.label, Math.min(x0, x1) + 3, ly); g.fillText(d.label, Math.min(x0, x1) + 3, ly); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
+      else if (d.type === "arrow") { const x0 = this.X(d.i0), y0 = this.Y(d.p0), x1 = this.X(d.i1), y1 = this.Y(d.p1), an = Math.atan2(y1 - y0, x1 - x0), hs = 7;
+        g.save(); g.strokeStyle = d.color; g.fillStyle = d.color; g.lineWidth = d.w || 2; g.lineCap = "round"; g.setLineDash(d.dash || []); g.globalAlpha = d.alpha || 1;
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - Math.cos(an) * hs * 0.6, y1 - Math.sin(an) * hs * 0.6); g.stroke(); g.setLineDash([]);
+        g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - hs * Math.cos(an - 0.45), y1 - hs * Math.sin(an - 0.45)); g.lineTo(x1 - hs * Math.cos(an + 0.45), y1 - hs * Math.sin(an + 0.45)); g.closePath(); g.fill(); g.restore(); }
+      else if (d.type === "poly") { g.beginPath(); d.pts.forEach(([i, p], j) => (j ? g.lineTo(this.X(i), this.Y(p)) : g.moveTo(this.X(i), this.Y(p)))); g.closePath(); g.fillStyle = rgba(d.color, d.alpha || 0.09); g.fill(); }
       else if (d.type === "seg") { g.save(); g.strokeStyle = d.color; g.lineWidth = d.w || 2; g.lineCap = "round"; g.setLineDash(d.dash || []); if (d.glow) { g.shadowColor = d.color; g.shadowBlur = 8; } g.beginPath(); g.moveTo(this.X(d.i0), this.Y(d.p0)); g.lineTo(this.X(d.i1), this.Y(d.p1)); g.stroke(); g.restore(); }
       else if (d.type === "dot") { g.beginPath(); g.arc(this.X(d.i), this.Y(d.p), d.r || 3.5, 0, Math.PI * 2); g.fillStyle = C.bg; g.fill(); g.strokeStyle = d.color; g.lineWidth = 1.6; g.stroke(); }
       else if (d.type === "pill" || d.type === "text") {
@@ -2673,7 +2682,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
+  const key = [ST.fibPlan, ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -2682,8 +2691,9 @@ function chartExtras(fromView) {
   if (on(ST.avwap) && intra) { const av = avwapSeries(k), m = (arr) => arr.map((p) => ({ t: p.time, v: p.value })); L.lines.push({ pts: m(av.m), color: "#e8c547", w: 1.8 }, { pts: m(av.u1), color: C.acc }, { pts: m(av.l1), color: C.acc }, { pts: m(av.u2), color: C.acc, dash: [4, 4] }, { pts: m(av.l2), color: C.acc, dash: [4, 4] }); L.hlines.push({ p: lastOf(av.m) ? lastOf(av.m).value : NaN, color: "#e8c547", tag: "AVWAP", prio: 48, alpha: 0 }); }
   if (on(ST.lv)) levels().forEach((l) => L.hlines.push({ p: l.p, color: l.t.startsWith("PD") ? C.fg3 : C.acc, dash: [5, 4], tag: l.t.replace("Day open", "D open").replace("Week open", "W open").replace("Month open", "M open"), prio: 50 }));
   const [va, vb] = CC.vis(), vis = k.slice(va, vb + 1);
+  const swP = (on(ST.fib) || on(ST.fibPlan)) && vis.length > 4 ? (ST.fibSrc === "auto" ? fibAuto(k, va, vb) : ST.fibSrc !== "vis" ? fibSwing(ST.fibSrc) : null) : null;
   if (on(ST.fib) && vis.length > 4) {
-    const sw = ST.fibSrc === "auto" ? fibAuto(k, va, vb) : ST.fibSrc !== "vis" ? fibSwing(ST.fibSrc) : null;
+    const sw = swP;
     if (sw) { // measured on the last large move of the chosen timeframe: 0 at the end of the move, 1 at its start
       const P = (r) => (sw.up ? sw.hi - r * (sw.hi - sw.lo) : sw.lo + r * (sw.hi - sw.lo)), ti = (t) => (t - k[0].t) / TF_SEC[ST.tf];
       FIBS.filter((r) => !ST.fibOff[r]).forEach((r) => L.hlines.push({ p: P(r), color: fibColor(r), dash: [1, 3], left: String(r), alpha: 0.95, x0: Math.max(k[0].t, sw.t0) }));
@@ -2709,6 +2719,9 @@ function chartExtras(fromView) {
   }
   L.draw = []; L.hl = new Map();
   if (L.fibLeg) { const f = L.fibLeg; L.draw.push({ type: "dot", i: f.i0, p: f.p0, color: C.fg3 }, { type: "dot", i: f.i1, p: f.p1, color: C.fg3 }); }
+  { const plan = on(ST.fibPlan) && swP ? fibPlan(swP, k) : null, want = plan ? Math.max(10, Math.round(CC.bars * 0.36)) : 0;
+    if ((CC.padX || 0) !== want) { const end = CC.atEnd(); CC.padX = want; if (end) CC.x0 = k.length + CC.padB() - CC.bars; }
+    if (plan) drawFibPlan(L, k, C, plan, want); fibGuide(plan); }
   if (on(ST.trend) && k.length > 40) drawStructure(L, k, C);
   if (on(ST.pat) && k.length > 60) drawGeo(L, k, C);
   if (on(ST.cdl) && k.length > 30) drawCandles(L, k, C, a);
@@ -2864,6 +2877,91 @@ drawMyLevels(); initChart(); if (CC) { CC.subAdj = ST.subAdj; CC.onSplit = (v) =
 /* ---------- chart opacity sliders (candles, whale bubbles) ---------- */
 [["opCdl", 100], ["opBub", 60]].forEach(([k, d]) => { const el = $("#" + k), v = $("#" + k + "V"); if (!el) return; const show = () => (v.textContent = `${ST[k]}%`);
   el.value = ST[k] ?? d; show(); el.addEventListener("input", () => { ST[k] = +el.value; show(); if (CC) CC.dirty(); }); el.addEventListener("change", () => LS.set(k, ST[k])); });
+
+/* ---------- Fib plan: where price sits in the last big move, the usual next reaction, and a drawn path ----------
+   Ratios are measured like the fib lines: 0 = end of the move, 1 = its start, negative = beyond the end (extensions).
+   Rules are the common textbook fib behaviour (pullback zones, golden pocket, 0.786 last defense, AB=CD,
+   1.272/1.618 extensions). It's a scenario map, not a prediction. */
+function fibPlan(sw, k) {
+  const n = k.length, px = k[n - 1].c, up = sw.up, rg = sw.hi - sw.lo; if (!(rg > 0)) return null;
+  const P = (r) => (up ? sw.hi - r * rg : sw.lo + r * rg), rOf = (p) => (up ? (sw.hi - p) / rg : (p - sw.lo) / rg);
+  const after = k.filter((x) => x.t > sw.t1); let cP = up ? sw.hi : sw.lo, cT = sw.t1;
+  for (const x of after) { if (up ? x.l < cP : x.h > cP) { cP = up ? x.l : x.h; cT = x.t; } }
+  const rNow = rOf(px), rMax = Math.max(0, rOf(cP)), bounced = rMax >= 0.236 && rMax - rNow >= 0.18, f2 = (r) => (Math.round(r * 1000) / 1000).toString();
+  const rng = (a, b) => `${n0(Math.min(a, b))}–${n0(Math.max(a, b))}`, W = up ? "up" : "down", fwd = up ? "higher" : "lower", back = up ? "lower" : "higher";
+  let phase, title, zone = null, main = [], alt = [], tips = [], inval = null;
+  if (rNow < -0.02) {
+    phase = "ext"; title = `Breaking past the end of the ${W}-move (extension mode)`;
+    const ts = [-0.272, -0.618, -1].filter((r) => r < rNow - 0.03);
+    main = [...ts.slice(0, 1).map((r) => ({ p: P(r), lab: `${f2(1 - r)} ext` })), { p: P(0), lab: "retest 0" }, ...ts.slice(1, 2).map((r) => ({ p: P(r), lab: `${f2(1 - r)} ext` }))];
+    zone = { a: P(0), b: P(0.236), lab: "Retest zone 0–0.236" }; inval = { p: P(0.382), lab: "back below 0.382" };
+    alt = [{ p: P(0.382), lab: "fails → 0.382" }];
+    tips = [`Price is beyond the move's end, so the next magnets are the extensions: <b>1.272 (${n0(P(-0.272))})</b> then <b>1.618 (${n0(P(-0.618))})</b>.`, `Breakouts often come back to retest the old end (the 0 line, ${n0(P(0))}) before carrying on.`];
+  } else if (rNow > 1.02) {
+    phase = "flip"; title = `The ${W}-move is fully retraced — trend has flipped`;
+    const ts = [1.272, 1.618, 2].filter((r) => r > rNow + 0.03);
+    main = [{ p: P(1), lab: "retest 1.0" }, ...ts.slice(0, 2).map((r) => ({ p: P(r), lab: `${f2(r)}` }))];
+    zone = { a: P(1), b: P(0.886), lab: "Old start, now resistance" }; inval = { p: P(0.786), lab: `reclaims 0.786` };
+    alt = [{ p: P(0.786), lab: "reclaim → 0.786" }];
+    tips = [`Price went through the start of the move (1.0, ${n0(P(1))}). That level often flips and gets retested from the other side.`, `Next fib targets past the start: <b>1.272 (${n0(P(1.272))})</b> and <b>1.618 (${n0(P(1.618))})</b>.`];
+  } else if (bounced && rMax <= 0.886) {
+    phase = "abc"; title = `Pullback held at ${f2(rMax)} — AB=CD leg in play`;
+    const d1 = cP + (up ? rg : -rg), d2 = cP + (up ? 1.272 * rg : -1.272 * rg);
+    main = [{ p: P(0), lab: "prior " + (up ? "high" : "low") }, { p: d1, lab: "AB=CD" }];
+    zone = { a: cP, b: P(Math.max(0, rMax - 0.08)), lab: `Held ${f2(rMax)}` }; inval = { p: cP, lab: `loses the ${f2(rMax)} ${up ? "low" : "high"}` };
+    alt = [{ p: cP, lab: "fails → retest C" }];
+    tips = [`The pullback stopped at ${f2(rMax)} (${n0(cP)}) and price has turned ${fwd}. That's the C point of an ABC move.`, `First test is the prior ${up ? "high" : "low"} (${n0(P(0))}). The classic AB=CD target is <b>${n0(d1)}</b>, with ${n0(d2)} (1.272) if it runs.`, `It stays valid while price holds ${up ? "above" : "below"} ${n0(cP)}.`];
+  } else if (rMax < 0.236 && rNow < 0.236) {
+    phase = "fresh"; title = `The ${W}-move just finished — no real pullback yet`;
+    main = [{ p: P(0.382), lab: "0.382" }, { p: P(0), lab: "retest 0" }, { p: P(-0.272), lab: "1.272 ext" }];
+    zone = { a: P(0.382), b: P(0.5), lab: "First pullback 0.382–0.5" }; inval = { p: P(0.786), lab: "below 0.786" };
+    alt = [{ p: P(0.618), lab: "deeper → 0.618" }];
+    tips = [`Strong moves usually pull back to <b>0.382–0.5 (${rng(P(0.382), P(0.5))})</b> before the next leg.`, `If that holds, the usual continuation target is the 1.272 extension (${n0(P(-0.272))}).`];
+  } else if (rNow <= 0.66 && rMax <= 0.7) {
+    phase = "pull"; const z = rNow < 0.37 ? [0.382, 0.5] : rNow < 0.49 ? [0.5, 0.618] : [0.618, 0.65], gp = z[0] === 0.618;
+    title = `Pulling back — price at ${f2(rNow)} of the move`;
+    main = [{ p: P((z[0] + z[1]) / 2), lab: gp ? "golden pocket" : f2(z[0]) + "–" + f2(z[1]) }, { p: P(0), lab: "retest 0" }, { p: P(-0.272), lab: "1.272 ext" }];
+    zone = { a: P(z[0]), b: P(z[1]), lab: gp ? "Golden pocket 0.618–0.65" : `Bounce zone ${f2(z[0])}–${f2(z[1])}` }; inval = { p: P(0.786), lab: "below 0.786" };
+    alt = [{ p: P(0.786), lab: "breaks → 0.786" }, { p: P(1), lab: "1.0" }];
+    tips = [`Next likely bounce zone: <b>${gp ? "the golden pocket" : `${f2(z[0])}–${f2(z[1])}`} (${rng(P(z[0]), P(z[1]))})</b>. ${gp ? "It's the most watched fib zone for a turn." : "The golden pocket (0.618–0.65) sits just past it if that fails."}`, `If it bounces, the usual path is back to the ${up ? "high" : "low"} (${n0(P(0))}), then the 1.272 extension (${n0(P(-0.272))}).`, `A clean break of 0.786 (${n0(P(0.786))}) usually means a full retrace to 1.0 (${n0(P(1))}).`];
+  } else {
+    phase = "deep"; title = `Deep retrace (${f2(rNow)}) — 0.786 is the last line`;
+    const atD = rNow < 0.83;
+    main = atD ? [{ p: P(0.786), lab: "0.786" }, { p: P(0.5), lab: "0.5" }, { p: P(0.382), lab: "0.382" }] : [{ p: P(0.886), lab: "0.886" }, { p: P(0.618), lab: "0.618" }];
+    zone = { a: P(0.786), b: P(0.886), lab: "Last defense 0.786–0.886" }; inval = { p: P(1), lab: "through 1.0" };
+    alt = [{ p: P(1), lab: "breaks → 1.0" }, { p: P(1.272), lab: "1.272" }];
+    tips = [`Price is past the golden pocket. Moves that are still alive tend to hold <b>0.786–0.886 (${rng(P(0.786), P(0.886))})</b>.`, `A bounce there usually goes back to 0.5–0.382 (${rng(P(0.5), P(0.382))}).`, `Losing 1.0 (${n0(P(1))}) cancels the move. Next fib targets ${back} are 1.272 (${n0(P(1.272))}) and 1.618 (${n0(P(1.618))}).`];
+  }
+  return { sw, up, px, rNow, rMax, cP, cT, phase, title, zone, main, alt, tips, inval, P };
+}
+function drawFibPlan(L, k, C, pl, room) {
+  const n = k.length, i0 = n - 1, axB = 64 / Math.max(1, CC.W / CC.bars), step = Math.max(2, (room - 2 - axB) / Math.max(2, pl.main.length)), // last point stays left of the price labels
+    col = (a, b) => (b >= a ? C.up : C.dn), pill = (i, p, t, c) => L.draw.push({ type: "pill", i, p, text: t, color: c, anchor: "right", size: 10 });
+  L.yInc = [...pl.main.map((q) => q.p), ...(pl.zone ? [pl.zone.a, pl.zone.b] : [])]; // keep the planned path on screen
+  if (pl.zone) L.draw.push({ type: "rect", i0: i0 - 1, i1: i0 + room, p0: pl.zone.a, p1: pl.zone.b, color: C.warn, alpha: 0.13, edge: true, label: pl.zone.lab });
+  let pi = i0, pp = pl.px;
+  pl.main.forEach((q, j) => { const ni = i0 + step * (j + 1); L.draw.push({ type: "arrow", i0: pi, p0: pp, i1: ni, p1: q.p, color: col(pp, q.p), w: 2.2, dash: [6, 4] }); L.draw.push({ type: "dot", i: ni, p: q.p, r: 3, color: col(pp, q.p) });
+    const inZ = pl.zone && q.p >= Math.min(pl.zone.a, pl.zone.b) && q.p <= Math.max(pl.zone.a, pl.zone.b); if (!inZ) L.draw.push({ type: "text", i: ni, p: q.p, dy: q.p >= pp ? -11 : 15, text: `${q.lab} ${kfmt(q.p)}`, color: col(pp, q.p), size: 10 }); pi = ni; pp = q.p; });
+  // what usually happens if the key level fails (faint)
+  pi = i0; pp = pl.px; pl.alt.forEach((q, j) => { const ni = i0 + step * (j + 1) * 0.9; L.draw.push({ type: "arrow", i0: pi, p0: pp, i1: ni, p1: q.p, color: C.fg3, w: 1.4, dash: [2, 4], alpha: 0.75 });
+    L.draw.push({ type: "text", i: ni, p: q.p, dy: q.p >= pp ? -10 : 14, text: q.lab, color: C.fg3, size: 9.5, bold: false }); pi = ni; pp = q.p; });
+  if (pl.inval) L.hlines.push({ p: pl.inval.p, color: C.dn, dash: [2, 2], w: 1, alpha: 0.6, x0: k[i0].t, tag: "Invalid", prio: 30 });
+}
+let FIBG = "";
+function fibGuide(pl) {
+  const el = document.getElementById("fibGuide"); if (!el) return;
+  if (!pl) { if (FIBG) { el.hidden = true; el.innerHTML = ""; FIBG = ""; } return; }
+  const C = chartColors(), sw = pl.sw, rng = (a, b) => `${n0(Math.min(a, b))}–${n0(Math.max(a, b))}`;
+  const lv = [[0, "End of the move"], [0.382, "Shallow pullback · strong trend"], [0.5, "Halfway · common pause"], [0.618, "Golden pocket (0.618–0.65) · most common bounce"], [0.786, "Last defense · trend still alive"], [1, "Start of the move · full retrace"]];
+  const rows = lv.map(([r, t]) => { const here = Math.abs(pl.rNow - r) < 0.04 || (r === 0.618 && pl.rNow >= 0.6 && pl.rNow <= 0.67);
+    return `<div class="fgr${here ? " on" : ""}"><span class="fgk" style="color:${fibColor(r)}">${r}</span><span class="fgp">${n0(pl.P(r))}</span><span class="fgt">${t}</span></div>`; }).join("");
+  const html = `<div class="fgh"><b>Fib plan</b><span class="mut"> · ${sw.up ? "▲" : "▼"} ${n0(sw.up ? sw.lo : sw.hi)} → ${n0(sw.up ? sw.hi : sw.lo)} · price at ${(Math.round(pl.rNow * 1000) / 1000).toFixed(3)}</span></div>
+    <div class="fgtt">${pl.title}</div>${pl.zone ? `<div class="fgz">${pl.zone.lab}: <b>${rng(pl.zone.a, pl.zone.b)}</b></div>` : ""}
+    <ul class="fgl">${pl.tips.map((t) => `<li>${t}</li>`).join("")}</ul>
+    <details class="fgd"><summary>What each fib level usually means</summary>${rows}<div class="mut" style="margin-top:4px">Extensions past the end: 1.272 ${n0(pl.P(-0.272))} · 1.618 ${n0(pl.P(-0.618))}</div></details>
+    <div class="mut fgn">Dashed arrows = the usual path if the zone holds. Grey = what usually happens if it fails. Common fib behaviour, not a prediction.</div>`;
+  if (html === FIBG) return; FIBG = html; el.innerHTML = html; el.hidden = false;
+}
 
 </script>
 <script>

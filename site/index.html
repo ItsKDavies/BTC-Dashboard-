@@ -76,6 +76,7 @@ main{padding-block:14px 40px;display:grid;gap:14px}
 canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:crosshair}
 .panel.full canvas.cc{touch-action:none}
 .cax{position:absolute;touch-action:none;cursor:ns-resize;z-index:2;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.fibg{margin:8px 8px 4px;padding:10px 12px;border:1px solid var(--weak);border-radius:10px;background:var(--bg);font-size:13.5px}.fibg[hidden]{display:none}.fgh{font-size:13px}.fgtt{font-weight:600;margin:4px 0 2px}.fgz{color:var(--warn);font-size:13px}.fgl{margin:6px 0;padding-left:18px;color:var(--fg2)}.fgl li{margin:2px 0}.fgd summary{cursor:pointer;color:var(--fg3);font-size:12.5px}.fgr{display:grid;grid-template-columns:44px 64px 1fr;gap:6px;font-size:12.5px;padding:2px 4px;border-radius:6px}.fgr.on{background:color-mix(in srgb,var(--warn) 16%,transparent)}.fgk{font:600 12px var(--mono)}.fgp{font:12px var(--mono);color:var(--fg)}.fgt{color:var(--fg2)}.fgn{font-size:11.5px;margin-top:6px}
 .cauto{position:absolute;z-index:3;font:600 12px var(--font);padding:5px 11px;border-radius:999px;border:1px solid var(--acc);background:color-mix(in srgb,var(--panel) 82%,transparent);color:var(--acc);min-height:28px}.cauto[hidden]{display:none}
 .layers{display:grid;gap:6px;margin:2px 0 8px;padding:8px 10px;border:1px solid var(--weak);border-radius:10px;background:var(--bg)}
 .lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -289,7 +290,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <div class="lg"><span class="lgt">Opacity</span><label class="rng"><span>Candles</span><input type="range" id="opCdl" min="15" max="100" step="5"><b id="opCdlV"></b></label></div>
         <div class="lg"><span class="lgt"></span><label class="rng"><span>Bubbles</span><input type="range" id="opBub" min="10" max="100" step="5"><b id="opBubV"></b></label></div>
         <div class="lg"><span class="lgt">Averages</span><button class="chip" data-tog="ema">EMA 21/50/200</button><button class="chip" data-tog="sma">SMA 50/200</button><button class="chip" data-tog="vwap">VWAP</button><button class="chip" data-tog="avwap">AVWAP bands</button></div>
-        <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="zones">Zones</button><button class="chip" data-tog="lineLbl">Labels on lines</button></div>
+        <div class="lg"><span class="lgt">Levels</span><button class="chip" data-tog="my">My levels</button><button class="chip" data-tog="lv">Opens + PDH/PDL</button><button class="chip" data-tog="fib">Fib</button><button class="chip" data-tog="fibPlan">Fib plan</button><button class="chip" data-tog="zones">Zones</button><button class="chip" data-tog="lineLbl">Labels on lines</button></div>
         <div class="ctl" id="fibSel" hidden style="padding-left:90px;margin:-2px 0 2px"></div>
         <div class="lg"><span class="lgt">Drawings</span><button class="chip" data-tog="pat">Chart patterns</button><button class="chip" data-tog="trend">Trendlines + HH/HL</button><span class="seg"><button data-tln="few">Few</button><button data-tln="more">More</button><button data-tln="max">Max</button></span><button class="chip" data-tog="cdl">Candle patterns</button></div>
         <div class="lg"><span class="lgt">Options</span><button class="chip" data-tog="gexl">GEX levels</button></div>
@@ -300,6 +301,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       <div class="ohlc" id="ohlc" hidden></div>
       <div class="ctl" id="myAdd" style="margin:-2px 0 6px;min-height:0"></div>
       <div id="cMain" class="chartbox"></div>
+      <div id="fibGuide" class="fibg" hidden></div>
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
     </div>
     <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
@@ -480,12 +482,12 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
 <footer>BTC Market Dashboard v2.0 · stage 4 + news + GEX · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
 </div>
 
-<script src="ta.js?v=20261102c"></script>
-<script src="app.js?v=20261102c"></script>
-<script src="app2.js?v=20261102c"></script>
-<script src="chart2.js?v=20261102c"></script>
-<script src="stage4.js?v=20261102c"></script>
-<script src="news.js?v=20261102c"></script>
-<script src="gex.js?v=20261102c"></script>
+<script src="ta.js?v=20261102d"></script>
+<script src="app.js?v=20261102d"></script>
+<script src="app2.js?v=20261102d"></script>
+<script src="chart2.js?v=20261102d"></script>
+<script src="stage4.js?v=20261102d"></script>
+<script src="news.js?v=20261102d"></script>
+<script src="gex.js?v=20261102d"></script>
 </body>
 </html>
