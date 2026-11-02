@@ -2182,12 +2182,13 @@ class CChart {
   nSub() { return this.L.subs ? this.L.subs.length : 0; }
   subBase(n) { return [0, 0.22, 0.38, 0.48, 0.54][Math.min(4, n)]; }
   resize() { const r = this.host.getBoundingClientRect(), d = window.devicePixelRatio || 1; this.W = Math.max(200, r.width); this.H = Math.max(160, r.height); this.d = d; this.cv.width = Math.round(this.W * d); this.cv.height = Math.round(this.H * d); this.cv.style.width = this.W + "px"; this.cv.style.height = this.H + "px"; this.draw(); }
-  setData(k, sec, keep) { const end = this.atEnd(), fresh = !this.k.length || !keep; this.k = k; this.sec = sec; if (fresh) this.reset(); else if (end) this.x0 = this.k.length + this.pad - this.bars; this.dirty(); }
+  setData(k, sec, keep) { const end = this.atEnd(), fresh = !this.k.length || !keep; this.k = k; this.sec = sec; if (fresh) this.reset(); else if (end) this.x0 = this.k.length + this.padB() - this.bars; this.dirty(); }
   atEnd() { return !this.k.length || this.x0 + this.bars >= this.k.length - 1; }
   defBars() { return Math.round(Math.min(160, Math.max(40, this.W / 7))); }
-  reset(n) { this.bars = n || this.defBars(); this.x0 = this.k.length + this.pad - this.bars; this.auto = true; this.dirty(); this.emit(); }
-  layout() { const axW = 66, tH = 20, n = this.nSub(), sub = n ? Math.round((this.H - tH) * Math.max(0.14, Math.min(0.72, this.subBase(n) + this.subAdj))) : 0, mainH = this.H - tH - (sub ? sub + 6 : 0); return { r: this.W - axW, axW, mainH, subTop: mainH + 6, subH: sub, tTop: this.H - tH }; }
-  bw() { return this.layout().r / this.bars; }
+  reset(n) { this.bars = n || this.defBars(); this.x0 = this.k.length + this.padB() - this.bars; this.auto = true; this.dirty(); this.emit(); }
+  layout() { const axW = 56, tH = 20, n = this.nSub(), sub = n ? Math.round((this.H - tH) * Math.max(0.14, Math.min(0.72, this.subBase(n) + this.subAdj))) : 0, mainH = this.H - tH - (sub ? sub + 6 : 0); return { r: this.W - axW, pw: this.W, axW, mainH, subTop: mainH + 6, subH: sub, tTop: this.H - tH }; }
+  bw() { return this.W / this.bars; }
+  padB() { return 2 + Math.ceil(56 / Math.max(1, this.W / this.bars)); } // keeps the newest candle clear of the price labels
   X(i) { return (i - this.x0 + 0.5) * this.bw(); }
   I(x) { return x / this.bw() + this.x0 - 0.5; }
   ti(t) { return this.k.length ? (t - this.k[0].t) / this.sec : 0; }
@@ -2199,7 +2200,7 @@ class CChart {
   }
   Y(p) { const L = this.layout(); return 6 + (1 - (p - this.yLo) / (this.yHi - this.yLo)) * (L.mainH - 12); }
   P(y) { const L = this.layout(); return this.yLo + (1 - (y - 6) / (L.mainH - 12)) * (this.yHi - this.yLo); }
-  clamp() { const n = this.k.length; this.bars = Math.max(12, Math.min(1000, this.bars)); this.x0 = Math.max(-this.bars * 0.5, Math.min(n + this.pad * 4 - this.bars * 0.3, this.x0)); }
+  clamp() { const n = this.k.length; this.bars = Math.max(12, Math.min(1000, this.bars)); this.x0 = Math.max(-this.bars * 0.5, Math.min(n + this.padB() + this.pad * 3 - this.bars * 0.3, this.x0)); }
   dirty() { if (this.q) return; this.q = requestAnimationFrame(() => { this.q = 0; this.draw(); }); }
   emit() { if (this.onView) { clearTimeout(this.vt); this.vt = setTimeout(() => this.onView(), 120); } }
   zoom(f) { const end = this.x0 + this.bars; this.bars *= f; this.clamp(); this.x0 = end - this.bars; this.clamp(); this.dirty(); this.emit(); }
@@ -2257,24 +2258,24 @@ class CChart {
     g.fillStyle = C.bg || "#111"; g.fillRect(0, 0, this.W, this.H); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; g.textBaseline = "middle";
     if (!this.k.length) { g.fillStyle = C.fg3; g.fillText("Loading candles…", 12, 24); return; }
     const L = this.layout(); this.yRange(); const [a, b] = this.vis(), bw = this.bw();
-    { const gr = g.createLinearGradient(0, 0, 0, L.mainH); gr.addColorStop(0, rgba(C.acc, 0.05)); gr.addColorStop(0.55, rgba(C.acc, 0)); gr.addColorStop(1, rgba(C.purple || C.acc, 0.05)); g.fillStyle = gr; g.fillRect(0, 0, L.r, L.mainH); }
+    { const gr = g.createLinearGradient(0, 0, 0, L.mainH); gr.addColorStop(0, rgba(C.acc, 0.05)); gr.addColorStop(0.55, rgba(C.acc, 0)); gr.addColorStop(1, rgba(C.purple || C.acc, 0.05)); g.fillStyle = gr; g.fillRect(0, 0, L.pw, L.mainH); }
     // grid
     const ys = niceStep(this.yHi - this.yLo, Math.max(4, Math.round(L.mainH / 46))), yt = [];
     g.strokeStyle = C.grid; g.lineWidth = 1; g.beginPath();
-    for (let v = Math.ceil(this.yLo / ys) * ys; v <= this.yHi; v += ys) { const y = Math.round(this.Y(v)) + 0.5; g.moveTo(0, y); g.lineTo(L.r, y); yt.push([v, y]); }
+    for (let v = Math.ceil(this.yLo / ys) * ys; v <= this.yHi; v += ys) { const y = Math.round(this.Y(v)) + 0.5; g.moveTo(0, y); g.lineTo(L.pw, y); yt.push([v, y]); }
     const secPx = this.sec / bw, cands = [300, 900, 1800, 3600, 7200, 14400, 21600, 43200, 86400, 172800, 604800, 1209600, 2592000], step = cands.find((s) => s / secPx >= 90) || 2592000;
     const off = -new Date().getTimezoneOffset() * 60, t0 = this.k[0].t + (this.x0 - 1) * this.sec, t1 = this.k[0].t + (this.x0 + this.bars + 1) * this.sec, xt = [];
-    for (let t = Math.ceil((t0 + off) / step) * step - off; t <= t1; t += step) { const x = Math.round(this.X(this.ti(t))) + 0.5; if (x < 0 || x > L.r) continue; g.moveTo(x, 0); g.lineTo(x, L.mainH); if (L.subH) { g.moveTo(x, L.subTop); g.lineTo(x, L.subTop + L.subH); } xt.push([t, x]); }
+    for (let t = Math.ceil((t0 + off) / step) * step - off; t <= t1; t += step) { const x = Math.round(this.X(this.ti(t))) + 0.5; if (x < 0 || x > L.pw) continue; g.moveTo(x, 0); g.lineTo(x, L.mainH); if (L.subH) { g.moveTo(x, L.subTop); g.lineTo(x, L.subTop + L.subH); } xt.push([t, x]); }
     g.stroke();
-    g.save(); g.beginPath(); g.rect(0, 0, L.r, L.mainH); g.clip();
+    g.save(); g.beginPath(); g.rect(0, 0, L.pw, L.mainH); g.clip();
     // session bands
-    for (const s of Ls.sessions || []) { const xa = this.X(this.ti(s.t0) - 0.5), xb = this.X(this.ti(s.t1) - 0.5); if (xb < 0 || xa > L.r) continue; g.fillStyle = rgba(s.color, 0.08); g.fillRect(xa, 0, xb - xa, L.mainH); if (xb - xa > 46) { g.fillStyle = rgba(s.color, 0.85); g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(s.name, Math.max(xa + 4, 4), 12); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
+    for (const s of Ls.sessions || []) { const xa = this.X(this.ti(s.t0) - 0.5), xb = this.X(this.ti(s.t1) - 0.5); if (xb < 0 || xa > L.pw) continue; g.fillStyle = rgba(s.color, 0.08); g.fillRect(xa, 0, xb - xa, L.mainH); if (xb - xa > 46) { g.fillStyle = rgba(s.color, 0.85); g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(s.name, Math.max(xa + 4, 4), 12); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
     // liquidation heatmap
     const H = Ls.heat;
     if (H && H.max > 0) {
       const ca = Math.max(0, Math.floor(this.ti(t0) * this.sec / H.dt + (this.k[0].t - H.t0) / H.dt) - 1);
       for (let c = ca; c < H.cols; c++) {
-        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5), xb = this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.r) break; if (xb < 0) continue;
+        const tA = H.t0 + c * H.dt, xa = this.X(this.ti(tA) - 0.5), xb = this.X(this.ti(tA + H.dt) - 0.5); if (xa > L.pw) break; if (xb < 0) continue;
         for (let r = 0; r < H.rows; r++) {
           const v = H.grid[c * H.rows + r]; if (v < H.max * 0.06) continue; const pa = H.lo + r * H.step, y1 = this.Y(pa + H.step), y2 = this.Y(pa); if (y2 < 0 || y1 > L.mainH) continue;
           const t = Math.pow(v / H.max, 0.75); g.fillStyle = heatColor(t); g.fillRect(xa, y1, Math.max(1, xb - xa + 0.5), Math.max(1, y2 - y1 + 0.5));
@@ -2382,8 +2383,8 @@ class CChart {
       const font = (w, z) => (g.font = `${w} ${z}px IBM Plex Sans, system-ui, sans-serif`);
       subs.forEach((S, j) => {
         const top = L.subTop + j * ph, h = ph - (j < subs.length - 1 ? 4 : 0), y0 = top + 15, hh = h - 19;
-        g.fillStyle = rgba(C.fg3, 0.035); g.fillRect(0, top, L.r, h); g.strokeStyle = C.grid; g.strokeRect(0.5, top + 0.5, L.r - 1, h - 1);
-        g.save(); g.beginPath(); g.rect(0, top, L.r, h); g.clip();
+        g.fillStyle = rgba(C.fg3, 0.035); g.fillRect(0, top, L.pw, h); g.strokeStyle = C.grid; g.strokeRect(0.5, top + 0.5, L.pw - 1, h - 1);
+        g.save(); g.beginPath(); g.rect(0, top, L.pw, h); g.clip();
         const tags = [];
         if (S.empty) { font(400, 11); g.fillStyle = C.fg3; g.fillText(S.empty, 8, y0 + hh / 2); }
         else if (S.kind === "ohlc") {
@@ -2401,7 +2402,7 @@ class CChart {
           g.strokeStyle = rgba(C.fg3, 0.5); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(0, Math.round(mid) + 0.5); g.lineTo(L.r, Math.round(mid) + 0.5); g.stroke(); g.setLineDash([]);
           for (const p of U) { const X = this.X(this.ti(p.t)), hgt = p.v * sc; if (hgt < 0.4) continue; g.fillStyle = S.color; g.fillRect(X - cwid / 2, mid - hgt, cwid, hgt); }
           for (const p of Dn) { const X = this.X(this.ti(p.t)), hgt = p.v * sc; if (hgt < 0.4) continue; g.fillStyle = S.dnColor || rgba(C.fg3, 0.75); g.fillRect(X - cwid / 2, mid, cwid, hgt); }
-          g.restore(); font(400, 10.5); g.fillStyle = S.color; g.fillText(`+${S.fmt(m)}`, L.r + 6, y0 + 6); g.fillStyle = S.dnColor || C.fg3; g.fillText(`−${S.fmt(m)}`, L.r + 6, y0 + hh - 4);
+          g.restore(); font(400, 10.5); g.lineJoin = "round"; g.lineWidth = 3; g.strokeStyle = rgba(C.bg, 0.9); g.strokeText(`+${S.fmt(m)}`, L.r + 6, y0 + 6); g.strokeText(`−${S.fmt(m)}`, L.r + 6, y0 + hh - 4); g.fillStyle = S.color; g.fillText(`+${S.fmt(m)}`, L.r + 6, y0 + 6); g.fillStyle = S.dnColor || C.fg3; g.fillText(`−${S.fmt(m)}`, L.r + 6, y0 + hh - 4); g.lineWidth = 1;
           const u = at(S.up, ct), d = at(S.dn, ct);
           S.read = [[`${S.upL || "▲"} ${ok(u) ? S.fmt(u) : "–"}`, S.color], [`${S.dnL || "▼"} ${ok(d) ? S.fmt(d) : "–"}`, S.dnColor || C.fg3]];
         } else {
@@ -2435,7 +2436,7 @@ class CChart {
       });
     }
     // price axis: tags first (priority, no overlaps), then tick labels in the gaps
-    g.fillStyle = C.bg; g.fillRect(L.r, 0, L.axW, L.mainH); g.strokeStyle = C.line; g.beginPath(); g.moveTo(L.r + 0.5, 0); g.lineTo(L.r + 0.5, this.H); g.stroke();
+    { const fx = g.createLinearGradient(L.r - 14, 0, L.r + 18, 0); fx.addColorStop(0, rgba(C.bg, 0)); fx.addColorStop(1, rgba(C.bg, 0.45)); g.fillStyle = fx; g.fillRect(L.r - 14, 0, L.axW + 14, L.mainH); }
     const tags = [{ p: last.c, text: n0(last.c), color: lc, prio: 1000, solid: true }];
     if (!Ls.lineLbl) for (const h of Ls.hlines || []) if (h.tag && ok(h.p)) tags.push({ p: h.p, text: h.tag, color: h.color, prio: h.prio || 10 });
     if (this.cross && this.cross.y < L.mainH) tags.push({ p: this.P(this.cross.y), text: n0(this.P(this.cross.y)), color: C.fg, prio: 2000, solid: true, cross: true });
@@ -2443,23 +2444,25 @@ class CChart {
     tags.sort((x, y) => y.prio - x.prio).forEach((t) => { const y = this.Y(t.p); if (y < 7 || y > L.mainH - 7) return; if (placed.some((q) => Math.abs(q.y - y) < 15)) return; placed.push({ ...t, y }); });
     // price scale: evenly spaced round numbers with tick marks; the nearest one to price is brighter
     g.textAlign = "left"; g.font = "500 12px IBM Plex Sans, system-ui, sans-serif"; g.strokeStyle = C.line; g.lineWidth = 1;
-    for (const [v, y] of yt) { if (y < 8 || y > L.mainH - 8) continue; g.beginPath(); g.moveTo(L.r, y); g.lineTo(L.r + 4, y); g.stroke();
-      if (placed.some((q) => Math.abs(q.y - y) < 13)) continue; g.fillStyle = Math.abs(v - last.c) < ys / 2 ? C.fg : C.fg2 || C.fg3; g.fillText(n0(v), L.r + 8, y); }
+    g.lineJoin = "round"; g.textAlign = "right";
+    for (const [v, y] of yt) { if (y < 8 || y > L.mainH - 8) continue;
+      if (placed.some((q) => Math.abs(q.y - y) < 13)) continue; g.strokeStyle = rgba(C.bg, 0.92); g.lineWidth = 3.5; g.strokeText(n0(v), L.pw - 6, y); g.fillStyle = Math.abs(v - last.c) < ys / 2 ? C.fg : C.fg2 || C.fg3; g.fillText(n0(v), L.pw - 6, y); }
+    g.textAlign = "left"; g.lineWidth = 1;
     g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
     for (const t of placed) this.tag(g, L, t.y, t.text, t.color, t.solid, t.cross);
     // countdown to this candle's close, under the live price tag (like TradingView / CoinWise)
     { const pt = placed.find((t) => t.prio === 1000); if (pt) { const left = Math.max(0, last.t + this.sec - Date.now() / 1000), hh = Math.floor(left / 3600), mm = Math.floor((left % 3600) / 60), ss = Math.floor(left % 60);
       const txt = (hh ? hh + ":" + String(mm).padStart(2, "0") : mm) + ":" + String(ss).padStart(2, "0"), y = pt.y + 16 > L.mainH - 8 ? pt.y - 16 : pt.y + 16;
-      g.fillStyle = rgba(lc, 0.22); g.fillRect(L.r + 1, y - 7, L.axW - 2, 14); g.fillStyle = lc; g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(txt, L.r + 5, y + 0.5); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
+      g.fillStyle = C.bg; g.fillRect(L.r + 1, y - 7, L.axW - 2, 14); g.fillStyle = rgba(lc, 0.22); g.fillRect(L.r + 1, y - 7, L.axW - 2, 14); g.fillStyle = lc; g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(txt, L.r + 5, y + 0.5); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
     // time axis
     g.fillStyle = C.bg; g.fillRect(0, L.tTop, this.W, this.H - L.tTop); g.fillStyle = C.fg3; g.textAlign = "center";
-    for (const [t, x] of xt) { const d = new Date(t * 1000), lab = step >= 86400 || (d.getHours() === 0 && d.getMinutes() === 0) ? d.toLocaleDateString([], { month: "short", day: "numeric" }) : d.toLocaleTimeString([], { hour: "numeric", minute: step < 3600 ? "2-digit" : undefined }); if (x > 20 && x < L.r - 20) g.fillText(lab, x, L.tTop + 10); }
+    for (const [t, x] of xt) { const d = new Date(t * 1000), lab = step >= 86400 || (d.getHours() === 0 && d.getMinutes() === 0) ? d.toLocaleDateString([], { month: "short", day: "numeric" }) : d.toLocaleTimeString([], { hour: "numeric", minute: step < 3600 ? "2-digit" : undefined }); if (x > 20 && x < L.pw - 24) g.fillText(lab, x, L.tTop + 10); }
     g.textAlign = "left";
     // crosshair
     if (this.cross) {
       const cb = this.crossBar(), i = Math.max(0, Math.min(this.k.length - 1, Math.round(this.I(this.cross.x)))), X = Math.round(this.X(i)) + 0.5;
-      g.strokeStyle = C.fg2; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(X, 0); g.lineTo(X, L.tTop); if (this.cross.y < L.mainH) { g.moveTo(0, Math.round(this.cross.y) + 0.5); g.lineTo(L.r, Math.round(this.cross.y) + 0.5); } g.stroke(); g.setLineDash([]);
-      if (cb) { const lab = new Date(cb.t * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), w = g.measureText(lab).width + 12; g.fillStyle = C.fg; g.fillRect(Math.min(L.r - w, Math.max(0, X - w / 2)), L.tTop + 1, w, 18); g.fillStyle = C.bg; g.textAlign = "center"; g.fillText(lab, Math.min(L.r - w / 2, Math.max(w / 2, X)), L.tTop + 10); g.textAlign = "left"; }
+      g.strokeStyle = C.fg2; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(X, 0); g.lineTo(X, L.tTop); if (this.cross.y < L.mainH) { g.moveTo(0, Math.round(this.cross.y) + 0.5); g.lineTo(L.pw, Math.round(this.cross.y) + 0.5); } g.stroke(); g.setLineDash([]);
+      if (cb) { const lab = new Date(cb.t * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), w = g.measureText(lab).width + 12; g.fillStyle = C.fg; g.fillRect(Math.min(L.pw - w, Math.max(0, X - w / 2)), L.tTop + 1, w, 18); g.fillStyle = C.bg; g.textAlign = "center"; g.fillText(lab, Math.min(L.pw - w / 2, Math.max(w / 2, X)), L.tTop + 10); g.textAlign = "left"; }
     }
     if (!this.auto) { g.fillStyle = C.acc; g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText("manual scale · double-tap axis", 6, L.mainH - 8); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
   }
