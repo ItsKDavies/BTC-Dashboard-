@@ -36,7 +36,7 @@ class CChart {
   reset(n) { this.bars = n || this.defBars(); this.x0 = this.k.length + this.padB() - this.bars; this.auto = true; this.dirty(); this.emit(); }
   layout() { const axW = 56, tH = 20, n = this.nSub(), sub = n ? Math.round((this.H - tH) * Math.max(0.14, Math.min(0.72, this.subBase(n) + this.subAdj))) : 0, mainH = this.H - tH - (sub ? sub + 6 : 0); return { r: this.W - axW, pw: this.W, axW, mainH, subTop: mainH + 6, subH: sub, tTop: this.H - tH }; }
   bw() { return this.W / this.bars; }
-  padB() { return 2 + Math.ceil(56 / Math.max(1, this.W / this.bars)); } // keeps the newest candle clear of the price labels
+  padB() { return 2; } // newest candle runs right up into the price column (prices float over the candles)
   X(i) { return (i - this.x0 + 0.5) * this.bw(); }
   I(x) { return x / this.bw() + this.x0 - 0.5; }
   ti(t) { return this.k.length ? (t - this.k[0].t) / this.sec : 0; }
@@ -139,6 +139,15 @@ class CChart {
     for (const z of Ls.boxes || []) { const y1 = this.Y(z.hi), y2 = this.Y(z.lo); g.fillStyle = rgba(z.color, 0.13); g.fillRect(0, Math.min(y1, y2) - 2, L.r, Math.max(4, Math.abs(y2 - y1) + 4)); }
     // value area shading
     const PF = Ls.profile; if (PF) { const y1 = this.Y(PF.vah), y2 = this.Y(PF.val); g.fillStyle = rgba(C.acc, 0.07); g.fillRect(0, y1, L.r, y2 - y1); }
+    // volume profile histogram
+    if (PF) {
+      const mx = Math.max(...PF.vol) || 1, maxW = L.r * 0.22;
+      for (let i = 0; i < PF.n; i++) {
+        const pa = PF.lo + i * PF.step, ya = this.Y(pa + PF.step), yb = this.Y(pa), mid = pa + PF.step / 2;
+        g.fillStyle = Math.abs(mid - PF.poc) < PF.step / 2 ? rgba("#e8c547", 0.75) : mid >= PF.val && mid <= PF.vah ? rgba(C.acc, 0.42) : rgba(C.fg3, 0.3);
+        const w = (PF.vol[i] / mx) * maxW; g.fillRect(L.r - w, ya + 0.5, w, Math.max(1, yb - ya - 1));
+      }
+    }
     // volume
     let mv = 0; for (let i = a; i <= b; i++) mv = Math.max(mv, this.k[i].v);
     const cwid = Math.max(1, Math.min(bw * 0.72, bw - 1)), vH = L.mainH * 0.16;
@@ -211,15 +220,6 @@ class CChart {
       if (lbls.some((q) => Math.abs(q.X - e.X) < 30 && Math.abs(q.Y - e.Y) < 13)) continue; lbls.push(e); g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineJoin = "round";
       const t = usd(e.usd).replace("$", ""); g.strokeStyle = rgba(C.bg, 0.9); g.lineWidth = 3; g.strokeText(t, e.X, e.Y); g.fillStyle = cssv("--fg") || C.fg; g.fillText(t, e.X, e.Y);
       g.textAlign = "left"; g.textBaseline = "alphabetic"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
-    }
-    // volume profile histogram
-    if (PF) {
-      const mx = Math.max(...PF.vol) || 1, maxW = L.r * 0.22;
-      for (let i = 0; i < PF.n; i++) {
-        const pa = PF.lo + i * PF.step, ya = this.Y(pa + PF.step), yb = this.Y(pa), mid = pa + PF.step / 2;
-        g.fillStyle = Math.abs(mid - PF.poc) < PF.step / 2 ? rgba("#e8c547", 0.75) : mid >= PF.val && mid <= PF.vah ? rgba(C.acc, 0.42) : rgba(C.fg3, 0.3);
-        const w = (PF.vol[i] / mx) * maxW; g.fillRect(L.r - w, ya + 0.5, w, Math.max(1, yb - ya - 1));
-      }
     }
     // last price line
     const last = this.k[this.k.length - 1], lc = last.c >= last.o ? C.up : C.dn, ly = Math.round(this.Y(last.c)) + 0.5;
@@ -304,7 +304,7 @@ class CChart {
     // countdown to this candle's close, under the live price tag (like TradingView / CoinWise)
     { const pt = placed.find((t) => t.prio === 1000); if (pt) { const left = Math.max(0, last.t + this.sec - Date.now() / 1000), hh = Math.floor(left / 3600), mm = Math.floor((left % 3600) / 60), ss = Math.floor(left % 60);
       const txt = (hh ? hh + ":" + String(mm).padStart(2, "0") : mm) + ":" + String(ss).padStart(2, "0"), y = pt.y + 16 > L.mainH - 8 ? pt.y - 16 : pt.y + 16;
-      g.fillStyle = C.bg; g.fillRect(L.r + 1, y - 7, L.axW - 2, 14); g.fillStyle = rgba(lc, 0.22); g.fillRect(L.r + 1, y - 7, L.axW - 2, 14); g.fillStyle = lc; g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(txt, L.r + 5, y + 0.5); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
+      g.font = "600 10.5px IBM Plex Sans, system-ui, sans-serif"; { const w = Math.ceil(g.measureText(txt).width) + 10, x = L.pw - w - 1; g.fillStyle = rgba(C.bg, 0.7); g.fillRect(x, y - 7, w, 14); g.fillStyle = rgba(lc, 0.22); g.fillRect(x, y - 7, w, 14); g.fillStyle = lc; g.fillText(txt, x + 5, y + 0.5); } g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
     // time axis
     g.fillStyle = C.bg; g.fillRect(0, L.tTop, this.W, this.H - L.tTop); g.fillStyle = C.fg3; g.textAlign = "center";
     for (const [t, x] of xt) { const d = new Date(t * 1000), lab = step >= 86400 || (d.getHours() === 0 && d.getMinutes() === 0) ? d.toLocaleDateString([], { month: "short", day: "numeric" }) : d.toLocaleTimeString([], { hour: "numeric", minute: step < 3600 ? "2-digit" : undefined }); if (x > 20 && x < L.pw - 24) g.fillText(lab, x, L.tTop + 10); }
@@ -321,8 +321,9 @@ class CChart {
   }
   tag(g, L, y, text, color, solid, cross) {
     const C = this.colors(); g.font = "600 11px IBM Plex Sans, system-ui, sans-serif"; let t = text; while (g.measureText(t).width > L.axW - 8 && t.length > 4) t = t.slice(0, -1);
-    g.fillStyle = solid ? color : C.bg; g.fillRect(L.r + 1, y - 8, L.axW - 2, 16); if (!solid) { g.strokeStyle = color; g.strokeRect(L.r + 1.5, y - 7.5, L.axW - 3, 15); }
-    g.fillStyle = solid ? (cross ? C.bg : "#fff") : color; g.fillText(t, L.r + 5, y + 0.5); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
+    const w = Math.ceil(g.measureText(t).width) + 10, x = L.pw - w - 1;
+    g.fillStyle = solid ? rgba(color, cross ? 0.95 : 0.8) : rgba(C.bg, 0.75); g.beginPath(); if (g.roundRect) g.roundRect(x, y - 8, w, 16, 3); else g.rect(x, y - 8, w, 16); g.fill(); if (!solid) { g.strokeStyle = color; g.stroke(); }
+    g.fillStyle = solid ? (cross ? C.bg : "#fff") : color; g.fillText(t, x + 5, y + 0.5); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
   }
 }
 const HEAT_STOPS = [[0, [40, 11, 84]], [0.25, [59, 82, 139]], [0.5, [33, 145, 140]], [0.75, [94, 201, 98]], [1, [253, 231, 37]]];
