@@ -77,6 +77,21 @@ canvas.cc{display:block;touch-action:pan-y;-webkit-user-select:none;user-select:
 .panel.full canvas.cc{touch-action:none}
 .cax{position:absolute;touch-action:none;cursor:ns-resize;z-index:2;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .fibg{margin:8px 8px 4px;padding:10px 12px;border:1px solid var(--weak);border-radius:10px;background:var(--bg);font-size:13.5px}.fibg[hidden]{display:none}.fgh{font-size:13px}.fgtt{font-weight:600;margin:4px 0 2px}.fgz{color:var(--warn);font-size:13px}.fgl{margin:6px 0;padding-left:18px;color:var(--fg2)}.fgl li{margin:2px 0}.fgd summary{cursor:pointer;color:var(--fg3);font-size:12.5px}.fgr{display:grid;grid-template-columns:44px 64px 1fr;gap:6px;font-size:12.5px;padding:2px 4px;border-radius:6px}.fgr.on{background:color-mix(in srgb,var(--warn) 16%,transparent)}.fgk{font:600 12px var(--mono)}.fgp{font:12px var(--mono);color:var(--fg)}.fgt{color:var(--fg2)}.fgn{font-size:11.5px;margin-top:6px}
+/* Neon chart style (community-dashboard look). Scoped to the chart panel; Classic = data-cs="classic". */
+#chartPanel[data-cs="neon"]{--fg:#e9edf7;--fg2:#9aa3b8;--fg3:#8b93ab;--line:rgba(255,255,255,.08);--weak:rgba(255,255,255,.06);--panel:#0d1122;--bg:#0a0d18;--acc:#20c3ff;--up:#22e39a;--dn:#ff4d6d;--warn:#ffd23f;--purple:#7c5cff;color:var(--fg);
+  background:linear-gradient(180deg,#151b33f2,#0d1122ee 55%,#0a0d18e6);border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:0 10px 30px #00000055,inset 0 1px 0 #ffffff0d}
+#chartPanel[data-cs="neon"] .pt{background:linear-gradient(90deg,#fff,#b9c3ff 60%,#7fe7ff);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+#chartPanel[data-cs="neon"] .seg{border-color:rgba(255,255,255,.08);border-radius:10px;background:#ffffff0c;gap:2px;padding:2px}
+#chartPanel[data-cs="neon"] .seg button{border-radius:8px;color:var(--fg)}
+#chartPanel[data-cs="neon"] .seg button[aria-pressed="true"]{background:linear-gradient(135deg,#7c5cff,#20c3ff);color:#fff;font-weight:700}
+#chartPanel[data-cs="neon"] .btn{background:#ffffff0c;border-color:rgba(255,255,255,.08);color:var(--fg);border-radius:9px}
+#chartPanel[data-cs="neon"] .btn[aria-pressed="true"],#chartPanel[data-cs="neon"] .btn[aria-expanded="true"]{background:linear-gradient(135deg,#7c5cff55,#20c3ff44);border-color:#7c5cff88}
+#chartPanel[data-cs="neon"] .chip{background:#ffffff08;border-color:rgba(255,255,255,.1);color:var(--fg2)}
+#chartPanel[data-cs="neon"] .chip[aria-pressed="true"]{background:linear-gradient(135deg,#7c5cff33,#20c3ff26);border-color:#20c3ff88;color:#fff}
+#chartPanel[data-cs="neon"] .layers{background:#0a0d18cc;border-color:rgba(255,255,255,.08)}
+#chartPanel[data-cs="neon"] #cMain{border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+#chartPanel[data-cs="neon"] .fibg{background:#ffd16608;border-color:#ffd16633}
+@media (max-width:520px){#chartPanel[data-cs="neon"]{border-radius:0;border-left:0;border-right:0}#chartPanel[data-cs="neon"] #cMain{border-radius:0;box-shadow:none}}
 .cauto{position:absolute;z-index:3;font:600 12px var(--font);padding:5px 11px;border-radius:999px;border:1px solid var(--acc);background:color-mix(in srgb,var(--panel) 82%,transparent);color:var(--acc);min-height:28px}.cauto[hidden]{display:none}
 .layers{display:grid;gap:6px;margin:2px 0 8px;padding:8px 10px;border:1px solid var(--weak);border-radius:10px;background:var(--bg)}
 .lg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -286,6 +301,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
         <button class="btn" id="bClean" aria-pressed="false" title="Hide every overlay except your own levels">Clean</button>
       </div>
       <div id="layers" hidden class="layers">
+        <div class="lg"><span class="lgt">Style</span><span class="seg"><button data-cst="neon">Neon</button><button data-cst="classic">Classic</button></span></div>
         <div class="lg"><span class="lgt">Candles</span><button class="chip" data-tog="mono">Mono</button><button class="chip" data-tog="sess">Sessions</button></div>
         <div class="lg"><span class="lgt">Opacity</span><label class="rng"><span>Candles</span><input type="range" id="opCdl" min="15" max="100" step="5"><b id="opCdlV"></b></label></div>
         <div class="lg"><span class="lgt"></span><label class="rng"><span>Bubbles</span><input type="range" id="opBub" min="10" max="100" step="5"><b id="opBubV"></b></label></div>
@@ -482,12 +498,12 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
 <footer>BTC Market Dashboard v2.0 · stage 4 + news + GEX · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
 </div>
 
-<script src="ta.js?v=20261102d"></script>
-<script src="app.js?v=20261102d"></script>
-<script src="app2.js?v=20261102d"></script>
-<script src="chart2.js?v=20261102d"></script>
-<script src="stage4.js?v=20261102d"></script>
-<script src="news.js?v=20261102d"></script>
-<script src="gex.js?v=20261102d"></script>
+<script src="ta.js?v=20261104a"></script>
+<script src="app.js?v=20261104a"></script>
+<script src="app2.js?v=20261104a"></script>
+<script src="chart2.js?v=20261104a"></script>
+<script src="stage4.js?v=20261104a"></script>
+<script src="news.js?v=20261104a"></script>
+<script src="gex.js?v=20261104a"></script>
 </body>
 </html>

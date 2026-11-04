@@ -3,7 +3,7 @@
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
 Object.assign(ST, {
   heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), tlN: LS.get("tlN", "more"), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
-  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60), fibPlan: LS.get("fibPlan", true),
+  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60), fibPlan: LS.get("fibPlan", true), cstyle: LS.get("cstyle", "neon"),
 });
 
 /* ---------- engine ---------- */
@@ -105,10 +105,10 @@ class CChart {
   /* ---------- drawing ---------- */
   draw() {
     const g = this.g, C = this.colors(), Ls = this.L; g.setTransform(this.d || 1, 0, 0, this.d || 1, 0, 0);
-    g.fillStyle = C.bg || "#111"; g.fillRect(0, 0, this.W, this.H); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; g.textBaseline = "middle";
+    if (C.grad) { const bgG = g.createLinearGradient(0, 0, 0, this.H); bgG.addColorStop(0, C.grad[0]); bgG.addColorStop(1, C.grad[1]); g.fillStyle = bgG; } else g.fillStyle = C.bg || "#111"; g.fillRect(0, 0, this.W, this.H); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; g.textBaseline = "middle";
     if (!this.k.length) { g.fillStyle = C.fg3; g.fillText("Loading candles…", 12, 24); return; }
     const L = this.layout(); this.yRange(); const [a, b] = this.vis(), bw = this.bw();
-    { const gr = g.createLinearGradient(0, 0, 0, L.mainH); gr.addColorStop(0, rgba(C.acc, 0.05)); gr.addColorStop(0.55, rgba(C.acc, 0)); gr.addColorStop(1, rgba(C.purple || C.acc, 0.05)); g.fillStyle = gr; g.fillRect(0, 0, L.pw, L.mainH); }
+    if (!C.grad) { const gr = g.createLinearGradient(0, 0, 0, L.mainH); gr.addColorStop(0, rgba(C.acc, 0.05)); gr.addColorStop(0.55, rgba(C.acc, 0)); gr.addColorStop(1, rgba(C.purple || C.acc, 0.05)); g.fillStyle = gr; g.fillRect(0, 0, L.pw, L.mainH); }
     // grid
     const ys = niceStep(this.yHi - this.yLo, Math.max(4, Math.round(L.mainH / 46))), yt = [];
     g.strokeStyle = C.grid; g.lineWidth = 1; g.beginPath();
@@ -151,7 +151,7 @@ class CChart {
     // volume
     let mv = 0; for (let i = a; i <= b; i++) mv = Math.max(mv, this.k[i].v);
     const cwid = Math.max(1, Math.min(bw * 0.72, bw - 1)), vH = L.mainH * 0.16;
-    for (let i = a; i <= b; i++) { const x = this.k[i], h = mv ? (x.v / mv) * vH : 0, X = this.X(i); g.fillStyle = rgba(x.c >= x.o ? (Ls.mono ? C.fg3 : C.up) : (Ls.mono ? C.fg3 : C.dn), 0.28); g.fillRect(X - cwid / 2, L.mainH - h, cwid, h); }
+    for (let i = a; i <= b; i++) { const x = this.k[i], h = mv ? (x.v / mv) * vH : 0, X = this.X(i); g.fillStyle = rgba(x.c >= x.o ? (Ls.mono ? C.fg3 : C.up) : (Ls.mono ? C.fg3 : C.dn), C.volA || 0.28); g.fillRect(X - cwid / 2, L.mainH - h, cwid, h); }
     // big-trade bubbles: drawn before the candles so candles stay on top; solid enough to read at a glance
     const bubs = [];
     for (const e of Ls.bubbles || []) {
@@ -225,7 +225,7 @@ class CChart {
     const lbls = [];
     for (const e of bubs.filter((q) => q.r >= 13).sort((x, y) => y.usd - x.usd)) {
       if (lbls.some((q) => Math.abs(q.X - e.X) < 30 && Math.abs(q.Y - e.Y) < 13)) continue; lbls.push(e); g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineJoin = "round";
-      const t = usd(e.usd).replace("$", ""); g.strokeStyle = rgba(C.bg, 0.9); g.lineWidth = 3; g.strokeText(t, e.X, e.Y); g.fillStyle = cssv("--fg") || C.fg; g.fillText(t, e.X, e.Y);
+      const t = usd(e.usd).replace("$", ""); g.strokeStyle = rgba(C.bg, 0.9); g.lineWidth = 3; g.strokeText(t, e.X, e.Y); g.fillStyle = C.grad ? "#fff" : cssv("--fg") || C.fg; g.fillText(t, e.X, e.Y);
       g.textAlign = "left"; g.textBaseline = "alphabetic"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
     }
     // last price line
@@ -443,7 +443,7 @@ function drawMood() {
 let CC = null;
 function initChart() {
   const host = $("#cMain"); if (!host || CC) return;
-  CC = new CChart(host); CC.colors = chartColors; CC.onView = () => { CH.xKey = null; chartExtras(true); };
+  CC = new CChart(host); CC.colors = chartPal; applyCStyle(); CC.onView = () => { CH.xKey = null; chartExtras(true); };
   CC.onCross = (b) => { showOhlc(b ? { o: b.o, h: b.h, l: b.l, c: b.c } : null); if (b && CC.cross && CC.cross.y < CC.layout().mainH) { MYADD = Math.round(CC.P(CC.cross.y)); } myAddBar(); };
   CH.ready = true;
 }
@@ -522,8 +522,8 @@ function lowerPanes(k, C) {
   return out;
 }
 function chartExtras(fromView) {
-  if (!CC || !CC.k.length) return; const C = chartColors(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.fibPlan, ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
+  if (!CC || !CC.k.length) return; const C = chartPal(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
+  const key = [ST.cstyle, ST.fibPlan, ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -803,3 +803,9 @@ function fibGuide(pl) {
     <div class="mut fgn">Dashed arrows = the usual path if the zone holds. Grey = what usually happens if it fails. Common fib behaviour, not a prediction.</div>`;
   if (html === FIBG) return; FIBG = html; el.innerHTML = html; el.hidden = false;
 }
+
+/* ---------- chart style: Neon (community-dashboard look) or Classic (the look before Nov 4 2026) ---------- */
+const NEON = { bg: "#0b0f1d", fg: "#d6dcec", fg2: "#9aa3b8", fg3: "#8b93ab", grid: "rgba(255,255,255,0.045)", line: "rgba(255,255,255,0.08)", up: "#22e39a", dn: "#ff4d6d", acc: "#20c3ff", warn: "#ffd23f", purple: "#7c5cff", grad: ["#121a35", "#0a0d18"], volA: 0.35 };
+function chartPal() { return ST.cstyle === "neon" ? NEON : chartColors(); }
+function applyCStyle() { const p = $("#chartPanel"); if (p) p.dataset.cs = ST.cstyle; document.querySelectorAll("[data-cst]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.cst === ST.cstyle)); }
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-cst]"); if (!b) return; ST.cstyle = b.dataset.cst; LS.set("cstyle", ST.cstyle); applyCStyle(); if (CC) { CH.xKey = null; chartExtras(); CC.dirty(); } });
