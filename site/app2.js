@@ -13,7 +13,7 @@ const blockedErr = (msg) => { const e = new Error(msg); e.blocked = true; return
 /* ---------- more polled sources ---------- */
 def("taK", "Binance spot 5m–1D", "TA, patterns, setups, liquidation model", 60000, async () => {
   const lim = { "15m": 300, "30m": 300, "1h": 300, "4h": 300, "1d": 250 }, out = {};
-  await Promise.all([...ATFS, "5m"].map(async (tf) => { out[tf] = (await getJSON(`${BN}/klines?symbol=BTCUSDT&interval=${tf}&limit=${lim[tf] || 300}`)).map(pk); })); // 5m is for patterns and fib only, not the TA score
+  await Promise.all([...ATFS, "5m", ...(typeof ST !== "undefined" && ST.chan && (ST.chanTf || []).includes("8h") ? ["8h"] : [])].map(async (tf) => { out[tf] = (await getJSON(`${BN}/klines?symbol=BTCUSDT&interval=${tf}&limit=${lim[tf] || 300}`)).map(pk); })); // 5m is for patterns and fib only, not the TA score
   return out;
 });
 def("okxOI1h", "OKX OI hourly", "Liquidation map model", 300000, async () => {

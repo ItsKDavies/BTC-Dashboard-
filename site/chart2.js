@@ -1,9 +1,9 @@
 "use strict";
 /* ===================== Stage 3: own canvas chart engine + new visuals ===================== */
-const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "1d": 86400 };
+const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "8h": 28800, "1d": 86400 };
 Object.assign(ST, {
   heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), tlN: LS.get("tlN", "more"), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
-  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60), fibPlan: LS.get("fibPlan", true), cstyle: LS.get("cstyle", "neon"),
+  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60), fibPlan: LS.get("fibPlan", true), cstyle: LS.get("cstyle", "neon"), chan: LS.get("chan", false), chanTf: LS.get("chanTf", ["4h"]), grpOpen: LS.get("grpOpen", { trend: true, levels: true }),
 });
 
 /* ---------- engine ---------- */
@@ -152,6 +152,46 @@ class CChart {
     let mv = 0; for (let i = a; i <= b; i++) mv = Math.max(mv, this.k[i].v);
     const cwid = Math.max(1, Math.min(bw * 0.72, bw - 1)), vH = L.mainH * 0.16;
     for (let i = a; i <= b; i++) { const x = this.k[i], h = mv ? (x.v / mv) * vH : 0, X = this.X(i); g.fillStyle = rgba(x.c >= x.o ? (Ls.mono ? C.fg3 : C.up) : (Ls.mono ? C.fg3 : C.dn), C.volA || 0.28); g.fillRect(X - cwid / 2, L.mainH - h, cwid, h); }
+    // lines and shapes sit under the candles (labels go on top after the candles)
+    // indicator lines
+    for (const s of Ls.lines || []) {
+      g.strokeStyle = s.color; g.lineWidth = s.w || 1.2; g.setLineDash(s.dash || []); g.beginPath(); let on = false;
+      for (const p of s.pts) { const i = this.ti(p.t); if (i < a - 2 || i > b + 2) continue; const X = this.X(i), Yv = this.Y(p.v); if (!on) { g.moveTo(X, Yv); on = true; } else g.lineTo(X, Yv); }
+      g.stroke(); g.setLineDash([]);
+    }
+    // drawings: pattern shapes, trendlines, swing labels, pattern tags
+    const drawD = (labels) => { for (const d of Ls.draw || []) {
+      if ((d.type === "pill" || d.type === "text") !== labels && d.type !== "rect") continue;
+      if (d.type === "rect") { const x0 = this.X(d.i0), x1 = this.X(d.i1), y0 = this.Y(d.p0), y1 = this.Y(d.p1); if (!labels) { g.fillStyle = rgba(d.color, d.alpha || 0.14); g.fillRect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.max(2, Math.abs(y1 - y0))); }
+        if (!labels && d.edge) { g.strokeStyle = rgba(d.color, 0.7); g.lineWidth = 1; g.setLineDash([3, 3]); g.strokeRect(Math.min(x0, x1) + 0.5, Math.min(y0, y1) + 0.5, Math.abs(x1 - x0), Math.max(2, Math.abs(y1 - y0))); g.setLineDash([]); }
+        if (labels && d.label) { g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.fillStyle = d.color; g.textAlign = "left"; g.lineJoin = "round"; g.strokeStyle = rgba(C.bg, 0.85); g.lineWidth = 3; const ly = Math.min(y0, y1) - 6; g.strokeText(d.label, Math.min(x0, x1) + 3, ly); g.fillText(d.label, Math.min(x0, x1) + 3, ly); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
+      else if (d.type === "arrow") { const x0 = this.X(d.i0), y0 = this.Y(d.p0), x1 = this.X(d.i1), y1 = this.Y(d.p1), an = Math.atan2(y1 - y0, x1 - x0), hs = 7;
+        g.save(); g.strokeStyle = d.color; g.fillStyle = d.color; g.lineWidth = d.w || 2; g.lineCap = "round"; g.setLineDash(d.dash || []); g.globalAlpha = d.alpha || 1;
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - Math.cos(an) * hs * 0.6, y1 - Math.sin(an) * hs * 0.6); g.stroke(); g.setLineDash([]);
+        g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - hs * Math.cos(an - 0.45), y1 - hs * Math.sin(an - 0.45)); g.lineTo(x1 - hs * Math.cos(an + 0.45), y1 - hs * Math.sin(an + 0.45)); g.closePath(); g.fill(); g.restore(); }
+      else if (d.type === "poly") { g.beginPath(); d.pts.forEach(([i, p], j) => (j ? g.lineTo(this.X(i), this.Y(p)) : g.moveTo(this.X(i), this.Y(p)))); g.closePath(); g.fillStyle = rgba(d.color, d.alpha || 0.09); g.fill(); }
+      else if (d.type === "seg") { g.save(); g.strokeStyle = d.color; g.lineWidth = d.w || 2; g.lineCap = "round"; g.setLineDash(d.dash || []); if (d.glow) { g.shadowColor = d.color; g.shadowBlur = 8; } g.beginPath(); g.moveTo(this.X(d.i0), this.Y(d.p0)); g.lineTo(this.X(d.i1), this.Y(d.p1)); g.stroke(); g.restore(); }
+      else if (d.type === "dot") { g.beginPath(); g.arc(this.X(d.i), this.Y(d.p), d.r || 3.5, 0, Math.PI * 2); g.fillStyle = C.bg; g.fill(); g.strokeStyle = d.color; g.lineWidth = 1.6; g.stroke(); }
+      else if (d.type === "pill" || d.type === "text") {
+        const X = this.X(d.i), Yv = this.Y(d.p) + (d.dy || 0); g.font = `${d.bold === false ? 600 : 700} ${d.size || 10.5}px IBM Plex Sans, system-ui, sans-serif`; const w = g.measureText(d.text).width;
+        if (d.type === "text") { g.fillStyle = d.color; g.textAlign = "center"; g.fillText(d.text, X, Yv); g.textAlign = "left"; }
+        else { const x0 = Math.min(L.r - w - 12, Math.max(2, d.anchor === "right" ? X - w - 12 : X - w / 2 - 6)); g.fillStyle = rgba(d.color, 0.92); g.beginPath(); if (g.roundRect) g.roundRect(x0, Yv - 9, w + 12, 18, 9); else g.rect(x0, Yv - 9, w + 12, 18); g.fill(); g.fillStyle = "#fff"; g.fillText(d.text, x0 + 6, Yv + 0.5); }
+        g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
+      }
+    } };
+    // horizontal levels
+    // CoinWise-style: level names written at the right end of each line instead of boxes on the price axis
+    const lbl = new Map();
+    if (Ls.lineLbl) { const used = []; g.font = "600 11px IBM Plex Sans, system-ui, sans-serif";
+      (Ls.hlines || []).filter((h) => h.tag && ok(h.p)).sort((x, y) => (y.prio || 10) - (x.prio || 10)).forEach((h) => { const y = this.Y(h.p); if (y < 8 || y > L.mainH - 8 || used.some((u) => Math.abs(u - y) < 12)) return; used.push(y); lbl.set(h, { y, w: g.measureText(h.tag).width }); });
+      g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
+    const drawH = (labels) => { for (const h of Ls.hlines || []) {
+      if (!ok(h.p)) continue; const y = Math.round(this.Y(h.p)) + 0.5; if (y < 0 || y > L.mainH) continue; const lb = lbl.get(h), xe = lb ? L.r - lb.w - 12 : L.r;
+      if (!labels) { g.strokeStyle = h.color; g.lineWidth = h.w || 1; g.setLineDash(h.dash || []); g.globalAlpha = h.alpha || 0.9; g.beginPath(); g.moveTo(h.x0 ? Math.max(0, this.X(this.ti(h.x0))) : 0, y); g.lineTo(xe, y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; continue; }
+      if (lb) { g.font = "600 11px IBM Plex Sans, system-ui, sans-serif"; g.fillStyle = h.color; g.textAlign = "right"; g.lineJoin = "round"; g.strokeStyle = rgba(C.bg, 0.85); g.lineWidth = 3.5; g.strokeText(h.tag, L.r - 5, y); g.fillText(h.tag, L.r - 5, y); g.textAlign = "left"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
+      if (h.left) { g.fillStyle = h.color; g.font = "10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(h.left, 4, y - 6); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
+    } };
+    drawD(false); drawH(false);
     // big-trade bubbles: drawn before the candles so candles stay on top; solid enough to read at a glance
     const bubs = [];
     for (const e of Ls.bubbles || []) {
@@ -160,7 +200,7 @@ class CChart {
       g.beginPath(); g.arc(X, Yv, r, 0, Math.PI * 2); const bo = (ST.opBub ?? 60) / 100; g.fillStyle = rgba(col, bo); g.fill(); g.strokeStyle = rgba(col, Math.min(1, bo + 0.35)); g.lineWidth = 1.6; g.stroke();
     }
     // candles
-    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null, halo = bubs.length > 0; const ca = (ST.opCdl ?? 100) / 100; g.globalAlpha = ca;
+    const HL = Ls.hl && Ls.hl.size ? Ls.hl : null, halo = true; const ca = (ST.opCdl ?? 100) / 100; g.globalAlpha = ca;
     if (HL) for (let i = a; i <= b; i++) { const hc = HL.get(i); if (!hc) continue; const x = this.k[i], X = this.X(i), y1 = this.Y(x.h) - 6, y2 = this.Y(x.l) + 6;
       g.fillStyle = rgba(hc, 0.13); g.fillRect(X - bw / 2, y1, bw, y2 - y1); }
     for (let i = a; i <= b; i++) {
@@ -177,43 +217,8 @@ class CChart {
       if (hc) g.restore();
     }
     g.globalAlpha = 1;
-    // indicator lines
-    for (const s of Ls.lines || []) {
-      g.strokeStyle = s.color; g.lineWidth = s.w || 1.2; g.setLineDash(s.dash || []); g.beginPath(); let on = false;
-      for (const p of s.pts) { const i = this.ti(p.t); if (i < a - 2 || i > b + 2) continue; const X = this.X(i), Yv = this.Y(p.v); if (!on) { g.moveTo(X, Yv); on = true; } else g.lineTo(X, Yv); }
-      g.stroke(); g.setLineDash([]);
-    }
-    // drawings: pattern shapes, trendlines, swing labels, pattern tags
-    for (const d of Ls.draw || []) {
-      if (d.type === "rect") { const x0 = this.X(d.i0), x1 = this.X(d.i1), y0 = this.Y(d.p0), y1 = this.Y(d.p1); g.fillStyle = rgba(d.color, d.alpha || 0.14); g.fillRect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.max(2, Math.abs(y1 - y0)));
-        if (d.edge) { g.strokeStyle = rgba(d.color, 0.7); g.lineWidth = 1; g.setLineDash([3, 3]); g.strokeRect(Math.min(x0, x1) + 0.5, Math.min(y0, y1) + 0.5, Math.abs(x1 - x0), Math.max(2, Math.abs(y1 - y0))); g.setLineDash([]); }
-        if (d.label) { g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.fillStyle = d.color; g.textAlign = "left"; g.lineJoin = "round"; g.strokeStyle = rgba(C.bg, 0.85); g.lineWidth = 3; const ly = Math.min(y0, y1) - 6; g.strokeText(d.label, Math.min(x0, x1) + 3, ly); g.fillText(d.label, Math.min(x0, x1) + 3, ly); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; } }
-      else if (d.type === "arrow") { const x0 = this.X(d.i0), y0 = this.Y(d.p0), x1 = this.X(d.i1), y1 = this.Y(d.p1), an = Math.atan2(y1 - y0, x1 - x0), hs = 7;
-        g.save(); g.strokeStyle = d.color; g.fillStyle = d.color; g.lineWidth = d.w || 2; g.lineCap = "round"; g.setLineDash(d.dash || []); g.globalAlpha = d.alpha || 1;
-        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - Math.cos(an) * hs * 0.6, y1 - Math.sin(an) * hs * 0.6); g.stroke(); g.setLineDash([]);
-        g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - hs * Math.cos(an - 0.45), y1 - hs * Math.sin(an - 0.45)); g.lineTo(x1 - hs * Math.cos(an + 0.45), y1 - hs * Math.sin(an + 0.45)); g.closePath(); g.fill(); g.restore(); }
-      else if (d.type === "poly") { g.beginPath(); d.pts.forEach(([i, p], j) => (j ? g.lineTo(this.X(i), this.Y(p)) : g.moveTo(this.X(i), this.Y(p)))); g.closePath(); g.fillStyle = rgba(d.color, d.alpha || 0.09); g.fill(); }
-      else if (d.type === "seg") { g.save(); g.strokeStyle = d.color; g.lineWidth = d.w || 2; g.lineCap = "round"; g.setLineDash(d.dash || []); if (d.glow) { g.shadowColor = d.color; g.shadowBlur = 8; } g.beginPath(); g.moveTo(this.X(d.i0), this.Y(d.p0)); g.lineTo(this.X(d.i1), this.Y(d.p1)); g.stroke(); g.restore(); }
-      else if (d.type === "dot") { g.beginPath(); g.arc(this.X(d.i), this.Y(d.p), d.r || 3.5, 0, Math.PI * 2); g.fillStyle = C.bg; g.fill(); g.strokeStyle = d.color; g.lineWidth = 1.6; g.stroke(); }
-      else if (d.type === "pill" || d.type === "text") {
-        const X = this.X(d.i), Yv = this.Y(d.p) + (d.dy || 0); g.font = `${d.bold === false ? 600 : 700} ${d.size || 10.5}px IBM Plex Sans, system-ui, sans-serif`; const w = g.measureText(d.text).width;
-        if (d.type === "text") { g.fillStyle = d.color; g.textAlign = "center"; g.fillText(d.text, X, Yv); g.textAlign = "left"; }
-        else { const x0 = Math.min(L.r - w - 12, Math.max(2, d.anchor === "right" ? X - w - 12 : X - w / 2 - 6)); g.fillStyle = rgba(d.color, 0.92); g.beginPath(); if (g.roundRect) g.roundRect(x0, Yv - 9, w + 12, 18, 9); else g.rect(x0, Yv - 9, w + 12, 18); g.fill(); g.fillStyle = "#fff"; g.fillText(d.text, x0 + 6, Yv + 0.5); }
-        g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
-      }
-    }
-    // horizontal levels
-    // CoinWise-style: level names written at the right end of each line instead of boxes on the price axis
-    const lbl = new Map();
-    if (Ls.lineLbl) { const used = []; g.font = "600 11px IBM Plex Sans, system-ui, sans-serif";
-      (Ls.hlines || []).filter((h) => h.tag && ok(h.p)).sort((x, y) => (y.prio || 10) - (x.prio || 10)).forEach((h) => { const y = this.Y(h.p); if (y < 8 || y > L.mainH - 8 || used.some((u) => Math.abs(u - y) < 12)) return; used.push(y); lbl.set(h, { y, w: g.measureText(h.tag).width }); });
-      g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
-    for (const h of Ls.hlines || []) {
-      if (!ok(h.p)) continue; const y = Math.round(this.Y(h.p)) + 0.5; if (y < 0 || y > L.mainH) continue; const lb = lbl.get(h), xe = lb ? L.r - lb.w - 12 : L.r;
-      g.strokeStyle = h.color; g.lineWidth = h.w || 1; g.setLineDash(h.dash || []); g.globalAlpha = h.alpha || 0.9; g.beginPath(); g.moveTo(h.x0 ? Math.max(0, this.X(this.ti(h.x0))) : 0, y); g.lineTo(xe, y); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
-      if (lb) { g.font = "600 11px IBM Plex Sans, system-ui, sans-serif"; g.fillStyle = h.color; g.textAlign = "right"; g.lineJoin = "round"; g.strokeStyle = rgba(C.bg, 0.85); g.lineWidth = 3.5; g.strokeText(h.tag, L.r - 5, y); g.fillText(h.tag, L.r - 5, y); g.textAlign = "left"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
-      if (h.left) { g.fillStyle = h.color; g.font = "10.5px IBM Plex Sans, system-ui, sans-serif"; g.fillText(h.left, 4, y - 6); g.font = "11.5px IBM Plex Sans, system-ui, sans-serif"; }
-    }
+    // labels for drawings and levels, above the candles
+    drawD(true); drawH(true);
     // real liquidations (summed per candle and side)
     for (const e of Ls.liqEv || []) {
       const i = this.ti(e.t); if (i < a - 1 || i > b + 1) continue; const X = this.X(Math.round(i)), Yv = this.Y(e.p), s = Math.max(4, Math.min(16, Math.sqrt(e.usd / 2e4) * 3)), col = e.side === "long" ? C.dn : C.up;
@@ -523,7 +528,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartPal(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.cstyle, ST.fibPlan, ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
+  const key = [ST.chan, ST.chanTf.join(","), ST.cstyle, ST.fibPlan, ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -562,7 +567,12 @@ function chartExtras(fromView) {
   if (L.fibLeg) { const f = L.fibLeg; L.draw.push({ type: "dot", i: f.i0, p: f.p0, color: C.fg3 }, { type: "dot", i: f.i1, p: f.p1, color: C.fg3 }); }
   { const plan = on(ST.fibPlan) && swP ? fibPlan(swP, k) : null, want = plan ? Math.max(10, Math.round(CC.bars * 0.36)) : 0;
     if ((CC.padX || 0) !== want) { const end = CC.atEnd(); CC.padX = want; if (end) CC.x0 = k.length + CC.padB() - CC.bars; }
-    if (plan) drawFibPlan(L, k, C, plan, want); fibGuide(plan); }
+    if (plan) drawFibPlan(L, k, C, plan, want); fibGuide(plan); LI.fib = swP ? fibInfoHTML(swP) : ""; LI.fibPlan = plan ? plan.title : ""; }
+  LI.chan = on(ST.chan) ? drawChannels(L, k, C) : "";
+  LI.bub = L.bubbles ? `${L.bubbles.length} whale trade${L.bubbles.length === 1 ? "" : "s"} on this chart` : "";
+  LI.my = MYLV.list.length ? `${MYLV.list.length} level${MYLV.list.length === 1 ? "" : "s"} saved` : "No levels saved yet · add them under the chart";
+  LI.sess = (() => { const s0 = sessions(Date.now() / 1000 - 1, Date.now() / 1000).filter((x) => x.t0 <= Date.now() / 1000 && x.t1 > Date.now() / 1000).map((x) => x.name); return s0.length ? `Now: ${s0.join(" + ")}` : "Between sessions"; })();
+  setTimeout(syncSettings, 0);
   if (on(ST.trend) && k.length > 40) drawStructure(L, k, C);
   if (on(ST.pat) && k.length > 60) drawGeo(L, k, C);
   if (on(ST.cdl) && k.length > 30) drawCandles(L, k, C, a);
@@ -809,3 +819,54 @@ const NEON = { bg: "#0b0f1d", fg: "#d6dcec", fg2: "#9aa3b8", fg3: "#8b93ab", gri
 function chartPal() { return ST.cstyle === "neon" ? NEON : chartColors(); }
 function applyCStyle() { const p = $("#chartPanel"); if (p) p.dataset.cs = ST.cstyle; document.querySelectorAll("[data-cst]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.cst === ST.cstyle)); }
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-cst]"); if (!b) return; ST.cstyle = b.dataset.cst; LS.set("cstyle", ST.cstyle); applyCStyle(); if (CC) { CH.xKey = null; chartExtras(); CC.dirty(); } });
+
+/* ---------- settings panel: live info per row, group counts, open/closed groups ---------- */
+const LI = {};
+function syncSettings() {
+  document.querySelectorAll("[data-li]").forEach((el) => { const v = LI[el.dataset.li] || ""; if (el.innerHTML !== v) el.innerHTML = v; });
+  document.querySelectorAll(".sg").forEach((g) => { const n = g.querySelectorAll('.srow[aria-pressed="true"], .lows [data-low][aria-pressed="true"]').length, c = g.querySelector(".sgc"); if (c) { const t = n ? `${n} on` : "off"; if (c.textContent !== t) c.textContent = t; c.classList.toggle("on", !!n); } });
+  document.querySelectorAll("[data-chtf]").forEach((b) => b.setAttribute("aria-pressed", ST.chanTf.includes(b.dataset.chtf)));
+}
+document.querySelectorAll(".sg").forEach((g) => { const id = g.dataset.grp; if (id in ST.grpOpen) g.open = !!ST.grpOpen[id]; g.addEventListener("toggle", () => { ST.grpOpen[id] = g.open; LS.set("grpOpen", ST.grpOpen); }); });
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-chtf]"); if (!b) return; const tf = b.dataset.chtf, had = ST.chanTf.includes(tf);
+  ST.chanTf = had ? ST.chanTf.filter((x) => x !== tf) : [...ST.chanTf, tf]; if (!ST.chanTf.length) ST.chanTf = [tf]; LS.set("chanTf", ST.chanTf);
+  if (!ST.chan) { ST.chan = true; LS.set("chan", true); syncCtl(); }
+  if (tf === "8h" && !had && !(D.taK && D.taK["8h"])) tick("taK");
+  CH.xKey = null; chartExtras(); syncSettings(); });
+
+/* ---------- auto parallel channel ----------
+   For each chosen timeframe: try several look-back windows, fit a straight line to the closes (least squares),
+   keep the window with the best fit (R², nudged toward longer windows), then shift that line up to the highest
+   high and down to the lowest low in the window. Top, middle and bottom are parallel and run a bit into the future. */
+const CHAN_C = { "5m": "#ff9f43", "30m": "#38bdf8", "1h": "#a78bfa", "4h": "#ffd166", "8h": "#f472b6", "1d": "#e5e7eb" };
+let CHANM = {};
+function chanCandles(tf) { if (tf === ST.tf && CC && CC.k.length) return CC.k; return D.taK && D.taK[tf] ? D.taK[tf] : null; }
+function autoChannel(k, tf) {
+  const n = k.length; if (n < 30) return null; const key = tf + ":" + n + ":" + k[n - 1].t + ":" + k[n - 1].c; if (CHANM[tf] && CHANM[tf].key === key) return CHANM[tf].v;
+  let best = null;
+  for (const w of [30, 45, 60, 90, 120, 160, 220]) { if (w > n) break; const s = k.slice(n - w); let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
+    s.forEach((x, i) => { sx += i; sy += x.c; sxx += i * i; sxy += i * x.c; syy += x.c * x.c; });
+    const d = w * sxx - sx * sx, b = d ? (w * sxy - sx * sy) / d : 0, a = (sy - b * sx) / w, vy = w * syy - sy * sy, r2 = vy > 0 && d ? Math.pow(w * sxy - sx * sy, 2) / (d * vy) : 0, sc = r2 * Math.pow(w / 30, 0.25);
+    if (!best || sc > best.sc) best = { w, a, b, r2, sc, s }; }
+  if (!best) return null; let up = -Infinity, dn = Infinity; best.s.forEach((x, i) => { const f = best.a + best.b * i; up = Math.max(up, x.h - f); dn = Math.min(dn, x.l - f); });
+  const sec = TF_SEC[tf], t0 = best.s[0].t, line = (t, off) => best.a + best.b * ((t - t0) / sec) + off, tNow = k[n - 1].t, px = k[n - 1].c;
+  const top = line(tNow, up), bot = line(tNow, dn), pos = (px - bot) / (top - bot), perDay = (best.b * (86400 / sec)) / px * 100;
+  const v = { tf, t0, t1: tNow + sec * Math.max(4, Math.round(best.w * 0.25)), sec, up, dn, line, w: best.w, r2: best.r2, top, bot, pos, perDay, dir: Math.abs(perDay) < 0.15 ? "flat" : perDay > 0 ? "rising" : "falling" };
+  CHANM[tf] = { key, v }; return v;
+}
+function drawChannels(L, k, C) {
+  const ti = (t) => (t - k[0].t) / TF_SEC[ST.tf], info = [];
+  for (const tf of ST.chanTf) {
+    const kk = chanCandles(tf); if (!kk) { info.push(`${tf}: loading…`); continue; } const ch = autoChannel(kk, tf); if (!ch) continue; const col = CHAN_C[tf] || C.acc;
+    const t0 = Math.max(ch.t0, k[0].t - TF_SEC[ST.tf] * 400), i0 = ti(t0), i1 = ti(ch.t1), P = (t, o) => ch.line(t, o), mid = (ch.up + ch.dn) / 2;
+    L.draw.push({ type: "poly", pts: [[i0, P(t0, ch.up)], [i1, P(ch.t1, ch.up)], [i1, P(ch.t1, ch.dn)], [i0, P(t0, ch.dn)]], color: col, alpha: 0.05 });
+    L.draw.push({ type: "seg", i0, p0: P(t0, ch.up), i1, p1: P(ch.t1, ch.up), color: col, w: 1.6 }, { type: "seg", i0, p0: P(t0, ch.dn), i1, p1: P(ch.t1, ch.dn), color: col, w: 1.6 },
+      { type: "seg", i0, p0: P(t0, mid), i1, p1: P(ch.t1, mid), color: col, w: 1, dash: [5, 5] });
+    const tN = k[k.length - 1].t, pxN = k[k.length - 1].c, topN = P(tN, ch.up), botN = P(tN, ch.dn), posN = (pxN - botN) / (topN - botN), arrow = ch.dir === "rising" ? "↗" : ch.dir === "falling" ? "↘" : "→";
+    L.draw.push({ type: "pill", i: ti(tN) - 1, p: topN, dy: -11, text: `${tf} ch ${arrow}`, color: col, anchor: "right", size: 10 });
+    info.push(`<span style="color:${col}">${tf}</span> ${ch.dir} ${arrow} · ${posN > 1 ? "above the top" : posN < 0 ? "below the bottom" : `price at ${Math.round(posN * 100)}% of it`} (${n0(botN)}–${n0(topN)})${ch.r2 < 0.5 ? " · loose fit" : ""}`);
+  }
+  return info.join("<br>");
+}
+
+if (ST.chan && ST.chanTf.includes("8h")) setTimeout(() => { if (!(D.taK && D.taK["8h"])) tick("taK"); }, 1500); // first fetch may run before the channel setting loaded

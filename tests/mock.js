@@ -1,6 +1,6 @@
 // Mock exchange API responses in the shapes the page expects
 const now = Math.floor(Date.now()/1000);
-function kl(interval, limit){ const sec={ '5m':300,'15m':900,'30m':1800,'1h':3600,'4h':14400,'1d':86400 }[interval]; const out=[]; let p=80000; const start=(Math.floor(now/sec)-limit+1)*sec;
+function kl(interval, limit){ const sec={ '5m':300,'15m':900,'30m':1800,'1h':3600,'4h':14400,'8h':28800,'1d':86400 }[interval]; const out=[]; let p=80000; const start=(Math.floor(now/sec)-limit+1)*sec;
   for(let i=0;i<limit;i++){ const o=p, c=p+(Math.sin(i/7)*60)+(Math.random()-0.5)*80; const h=Math.max(o,c)+30, l=Math.min(o,c)-30, v=50+Math.random()*100; out.push([ (start+i*sec)*1000, o.toFixed(2), h.toFixed(2), l.toFixed(2), c.toFixed(2), v.toFixed(4), (start+i*sec+sec)*1000-1, (v*c).toFixed(2), 1000, (v*(0.4+Math.random()*0.2)).toFixed(4), '0','0']); p=c; } return out; }
 const rub = (n, f, sec=300) => Array.from({length:n}, (_,i)=>[String((Math.floor(now/sec)*sec - i*sec)*1000), ...f(i)]);
 function sampleRss(host) {
