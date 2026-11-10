@@ -3,7 +3,7 @@
 const TF_SEC = { "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "4h": 14400, "8h": 28800, "1d": 86400 };
 Object.assign(ST, {
   heat: LS.get("heat", true), bub: LS.get("bub", true), liqev: LS.get("liqev", false), liqb: LS.get("liqb", false), lpStyle: LS.get("lpStyle", "candles"), pat: LS.get("pat", false), trend: LS.get("trend", false), tlN: LS.get("tlN", "more"), cdl: LS.get("cdl", false), sess: LS.get("sess", true), my: LS.get("my", true),
-  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60), fibPlan: LS.get("fibPlan", true), cstyle: LS.get("cstyle", "neon"), chan: LS.get("chan", false), chanTf: LS.get("chanTf", ["4h"]), grpOpen: LS.get("grpOpen", { trend: true, levels: true }),
+  lowers: LS.get("lowers", ["bcvd"]), lineLbl: LS.get("lineLbl", true), subAdj: LS.get("subAdj", 0), clean: LS.get("clean", false), layersOpen: false, opCdl: LS.get("opCdl", 100), opBub: LS.get("opBub", 60), fibPlan: LS.get("fibPlan", true), cstyle: LS.get("cstyle", "neon"), chan: LS.get("chan", false), chanTf: LS.get("chanTf", ["4h"]), grpOpen: LS.get("grpOpen", { trend: true, levels: true }), watchLv: LS.get("watchLv", true), quick: LS.get("quick", ["watchLv", "fib", "fibPlan", "chan", "ema", "vwap", "heat", "bub", "prof", "sess", "my"]),
 });
 
 /* ---------- engine ---------- */
@@ -528,7 +528,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartPal(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.chan, ST.chanTf.join(","), ST.cstyle, ST.fibPlan, ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
+  const key = [ST.watchLv, ST.chan, ST.chanTf.join(","), ST.cstyle, ST.fibPlan, ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -578,10 +578,16 @@ function chartExtras(fromView) {
   if (on(ST.cdl) && k.length > 30) drawCandles(L, k, C, a);
   if (ST.my && MYLV.list.length) MYLV.list.forEach((l) => L.hlines.push({ p: l.p, color: cssv("--my"), w: 1.6, tag: `${l.label.slice(0, 5)} ${kfmt(l.p)}`, prio: 90, left: l.label }));
   if (typeof gexHlines === "function" && on(ST.gexl)) gexHlines(L, C);
+  LI.watchLv = "";
+  if (on(ST.watchLv) && a && typeof briefLevels === "function") { const { above, below } = briefLevels(a), up = briefPick(above), dn = briefPick(below);
+    const add = (z, i, side) => { const trig = z === (side > 0 ? up : dn), col = side > 0 ? C.dn : C.up, p = trig ? (side > 0 ? z.hi : z.lo) : z.p;
+      L.hlines.push({ p, color: col, w: trig ? 2.2 : 1.3, alpha: trig ? 0.95 : 0.7, dash: trig ? [] : [8, 4], tag: `${trig ? (side > 0 ? "▲ Trigger" : "▼ Trigger") : (side > 0 ? "R" : "S") + (i + 1)} ${kfmt(p)}`, prio: trig ? 95 : 70 }); };
+    above.forEach((z, i) => add(z, i, 1)); below.forEach((z, i) => add(z, i, -1));
+    LI.watchLv = `${above.length} resistance · ${below.length} support${up ? ` · up trigger ${n0(up.hi)}` : ""}${dn ? ` · down trigger ${n0(dn.lo)}` : ""}`; }
   L.subs = lowerPanes(k, C); const host = $("#cMain"); if (host) host.style.setProperty("--subx", `${L.subs.length > 1 ? 90 * (L.subs.length - 1) : 0}px`);
   const nb = CC.nSub(); CC.L = L; if (nb !== L.subs.length) CC.resize(); CC.dirty();
   const n = ["ema", "sma", "vwap", "avwap", "lv", "fib", "prof", "tpo", "zones", "liq", "liqb", "liqev", "heat", "bub", "sess", "my", "pat", "trend", "cdl", "gexl"].filter((x) => ST[x]).length;
-  const lb = $("#bLayers"); if (lb) lb.textContent = `Layers · ${ST.clean ? "clean" : n + " on"} ${ST.layersOpen ? "▴" : "▾"}`;
+  QN = ST.clean ? "clean" : n; drawQuick();
 }
 
 
@@ -705,8 +711,9 @@ function drawCandles(L, k, C, a) {
 
 /* ---------- controls ---------- */
 document.addEventListener("click", (e) => {
-  if (e.target.closest("#bFull") && ST.layersOpen) { ST.layersOpen = false; $("#layers").hidden = true; CH.xKey = null; chartExtras(); }
-  if (e.target.closest("#bLayers")) { ST.layersOpen = !ST.layersOpen; $("#layers").hidden = !ST.layersOpen; CH.xKey = null; chartExtras(); return; }
+  if (e.target.closest("#bFull") && ST.layersOpen) setSheet(false);
+  if (e.target.closest("#bLayers")) { setSheet(!ST.layersOpen); return; }
+  if (e.target.closest("#bLayersX") || e.target.closest("#layersBg")) { setSheet(false); return; }
   if (e.target.closest("#bClean")) { ST.clean = !ST.clean; LS.set("clean", ST.clean); $("#bClean").setAttribute("aria-pressed", ST.clean); CH.xKey = null; chartExtras(); return; }
   const tl = e.target.closest("[data-tln]"); if (tl) { ST.tlN = tl.dataset.tln; LS.set("tlN", ST.tlN); if (!ST.trend) { ST.trend = true; LS.set("trend", true); syncCtl(); } syncLow(); CH.xKey = null; chartExtras(); return; }
   const lp = e.target.closest("[data-lps]"); if (lp) { ST.lpStyle = lp.dataset.lps; LS.set("lpStyle", ST.lpStyle); if (!ST.lowers.includes("pos")) { ST.lowers.push("pos"); while (ST.lowers.length > 4) ST.lowers.shift(); LS.set("lowers", ST.lowers); tick("pfc"); } syncLow(); CH.xKey = null; chartExtras(); return; }
@@ -870,3 +877,27 @@ function drawChannels(L, k, C) {
 }
 
 if (ST.chan && ST.chanTf.includes("8h")) setTimeout(() => { if (!(D.taK && D.taK["8h"])) tick("taK"); }, 1500); // first fetch may run before the channel setting loaded
+
+/* ---------- quick toggle bar (slim chips under the chart toolbar) + settings sheet ---------- */
+let QN = 0, QHTML = "";
+const QT = { watchLv: ["Watch levels", "#ff6b8b"], fib: ["Fib", "#ff6ec7"], fibPlan: ["Fib plan", "#ffd166"], chan: ["Channel", "#f472b6"], ema: ["EMA", "#ffd23f"], sma: ["SMA", "#22e39a"], vwap: ["VWAP", "#9aa3b8"], avwap: ["AVWAP", "#e8c547"],
+  trend: ["Trendlines", "#20c3ff"], pat: ["Patterns", "#a78bfa"], cdl: ["Candles", "#ff9f43"], my: ["My levels", "#f472d0"], lv: ["Opens", "#5c9dff"], zones: ["Zones", "#ff4d6d"], gexl: ["GEX", "#e8c547"],
+  prof: ["Profile", "#5c9dff"], tpo: ["TPO", "#20c3ff"], heat: ["Heatmap", "#22e39a"], liq: ["Liq lines", "#ff4d6d"], liqb: ["Liq bands", "#ff9f43"], liqev: ["Liqs", "#ff4d6d"], bub: ["Whales", "#22e39a"], sess: ["Sessions", "#7c5cff"], mono: ["Mono", "#cfcfcf"], lineLbl: ["Labels", "#9aa3b8"] };
+function drawQuick() {
+  const el = $("#qbar"); if (!el) return;
+  const chips = ST.quick.filter((k) => QT[k]).map((k) => `<button class="qt" data-qt="${k}" aria-pressed="${!!ST[k]}" style="--c:${QT[k][1]}"><i></i>${QT[k][0]}</button>`).join("");
+  const html = chips + `<button class="qt" data-qclean aria-pressed="${!!ST.clean}" style="--c:#e9edf7" title="Hide every overlay except your own levels"><i></i>Clean</button><button class="qt qall" id="bLayers" aria-expanded="${!!ST.layersOpen}">⚙ All layers <b>${QN}</b></button>`;
+  if (html !== QHTML) { el.innerHTML = html; QHTML = html; }
+  // pins in the sheet
+  document.querySelectorAll("#layers .srow[data-tog]").forEach((r) => { const k = r.dataset.tog; if (!QT[k]) return; let p = r.querySelector(".pin"); if (!p) { p = document.createElement("span"); p.className = "pin"; p.dataset.pin = k; p.setAttribute("role", "button"); p.title = "Pin to the quick bar"; r.insertBefore(p, r.querySelector(".tg")); }
+    const on2 = ST.quick.includes(k); p.textContent = on2 ? "★" : "☆"; p.classList.toggle("on", on2); });
+}
+function setSheet(open) { ST.layersOpen = open; $("#layers").hidden = !open; $("#layersBg").hidden = !open; document.body.style.overflow = open ? "hidden" : ""; CH.xKey = null; chartExtras(); }
+document.addEventListener("click", (e) => {
+  const pin = e.target.closest("[data-pin]"); if (pin) { e.stopPropagation(); e.preventDefault(); const k = pin.dataset.pin; ST.quick = ST.quick.includes(k) ? ST.quick.filter((x) => x !== k) : [...ST.quick, k]; LS.set("quick", ST.quick); drawQuick(); return; }
+}, true);
+document.addEventListener("click", (e) => {
+  const q = e.target.closest("[data-qt]"); if (q) { const k = q.dataset.qt; ST[k] = !ST[k]; LS.set(k, ST[k]); syncCtl(); render(); CH.xKey = null; chartExtras(); return; }
+  if (e.target.closest("[data-qclean]")) { ST.clean = !ST.clean; LS.set("clean", ST.clean); CH.xKey = null; chartExtras(); }
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && ST.layersOpen) setSheet(false); });
