@@ -2300,10 +2300,12 @@ class CChart {
   nSub() { return this.L.subs ? this.L.subs.length : 0; }
   subBase(n) { return [0, 0.22, 0.38, 0.48, 0.54][Math.min(4, n)]; }
   resize() { const r = this.host.getBoundingClientRect(), d = window.devicePixelRatio || 1; this.W = Math.max(200, r.width); this.H = Math.max(160, r.height); this.d = d; this.cv.width = Math.round(this.W * d); this.cv.height = Math.round(this.H * d); this.cv.style.width = this.W + "px"; this.cv.style.height = this.H + "px"; this.draw(); }
-  setData(k, sec, keep) { const end = this.atEnd(), fresh = !this.k.length || !keep; this.k = k; this.sec = sec; if (fresh) this.reset(); else if (end) this.x0 = this.k.length + this.padB() - this.bars; this.dirty(); }
+  setData(k, sec, keep) { const fresh = !this.k.length || !keep; this.k = k; this.sec = sec; if (fresh) this.reset(); else if (this.follow) this.x0 = this.liveX0(); this.dirty(); }
+  liveX0() { return this.k.length + this.padB() - this.bars; }
+  chkFollow() { this.follow = this.k.length > 0 && this.x0 >= this.liveX0() - 0.6; } // back at the live edge → follow new candles again
   atEnd() { return !this.k.length || this.x0 + this.bars >= this.k.length - 1; }
   defBars() { return Math.round(Math.min(160, Math.max(40, this.W / 7))); }
-  reset(n) { this.bars = n || this.defBars(); this.x0 = this.k.length + this.padB() - this.bars; this.auto = true; this.dirty(); this.emit(); }
+  reset(n) { this.bars = n || this.defBars(); this.x0 = this.k.length + this.padB() - this.bars; this.auto = true; this.follow = true; this.dirty(); this.emit(); }
   layout() { const axW = 56, tH = 20, n = this.nSub(), sub = n ? Math.round((this.H - tH) * Math.max(0.14, Math.min(0.72, this.subBase(n) + this.subAdj))) : 0, mainH = this.H - tH - (sub ? sub + 6 : 0); return { r: this.W - axW, pw: this.W, axW, mainH, subTop: mainH + 6, subH: sub, tTop: this.H - tH }; }
   bw() { return this.W / this.bars; }
   padB() { return 2 + (this.padX || 0); } // newest candle runs right up into the price column (prices float over the candles)
@@ -2314,21 +2316,21 @@ class CChart {
   yRange() {
     if (!this.auto) return; const [a, b] = this.vis(); let lo = Infinity, hi = -Infinity;
     for (let i = a; i <= b; i++) { const x = this.k[i]; if (x.l < lo) lo = x.l; if (x.h > hi) hi = x.h; }
-    if (!isFinite(lo)) { lo = 0; hi = 1; } for (const v of this.L.yInc || []) { if (v < lo) lo = v; if (v > hi) hi = v; } const p = (hi - lo) * 0.08 || 1; this.yLo = lo - p; this.yHi = hi + p;
+    if (!isFinite(lo)) { lo = 0; hi = 1; } if (this.x0 + this.bars >= this.k.length) for (const v of this.L.yInc || []) { if (v < lo) lo = v; if (v > hi) hi = v; } // plan targets only matter when the live edge is on screen const p = (hi - lo) * 0.08 || 1; this.yLo = lo - p; this.yHi = hi + p;
   }
   Y(p) { const L = this.layout(); return 6 + (1 - (p - this.yLo) / (this.yHi - this.yLo)) * (L.mainH - 12); }
   P(y) { const L = this.layout(); return this.yLo + (1 - (y - 6) / (L.mainH - 12)) * (this.yHi - this.yLo); }
   clamp() { const n = this.k.length; this.bars = Math.max(12, Math.min(1000, this.bars)); this.x0 = Math.max(-this.bars * 0.5, Math.min(n + this.padB() + this.pad * 3 - this.bars * 0.3, this.x0)); }
   dirty() { if (this.q) return; this.q = requestAnimationFrame(() => { this.q = 0; this.draw(); }); }
   emit() { if (this.onView) { clearTimeout(this.vt); this.vt = setTimeout(() => this.onView(), 120); } }
-  zoom(f) { const end = this.x0 + this.bars; this.bars *= f; this.clamp(); this.x0 = end - this.bars; this.clamp(); this.dirty(); this.emit(); }
+  zoom(f) { const end = this.x0 + this.bars; this.bars *= f; this.clamp(); this.x0 = end - this.bars; this.clamp(); this.chkFollow(); this.dirty(); this.emit(); }
   crossBar() { if (!this.cross || !this.k.length) return null; const i = Math.round(this.I(this.cross.x)); return this.k[Math.max(0, Math.min(this.k.length - 1, i))]; }
   bind() {
     const c = this.cv, pos = (e) => { const r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
     const el = [c, this.axEl], on = (ev, fn, o) => el.forEach((x) => x.addEventListener(ev, fn, o));
     on("pointerdown", (e) => {
       const p = pos(e); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) {}
-      this.ptr.set(e.pointerId, { x: p.x, y: p.y, sx: p.x, sy: p.y }); this.vx = 0; cancelAnimationFrame(this.inert);
+      this.ptr.set(e.pointerId, { x: p.x, y: p.y, sx: p.x, sy: p.y }); this.vx = 0; cancelAnimationFrame(this.inert); this.touching = true;
       if (this.ptr.size === 2) { const [a, b] = [...this.ptr.values()]; this.pinch = { d: Math.max(20, Math.abs(a.x - b.x)), bars: this.bars, idx: this.I((a.x + b.x) / 2) }; this.drag = null; }
       else if (this.ptr.size === 1) this.drag = { axis: p.x > this.layout().r, x0: this.x0, yLo: this.yLo, yHi: this.yHi, moved: false, full: !!this.host.closest(".full"), mouse: e.pointerType === "mouse" };
     });
@@ -2338,25 +2340,26 @@ class CChart {
       const lastX = q.x; q.x = p.x; q.y = p.y;
       if (this.ptr.size >= 2 && this.pinch) {
         const [a, b] = [...this.ptr.values()], d = Math.max(20, Math.abs(a.x - b.x));
-        this.bars = (this.pinch.bars * this.pinch.d) / d; this.clamp(); this.x0 = this.pinch.idx - ((a.x + b.x) / 2) / this.bw() + 0.5; this.clamp();
+        this.follow = false; this.bars = (this.pinch.bars * this.pinch.d) / d; this.clamp(); this.x0 = this.pinch.idx - ((a.x + b.x) / 2) / this.bw() + 0.5; this.clamp();
         this.cross = null; this.dirty(); this.emit(); return;
       }
       const dr = this.drag; if (!dr) return; const dx = p.x - q.sx, dy = p.y - q.sy;
       if (!dr.moved && Math.abs(dx) + Math.abs(dy) > 6) dr.moved = true; if (!dr.moved) return;
       if (dr.axis) { const f = Math.exp(dy * 0.006), mid = (dr.yLo + dr.yHi) / 2, half = ((dr.yHi - dr.yLo) / 2) * f; this.auto = false; this.yLo = mid - half; this.yHi = mid + half; this.dirty(); return; }
-      this.x0 = dr.x0 - dx / this.bw(); this.vx = p.x - lastX; this.clamp();
+      this.follow = false; this.x0 = dr.x0 - dx / this.bw(); this.vx = p.x - lastX; this.clamp();
       if (dr.full || !this.auto) { const span = dr.yHi - dr.yLo, dp = (dy / (this.layout().mainH - 12)) * span; this.auto = false; this.yLo = dr.yLo + dp; this.yHi = dr.yHi + dp; }
       this.cross = null; this.dirty(); this.emit();
     });
     const up = (e) => {
       const q = this.ptr.get(e.pointerId); this.ptr.delete(e.pointerId); if (this.ptr.size < 2) this.pinch = null;
-      if (this.ptr.size) return; const dr = this.drag; this.drag = null; if (!dr) return;
+      if (this.ptr.size) return; this.touching = false; const dr = this.drag; this.drag = null; if (!dr) { this.chkFollow(); return; }
       if (q && !dr.moved && e.type === "pointerup") {
         const now = performance.now();
         if (now - (this.lastTap || 0) < 320) { if (dr.axis) this.auto = true; else this.reset(); this.lastTap = 0; this.cross = null; }
         else { this.lastTap = now; if (!dr.axis) { this.cross = this.cross && !dr.mouse ? null : { x: q.x, y: q.y }; if (this.onCross) this.onCross(this.cross ? this.crossBar() : null); } }
         this.dirty();
       } else if (dr.moved && !dr.axis && Math.abs(this.vx) > 2) this.inertia();
+      else this.chkFollow();
     };
     on("pointerup", up); on("pointercancel", up);
     c.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse" && !this.ptr.size) { this.cross = null; this.dirty(); if (this.onCross) this.onCross(null); } });
@@ -2365,12 +2368,12 @@ class CChart {
       if (p.x > this.layout().r && !e.shiftKey && Math.abs(e.deltaY) >= Math.abs(e.deltaX)) { const f = Math.exp(e.deltaY * 0.0015), mid = (this.yLo + this.yHi) / 2, half = ((this.yHi - this.yLo) / 2) * f; this.auto = false; this.yLo = mid - half; this.yHi = mid + half; this.dirty(); return; }
       if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) this.x0 += (e.deltaX || e.deltaY) / this.bw();
       else { const idx = this.I(p.x); this.bars *= Math.exp(e.deltaY * 0.0015); this.clamp(); this.x0 = idx - p.x / this.bw() + 0.5; }
-      this.clamp(); this.dirty(); this.emit();
+      this.clamp(); this.chkFollow(); this.dirty(); this.emit();
     }, { passive: false });
     ["gesturestart", "gesturechange", "gestureend"].forEach((ev) => on(ev, (e) => e.preventDefault(), { passive: false }));
     on("contextmenu", (e) => e.preventDefault());
   }
-  inertia() { let v = this.vx; const step = () => { v *= 0.88; if (Math.abs(v) < 0.4) { this.emit(); return; } this.x0 -= v / this.bw(); this.clamp(); this.draw(); this.inert = requestAnimationFrame(step); }; this.inert = requestAnimationFrame(step); }
+  inertia() { let v = this.vx; this.follow = false; const step = () => { v *= 0.88; if (Math.abs(v) < 0.4) { this.chkFollow(); this.emit(); return; } this.x0 -= v / this.bw(); this.clamp(); this.draw(); this.inert = requestAnimationFrame(step); }; this.inert = requestAnimationFrame(step); }
 
   /* ---------- drawing ---------- */
   draw() {
@@ -2835,8 +2838,8 @@ function chartExtras(fromView) {
   }
   L.draw = []; L.hl = new Map();
   if (L.fibLeg) { const f = L.fibLeg; L.draw.push({ type: "dot", i: f.i0, p: f.p0, color: C.fg3 }, { type: "dot", i: f.i1, p: f.p1, color: C.fg3 }); }
-  { const plan = on(ST.fibPlan) && swP ? fibPlan(swP, k) : null, want = plan ? Math.max(10, Math.round(CC.bars * 0.36)) : 0;
-    if ((CC.padX || 0) !== want) { const end = CC.atEnd(); CC.padX = want; if (end) CC.x0 = k.length + CC.padB() - CC.bars; }
+  { const plan = on(ST.fibPlan) && swP ? fibPlan(swP, k) : null, want = plan ? Math.max(10, Math.round(CC.defBars() * 0.36)) : 0; // fixed room (not tied to zoom) so zooming never shifts the view
+    if ((CC.padX || 0) !== want && !CC.touching) { const was = CC.follow; CC.padX = want; if (was) CC.x0 = CC.liveX0(); }
     if (plan) drawFibPlan(L, k, C, plan, want); fibGuide(plan); LI.fib = swP ? fibInfoHTML(swP) : ""; LI.fibPlan = plan ? plan.title : ""; }
   LI.chan = on(ST.chan) ? drawChannels(L, k, C) : "";
   LI.bub = L.bubbles ? `${L.bubbles.length} whale trade${L.bubbles.length === 1 ? "" : "s"} on this chart` : "";
