@@ -335,14 +335,15 @@ function setupCard(s, i, a) {
       <div><div class="mut" style="font-size:12px">Reward : risk</div><div class="big" style="font-size:18px">${s.rr.toFixed(2)}</div></div>
     </div>
     ${ladder(s, r, px, W)}
-    <div class="tw"><table class="rt"><tbody>
-      <tr><td>Position at ${ST.lev}×</td><td>$${n0(ST.margin)} margin → <b>${usd(r.notional)}</b> · ${r.qty.toFixed(4)} BTC</td></tr>
-      <tr><td>Liquidation (est.)</td><td class="${r.liqFirst ? "dn" : ""}"><b>${n0(r.liq)}</b>${r.liqFirst ? " · <b>liquidates before your stop, lower the leverage</b>" : ""}</td></tr>
-      <tr><td>Max leverage for this stop</td><td>${r.maxLev}×</td></tr>
-      <tr><td>Stop loss hit</td><td>${pnl(r.sl)}</td></tr>
-      <tr><td>TP1 hit</td><td>${pnl(r.tp1)}</td></tr>
-      <tr><td>TP2 hit</td><td>${pnl(r.tp2)}</td></tr>
-    </tbody></table></div>
+    <div class="spnl"><div><i>Stop hit</i>${pnl(r.sl)}</div><div><i>TP1 hit</i>${pnl(r.tp1)}</div><div><i>TP2 hit</i>${pnl(r.tp2)}</div></div>
+    <div class="spos">${ST.lev}× · $${n0(ST.margin)} margin → <b>${usd(r.notional)}</b> · ${r.qty.toFixed(4)} BTC · liq <b class="${r.liqFirst ? "dn" : ""}">${n0(r.liq)}</b> · max ${r.maxLev}× for this stop</div>
+    ${r.liqFirst ? `<div class="sub dn" style="margin-top:4px"><b>Liquidates before the stop at ${ST.lev}×. Lower the leverage.</b></div>` : ""}
+    <details class="swhy"><summary>Why this setup and how to take it</summary><ul>
+      <li>Zone: ${esc(s.zone.names.join(", "))} (${s.zone.names.length} level${s.zone.names.length > 1 ? "s" : ""} agree).</li>
+      <li>Score ${s.score}/100 from zone strength, agreement with the overall lean (${a.bias > 0 ? "+" : ""}${a.bias}), reward:risk ${s.rr.toFixed(2)} and distance (${s.dist.toFixed(2)}%).</li>
+      <li>Trigger: let price reach ${n0(s.entry)} and show a reaction first (a 5m or 15m wick through the zone that closes back ${s.side > 0 ? "above" : "below"} it). No reaction, no trade.</li>
+      <li>Manage: take some at TP1 ${n0(s.tp1)} and move the stop to entry; let the rest run to TP2 ${n0(s.tp2)}.</li>
+      <li>Invalid if price closes 30m ${s.side > 0 ? "below" : "above"} ${n0(s.stop)}.</li></ul></details>
     <details data-setid="${id}" ${SETOPEN[id] ? "open" : ""} style="margin-top:8px"><summary class="mut" style="cursor:pointer;font-size:13px">Chart with levels</summary>${chart}</details>
   </div>`;
 }
@@ -615,6 +616,7 @@ function drawStage2(tab) {
   try {
     if (tab === "overview") {
       need("#ovAssess", (x) => ($("#ovAssess").innerHTML = assessHTML(x, false)));
+      if (typeof drawBrief === "function") drawBrief(a);
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
       if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
         const swi = ST.fibSrc === "auto" ? (typeof FIBA !== "undefined" ? FIBA.v : null) : ST.fibSrc !== "vis" && typeof fibSwing === "function" ? fibSwing(ST.fibSrc) : null;

@@ -817,7 +817,7 @@ function fibGuide(pl) {
 /* ---------- chart style: Neon (community-dashboard look) or Classic (the look before Nov 4 2026) ---------- */
 const NEON = { bg: "#0b0f1d", fg: "#d6dcec", fg2: "#9aa3b8", fg3: "#8b93ab", grid: "rgba(255,255,255,0.045)", line: "rgba(255,255,255,0.08)", up: "#22e39a", dn: "#ff4d6d", acc: "#20c3ff", warn: "#ffd23f", purple: "#7c5cff", grad: ["#121a35", "#0a0d18"], volA: 0.35 };
 function chartPal() { return ST.cstyle === "neon" ? NEON : chartColors(); }
-function applyCStyle() { const p = $("#chartPanel"); if (p) p.dataset.cs = ST.cstyle; document.querySelectorAll("[data-cst]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.cst === ST.cstyle)); }
+function applyCStyle() { const p = $("#chartPanel"); if (p) p.dataset.cs = ST.cstyle; document.documentElement.dataset.cs = ST.cstyle; if (typeof render === "function" && CC) setTimeout(render, 0); document.querySelectorAll("[data-cst]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.cst === ST.cstyle)); }
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-cst]"); if (!b) return; ST.cstyle = b.dataset.cst; LS.set("cstyle", ST.cstyle); applyCStyle(); if (CC) { CH.xKey = null; chartExtras(); CC.dirty(); } });
 
 /* ---------- settings panel: live info per row, group counts, open/closed groups ---------- */

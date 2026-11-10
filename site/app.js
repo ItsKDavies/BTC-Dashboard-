@@ -395,7 +395,7 @@ function draw() {
   const ids = Object.keys(SRC).filter((id) => !ST.off[id]), counted = ids.filter((id) => status(id) !== "blocked"), nLive = counted.filter((id) => ["ok", "stale"].includes(status(id))).length;
   const last = Math.max(0, ...ids.map((id) => SRC[id].st.okAt));
   $("#hLive").innerHTML = `<span class="dot ${ST.auto && !document.hidden ? "live" : ""}"></span><span>${nLive} of ${counted.length} sources live · ${ST.auto ? "updated " + ago(last) : "paused"}</span>`;
-  $("#bAuto").setAttribute("aria-pressed", ST.auto); $("#bAuto").textContent = ST.auto ? "Auto-refresh on" : "Auto-refresh off";
+  $("#bAuto").setAttribute("aria-pressed", ST.auto); $("#bAuto").textContent = ST.auto ? "● Live" : "❚❚ Paused"; $("#bAuto").title = ST.auto ? "Auto-refresh is on · tap to pause" : "Paused · tap to resume auto-refresh";
   if (ST.tab === "overview") { drawKpis(C); drawFlow(); const ks = status("kl"); $("#chartSt").className = "st " + ks; $("#chartSt").textContent = STL[ks]; updateChart(); }
   if (ST.tab === "derivs") drawDerivs(C);
   if (ST.tab === "sources") drawSources();
@@ -480,12 +480,20 @@ function report() {
 
 /* ---------- controls ---------- */
 function setTab(t) {
+  if (!document.querySelector(`.tab[data-tab="${t}"]`)) t = "overview";
   ST.tab = t; LS.set("tab", t);
   document.querySelectorAll(".tab").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === t));
+  // main tab + its sub-tabs
+  const grp = document.querySelector(`.tab[data-tab="${t}"]`).dataset.grp; LS.set("sub." + grp, t);
+  document.querySelectorAll(".mtab").forEach((b) => b.setAttribute("aria-selected", b.dataset.main === grp));
+  let nSub = 0; document.querySelectorAll(".tabs .tab").forEach((b) => { b.hidden = b.dataset.grp !== grp; if (!b.hidden) nSub++; });
+  const tn = document.querySelector(".tabs"); if (tn) tn.classList.toggle("one", nSub < 2);
   document.querySelectorAll(".view").forEach((v) => (v.hidden = v.dataset.view !== t));
   render();
 }
 document.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+document.querySelectorAll(".mtab").forEach((b) => b.addEventListener("click", () => { const g = b.dataset.main, last = LS.get("sub." + g, null), first = document.querySelector(`.tab[data-grp="${g}"]`);
+  setTab(last && document.querySelector(`.tab[data-tab="${last}"][data-grp="${g}"]`) ? last : first.dataset.tab); window.scrollTo({ top: 0 }); }));
 $("#tfSeg").innerHTML = TFS.map((t) => `<button data-tf="${t}">${t}</button>`).join("");
 function syncCtl() {
   document.querySelectorAll("[data-tf]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tf === ST.tf));

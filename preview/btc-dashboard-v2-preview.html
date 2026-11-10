@@ -269,7 +269,68 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
 .gmf span{background:#e8c547;color:#000}.gmf:before{border-color:#e8c547}
 .govr{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;align-items:baseline}.govr>b{flex-basis:100%;font-size:15px}.govr span{color:var(--fg2)}.govr span b{color:var(--fg)}
 @media (max-width:520px){.gkpi{grid-template-columns:1fr 1fr}.grow{grid-template-columns:40px 1fr 84px}.gmark:before{left:40px}.gmark span{margin-left:50px}}
+/* ===== revamp: main tabs + sub-tabs ===== */
+.mtabs{display:flex;gap:4px;padding:2px 0 6px}
+.mtab{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;border:0;background:none;padding:8px 10px;border-radius:12px;font-weight:650;font-size:14px;color:var(--fg3);min-height:40px;position:relative}
+.mtab svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mtab[aria-selected="true"]{color:var(--fg);background:linear-gradient(135deg,color-mix(in srgb,var(--purple) 26%,transparent),color-mix(in srgb,var(--acc) 20%,transparent));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc) 30%,transparent)}
+.tabs{gap:6px}.tabs .tab[hidden]{display:none}.tabs.one{display:none}
+.tabs .tab{font-size:13.5px;padding:6px 13px;border-radius:999px;border:1px solid var(--edge,var(--weak))}
+@media (max-width:520px){
+  .mtabs{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:6px max(8px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom));gap:2px;
+    background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);border-top:1px solid var(--edge,var(--weak))}
+  .mtab{flex-direction:column;gap:2px;font-size:10.5px;font-weight:600;padding:5px 2px;min-height:50px;border-radius:12px}
+  .mtab svg{width:22px;height:22px}
+  main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+}
+.mtab .nbadge.mb{position:absolute;top:2px;right:calc(50% - 22px)}
+/* compact header on phones */
+@media (max-width:520px){
+  header{backdrop-filter:none;-webkit-backdrop-filter:none}
+  .hd{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"px auto now" "stats stats stats" "lean lean lean" "live live live";gap:6px 8px;padding-block:8px 6px;align-items:center}
+  .hd>div:first-child{grid-area:px}#hStats{grid-area:stats;font-size:12px;gap:8px}#hLean{grid-area:lean;min-width:0}
+  .hright{display:contents}#hLive{grid-area:live;justify-self:start;min-width:0;max-width:100%;overflow:hidden;padding:3px 9px;font-size:11.5px}#hLive span:last-child{overflow:hidden;text-overflow:ellipsis;min-width:0}#hStats{min-width:0;overflow:hidden;flex-wrap:nowrap;white-space:nowrap}
+  #bAuto{grid-area:auto}#bNow{grid-area:now;font-size:0;width:34px;padding:0}#bNow:before{content:"↻";font-size:17px}.hd .btn{padding:4px 10px;min-height:32px;font-size:12.5px;white-space:nowrap}
+  .hd>div:first-child>div:last-child{flex-wrap:nowrap;gap:8px!important}.chg{white-space:nowrap;font-size:13px;padding:2px 7px}.px{font-size:25px}
+  #hLean{font-size:12.5px;flex-wrap:nowrap;overflow:hidden}#hLean>*{white-space:nowrap}
+}
+/* ===== revamp: Neon look across the whole dashboard (html[data-cs="neon"]); Classic = previous look ===== */
+html[data-cs="neon"]{--bg:#07090f;--panel:#0f1428;--fg:#e9edf7;--fg2:#a3acc2;--fg3:#7f89a3;--line:rgba(255,255,255,.12);--weak:rgba(255,255,255,.065);
+  --acc:#20c3ff;--up:#22e39a;--dn:#ff4d6d;--warn:#ffd23f;--purple:#7c5cff;--my:#f472d0;--edge:rgba(255,255,255,.08);
+  --g1:rgba(124,92,255,.18);--g2:rgba(32,195,255,.12);--shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05);color-scheme:dark}
+html[data-cs="neon"] body{background:radial-gradient(1200px 600px at 10% -10%,#1b1440 0%,transparent 60%),radial-gradient(900px 500px at 110% 10%,#0b2a3a 0%,transparent 55%),var(--bg);background-attachment:fixed}
+html[data-cs="neon"] header{background:linear-gradient(180deg,rgba(13,17,34,.92),rgba(7,9,15,.82))}
+html[data-cs="neon"] .panel{background:linear-gradient(180deg,rgba(21,27,51,.92),rgba(13,17,34,.88) 55%,rgba(10,13,24,.86));border:1px solid var(--edge);border-radius:18px;box-shadow:var(--shadow)}
+html[data-cs="neon"] .panel::before{inset:0 12% auto;background:linear-gradient(90deg,transparent,rgba(124,92,255,.55),rgba(32,195,255,.45),transparent)}
+html[data-cs="neon"] .pt{color:#b9c3ff;letter-spacing:.08em}
+html[data-cs="neon"] .px{background:linear-gradient(90deg,#fff,#b9c3ff 60%,#7fe7ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-cs="neon"] .btn,html[data-cs="neon"] .pill{background:rgba(255,255,255,.05);border-color:var(--edge)}
+html[data-cs="neon"] .btn[aria-pressed="true"]{background:linear-gradient(135deg,rgba(124,92,255,.32),rgba(32,195,255,.24));border-color:rgba(124,92,255,.6);color:#fff}
+html[data-cs="neon"] .seg{background:rgba(255,255,255,.05);border-color:var(--edge)}
+html[data-cs="neon"] .seg button[aria-pressed="true"],html[data-cs="neon"] .tabs .tab[aria-selected="true"]{background:linear-gradient(135deg,#7c5cff,#20c3ff);color:#fff;box-shadow:0 4px 14px -6px rgba(32,195,255,.6);border-color:transparent}
+html[data-cs="neon"] .chip{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1)}
+html[data-cs="neon"] .chip[aria-pressed="true"]{background:linear-gradient(135deg,rgba(124,92,255,.28),rgba(32,195,255,.2));border-color:rgba(32,195,255,.55);color:#fff}
+html[data-cs="neon"] .moodg .panel,html[data-cs="neon"] .pfsum div,html[data-cs="neon"] .ncard{background:rgba(255,255,255,.03)}
+.spnl{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.spnl>div{display:grid;gap:1px;padding:7px 9px;border-radius:10px;background:color-mix(in srgb,var(--fg) 3.5%,transparent);font-size:13.5px}.spnl i{font-style:normal;font-size:11px;color:var(--fg3);text-transform:uppercase;letter-spacing:.05em}.spnl .mut{font-size:11.5px}
+.spos{font-size:12.5px;color:var(--fg2);margin-top:6px}.swhy{margin-top:8px}.swhy summary{cursor:pointer;font-size:13px;color:var(--acc)}.swhy ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--fg2);line-height:1.5}
+/* ===== Trade brief ===== */
+.brief{padding:12px 14px}.bwrap>summary{list-style:none;cursor:pointer}.bwrap>summary::-webkit-details-marker{display:none}
+.bhd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.bhd .pt{margin-right:2px}.bsc{font-weight:700;font-size:15px}.bt{margin-left:auto;font-size:12px}
+.bhd:after{content:"";width:7px;height:7px;border-right:2px solid var(--fg3);border-bottom:2px solid var(--fg3);transform:rotate(45deg);margin:0 4px 3px 6px;transition:transform .15s}.bwrap:not([open]) .bhd:after{transform:rotate(-45deg)}
+.bhl{margin:8px 0 10px;font-size:14px;line-height:1.5;color:var(--fg2)}.bhl b{color:var(--fg)}
+.bcap{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--fg3);font-weight:600;margin-bottom:4px}
+.blvs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:start}
+.bnow{display:grid;justify-items:center;align-self:center;padding:6px 10px;border-radius:12px;background:color-mix(in srgb,var(--acc) 12%,transparent);border:1px solid color-mix(in srgb,var(--acc) 35%,transparent)}.bnow span{font-size:10.5px;color:var(--fg3);text-transform:uppercase;letter-spacing:.06em}.bnow b{font-size:15px}
+.blv{display:grid;grid-template-columns:auto auto 1fr auto;gap:2px 8px;align-items:baseline;padding:5px 0;border-bottom:1px dashed var(--weak);font-size:13px}.blv:last-child{border-bottom:0}
+.blp{font-weight:700;font-variant-numeric:tabular-nums}.blv.up .blp{color:var(--dn)}.blv.down .blp{color:var(--up)}.bld{font-size:11.5px;opacity:.85}.bln{color:var(--fg2);font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bls{font-size:9px;letter-spacing:1px;color:var(--warn)}
+.bmy{font-style:normal;font-size:10.5px;color:var(--my);border:1px solid currentColor;border-radius:5px;padding:0 4px}
+.bwl{margin:0 0 10px;padding-left:0;list-style:none;display:grid;gap:5px;font-size:13.5px;line-height:1.45}.bwl li{display:grid;grid-template-columns:16px 1fr;gap:4px}.bwl li>span:first-child{text-align:center}
+.bsets{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.bset{display:grid;gap:2px;text-align:left;padding:8px 10px;border-radius:12px;border:1px solid var(--weak);background:color-mix(in srgb,var(--fg) 3%,transparent);font-size:13px}.bset b{font-size:12px;text-transform:uppercase;letter-spacing:.06em}.bset.up{border-left:3px solid var(--up)}.bset.up b{color:var(--up)}.bset.down{border-left:3px solid var(--dn)}.bset.down b{color:var(--dn)}.bset span:nth-of-type(1){font-weight:650}.bset .mut{font-size:12px}
+.bchips{display:flex;flex-wrap:wrap;gap:6px}.bchip{display:inline-flex;gap:6px;align-items:baseline;padding:4px 9px;border-radius:999px;border:1px solid var(--weak);background:color-mix(in srgb,var(--fg) 3%,transparent);font-size:12px}.bchip i{font-style:normal;color:var(--fg3)}.bchip b{font-weight:650}
+@media (max-width:520px){.blvs{grid-template-columns:1fr}.bnow{justify-self:start;display:flex;gap:8px;align-items:baseline;padding:4px 10px}.bsets{grid-template-columns:1fr}}
 </style>
+<script>try{document.documentElement.dataset.cs=JSON.parse(localStorage.getItem("v2.cstyle")||'"neon"')}catch(e){document.documentElement.dataset.cs="neon"}</script>
 <div style="background:color-mix(in srgb,var(--warn) 18%,var(--bg));color:var(--fg);font-size:13px;padding:7px max(14px,env(safe-area-inset-left));border-bottom:1px solid var(--line)"><b>Preview with sample data.</b> Prices and flows here are made up so you can try the layout, chart and layers. Real data runs on your live Cloudflare site.</div>
 <script>
 /* DEMO MODE: no network. Exchange requests and live sockets are answered with generated sample data. */
@@ -395,24 +456,12 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
       <div id="hLean" style="display:flex;align-items:center;gap:6px"></div>
       <div class="hright">
         <span class="pill" id="hLive"><span class="dot"></span><span>Starting…</span></span>
-        <button class="btn" id="bAuto" aria-pressed="true" title="Pause or resume automatic updates">Auto-refresh</button>
+        <button class="btn" id="bAuto" aria-pressed="true" title="Pause or resume automatic updates">Auto</button>
         <button class="btn" id="bNow" title="Fetch everything now">↻ Refresh</button>
       </div>
     </div>
-    <nav class="tabs" role="tablist" aria-label="Dashboard sections">
-      <button class="tab" role="tab" data-tab="overview">Overview</button>
-      <button class="tab" role="tab" data-tab="news">News</button>
-      <button class="tab" role="tab" data-tab="ta">TA</button>
-      <button class="tab" role="tab" data-tab="pat">Patterns</button>
-      <button class="tab" role="tab" data-tab="setups">Setups</button>
-      <button class="tab" role="tab" data-tab="flow">CVD</button>
-      <button class="tab" role="tab" data-tab="sess">Sessions</button>
-      <button class="tab" role="tab" data-tab="gex">GEX</button>
-      <button class="tab" role="tab" data-tab="liq">Liquidations</button>
-      <button class="tab" role="tab" data-tab="mkts">Markets</button>
-      <button class="tab" role="tab" data-tab="derivs">Derivatives</button>
-      <button class="tab" role="tab" data-tab="sources">Sources</button>
-    </nav>
+    <nav class="mtabs" aria-label="Main sections"><button class="mtab" data-main="chart" aria-label="Chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg><span>Chart</span></button><button class="mtab" data-main="trade" aria-label="Trade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17l4-5 3 3 5-7"/><path d="M14 8h4v4"/></svg><span>Trade</span></button><button class="mtab" data-main="flow" aria-label="Flow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-6 6 6 9 0s6 6 9 0"/><path d="M3 18c3-4 6 4 9 0s6 4 9 0" opacity=".5"/></svg><span>Flow</span></button><button class="mtab" data-main="markets" aria-label="Markets"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 2.5 14.5 0 17M12 3.5c-2.5 2.5-2.5 14.5 0 17"/></svg><span>Markets</span></button><button class="mtab" data-main="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span>Settings</span></button></nav>
+    <nav class="tabs" role="tablist" aria-label="Sub-sections"><button class="tab" role="tab" data-tab="overview" data-grp="chart">Chart</button><button class="tab" role="tab" data-tab="setups" data-grp="trade">Setups</button><button class="tab" role="tab" data-tab="ta" data-grp="trade">Technicals</button><button class="tab" role="tab" data-tab="pat" data-grp="trade">Patterns</button><button class="tab" role="tab" data-tab="flow" data-grp="flow">CVD</button><button class="tab" role="tab" data-tab="derivs" data-grp="flow">Derivatives</button><button class="tab" role="tab" data-tab="liq" data-grp="flow">Liquidations</button><button class="tab" role="tab" data-tab="gex" data-grp="flow">Options · GEX</button><button class="tab" role="tab" data-tab="news" data-grp="markets">News</button><button class="tab" role="tab" data-tab="mkts" data-grp="markets">Markets & macro</button><button class="tab" role="tab" data-tab="sess" data-grp="markets">Sessions</button><button class="tab" role="tab" data-tab="sources" data-grp="settings">Data & settings</button></nav>
   </div>
 </header>
 
@@ -420,6 +469,7 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
 <main>
   <!-- OVERVIEW -->
   <section data-view="overview" class="view" style="display:grid;gap:14px">
+    <div class="panel brief" id="brief"></div>
     <div class="panel" id="chartPanel">
       <div class="ph"><span class="pt">BTC / USDT · Binance spot</span><span class="st" id="chartSt"></span></div>
       <div class="ctl">
@@ -611,6 +661,9 @@ header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;ba
     <div class="panel"><div class="ph"><span class="pt">By weekday · biggest moves</span></div><div id="sessDays"></div><div class="src">Binance spot BTC/USDT 30m candles · refreshes every 10 minutes · history, not a prediction</div></div>
   </section>
   <section data-view="sources" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Appearance</span></div>
+      <div style="display:grid;gap:8px"><div><b style="font-size:14px">Dashboard style</b><div class="sub">Neon is the dark glass look. Classic is the look from before Nov 10 and follows your phone's light/dark mode.</div></div><span class="seg" style="justify-self:start"><button data-cst="neon">Neon</button><button data-cst="classic">Classic</button></span></div>
+      <div class="src">Every past version is also saved on GitHub (branches <b>pre-revamp</b> and <b>chart-classic</b>), so anything can be restored.</div></div>
     <div class="panel">
       <div class="ph"><span class="pt">Data sources</span></div>
       <p class="note" style="margin:2px 0 10px">Every source runs on its own timer, straight from your browser. A failed source backs off and retries; sources refused in your region retry every 30 minutes. If something stays down, tap <b>Copy status report</b> and paste it to Claude.</p>
@@ -1417,7 +1470,7 @@ function draw() {
   const ids = Object.keys(SRC).filter((id) => !ST.off[id]), counted = ids.filter((id) => status(id) !== "blocked"), nLive = counted.filter((id) => ["ok", "stale"].includes(status(id))).length;
   const last = Math.max(0, ...ids.map((id) => SRC[id].st.okAt));
   $("#hLive").innerHTML = `<span class="dot ${ST.auto && !document.hidden ? "live" : ""}"></span><span>${nLive} of ${counted.length} sources live · ${ST.auto ? "updated " + ago(last) : "paused"}</span>`;
-  $("#bAuto").setAttribute("aria-pressed", ST.auto); $("#bAuto").textContent = ST.auto ? "Auto-refresh on" : "Auto-refresh off";
+  $("#bAuto").setAttribute("aria-pressed", ST.auto); $("#bAuto").textContent = ST.auto ? "● Live" : "❚❚ Paused"; $("#bAuto").title = ST.auto ? "Auto-refresh is on · tap to pause" : "Paused · tap to resume auto-refresh";
   if (ST.tab === "overview") { drawKpis(C); drawFlow(); const ks = status("kl"); $("#chartSt").className = "st " + ks; $("#chartSt").textContent = STL[ks]; updateChart(); }
   if (ST.tab === "derivs") drawDerivs(C);
   if (ST.tab === "sources") drawSources();
@@ -1502,12 +1555,20 @@ function report() {
 
 /* ---------- controls ---------- */
 function setTab(t) {
+  if (!document.querySelector(`.tab[data-tab="${t}"]`)) t = "overview";
   ST.tab = t; LS.set("tab", t);
   document.querySelectorAll(".tab").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === t));
+  // main tab + its sub-tabs
+  const grp = document.querySelector(`.tab[data-tab="${t}"]`).dataset.grp; LS.set("sub." + grp, t);
+  document.querySelectorAll(".mtab").forEach((b) => b.setAttribute("aria-selected", b.dataset.main === grp));
+  let nSub = 0; document.querySelectorAll(".tabs .tab").forEach((b) => { b.hidden = b.dataset.grp !== grp; if (!b.hidden) nSub++; });
+  const tn = document.querySelector(".tabs"); if (tn) tn.classList.toggle("one", nSub < 2);
   document.querySelectorAll(".view").forEach((v) => (v.hidden = v.dataset.view !== t));
   render();
 }
 document.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+document.querySelectorAll(".mtab").forEach((b) => b.addEventListener("click", () => { const g = b.dataset.main, last = LS.get("sub." + g, null), first = document.querySelector(`.tab[data-grp="${g}"]`);
+  setTab(last && document.querySelector(`.tab[data-tab="${last}"][data-grp="${g}"]`) ? last : first.dataset.tab); window.scrollTo({ top: 0 }); }));
 $("#tfSeg").innerHTML = TFS.map((t) => `<button data-tf="${t}">${t}</button>`).join("");
 function syncCtl() {
   document.querySelectorAll("[data-tf]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tf === ST.tf));
@@ -1874,14 +1935,15 @@ function setupCard(s, i, a) {
       <div><div class="mut" style="font-size:12px">Reward : risk</div><div class="big" style="font-size:18px">${s.rr.toFixed(2)}</div></div>
     </div>
     ${ladder(s, r, px, W)}
-    <div class="tw"><table class="rt"><tbody>
-      <tr><td>Position at ${ST.lev}×</td><td>$${n0(ST.margin)} margin → <b>${usd(r.notional)}</b> · ${r.qty.toFixed(4)} BTC</td></tr>
-      <tr><td>Liquidation (est.)</td><td class="${r.liqFirst ? "dn" : ""}"><b>${n0(r.liq)}</b>${r.liqFirst ? " · <b>liquidates before your stop, lower the leverage</b>" : ""}</td></tr>
-      <tr><td>Max leverage for this stop</td><td>${r.maxLev}×</td></tr>
-      <tr><td>Stop loss hit</td><td>${pnl(r.sl)}</td></tr>
-      <tr><td>TP1 hit</td><td>${pnl(r.tp1)}</td></tr>
-      <tr><td>TP2 hit</td><td>${pnl(r.tp2)}</td></tr>
-    </tbody></table></div>
+    <div class="spnl"><div><i>Stop hit</i>${pnl(r.sl)}</div><div><i>TP1 hit</i>${pnl(r.tp1)}</div><div><i>TP2 hit</i>${pnl(r.tp2)}</div></div>
+    <div class="spos">${ST.lev}× · $${n0(ST.margin)} margin → <b>${usd(r.notional)}</b> · ${r.qty.toFixed(4)} BTC · liq <b class="${r.liqFirst ? "dn" : ""}">${n0(r.liq)}</b> · max ${r.maxLev}× for this stop</div>
+    ${r.liqFirst ? `<div class="sub dn" style="margin-top:4px"><b>Liquidates before the stop at ${ST.lev}×. Lower the leverage.</b></div>` : ""}
+    <details class="swhy"><summary>Why this setup and how to take it</summary><ul>
+      <li>Zone: ${esc(s.zone.names.join(", "))} (${s.zone.names.length} level${s.zone.names.length > 1 ? "s" : ""} agree).</li>
+      <li>Score ${s.score}/100 from zone strength, agreement with the overall lean (${a.bias > 0 ? "+" : ""}${a.bias}), reward:risk ${s.rr.toFixed(2)} and distance (${s.dist.toFixed(2)}%).</li>
+      <li>Trigger: let price reach ${n0(s.entry)} and show a reaction first (a 5m or 15m wick through the zone that closes back ${s.side > 0 ? "above" : "below"} it). No reaction, no trade.</li>
+      <li>Manage: take some at TP1 ${n0(s.tp1)} and move the stop to entry; let the rest run to TP2 ${n0(s.tp2)}.</li>
+      <li>Invalid if price closes 30m ${s.side > 0 ? "below" : "above"} ${n0(s.stop)}.</li></ul></details>
     <details data-setid="${id}" ${SETOPEN[id] ? "open" : ""} style="margin-top:8px"><summary class="mut" style="cursor:pointer;font-size:13px">Chart with levels</summary>${chart}</details>
   </div>`;
 }
@@ -2154,6 +2216,7 @@ function drawStage2(tab) {
   try {
     if (tab === "overview") {
       need("#ovAssess", (x) => ($("#ovAssess").innerHTML = assessHTML(x, false)));
+      if (typeof drawBrief === "function") drawBrief(a);
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
       if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
         const swi = ST.fibSrc === "auto" ? (typeof FIBA !== "undefined" ? FIBA.v : null) : ST.fibSrc !== "vis" && typeof fibSwing === "function" ? fibSwing(ST.fibSrc) : null;
@@ -3007,7 +3070,7 @@ function fibGuide(pl) {
 /* ---------- chart style: Neon (community-dashboard look) or Classic (the look before Nov 4 2026) ---------- */
 const NEON = { bg: "#0b0f1d", fg: "#d6dcec", fg2: "#9aa3b8", fg3: "#8b93ab", grid: "rgba(255,255,255,0.045)", line: "rgba(255,255,255,0.08)", up: "#22e39a", dn: "#ff4d6d", acc: "#20c3ff", warn: "#ffd23f", purple: "#7c5cff", grad: ["#121a35", "#0a0d18"], volA: 0.35 };
 function chartPal() { return ST.cstyle === "neon" ? NEON : chartColors(); }
-function applyCStyle() { const p = $("#chartPanel"); if (p) p.dataset.cs = ST.cstyle; document.querySelectorAll("[data-cst]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.cst === ST.cstyle)); }
+function applyCStyle() { const p = $("#chartPanel"); if (p) p.dataset.cs = ST.cstyle; document.documentElement.dataset.cs = ST.cstyle; if (typeof render === "function" && CC) setTimeout(render, 0); document.querySelectorAll("[data-cst]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.cst === ST.cstyle)); }
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-cst]"); if (!b) return; ST.cstyle = b.dataset.cst; LS.set("cstyle", ST.cstyle); applyCStyle(); if (CC) { CH.xKey = null; chartExtras(); CC.dirty(); } });
 
 /* ---------- settings panel: live info per row, group counts, open/closed groups ---------- */
@@ -3690,6 +3753,7 @@ function newsBadge() {
   const b = document.querySelector('.tab[data-tab="news"]'); if (!b) return;
   const n = ST.tab === "news" ? 0 : newsAll().filter((s) => s.lvl > 0 && s.t > ST.newsSeen && Date.now() - s.t < 24 * 36e5).length;
   const want = n ? `News <span class="nbadge">${n > 9 ? "9+" : n}</span>` : "News"; if (b.innerHTML !== want) b.innerHTML = want;
+  const m = document.querySelector('.mtab[data-main="markets"]'); if (m) { let d = m.querySelector(".nbadge"); if (n && !d) { d = document.createElement("span"); d.className = "nbadge mb"; m.appendChild(d); } if (d) { if (n) d.textContent = n > 9 ? "9+" : n; else d.remove(); } }
 }
 document.addEventListener("click", (e) => {
   const s = e.target.closest("[data-nscope]"); if (s) { ST.newsScope = s.dataset.nscope; LS.set("newsScope", ST.newsScope); drawNews(); return; }
@@ -3869,6 +3933,89 @@ drawStage2 = function (tab) {
 };
 if (typeof syncCtl === "function") syncCtl();
 render();
+
+</script>
+<script>
+/* ===================== Trade brief (top of the Chart tab) =====================
+   One card that pulls the whole dashboard together: lean, where price sits, the nearest levels above and below
+   (zones + GEX + your levels), what would change the picture, the best setup each way, flow context and the
+   next macro event. Everything here is computed in the browser from data the dashboard already loads. */
+ST.briefOpen = LS.get("briefOpen", true);
+let BRIEF = "";
+function briefLevels(a) {
+  const px = a.px, out = [];
+  (a.Z || []).forEach((z) => out.push({ p: z.c, lo: z.lo, hi: z.hi, w: z.w, names: z.names.slice(), src: "zone" }));
+  if (typeof gexCalc === "function") { const g = gexCalc("all"); if (g) gexLevels(g).filter((l) => /flip|wall|Magnet/i.test(l.name)).forEach((l) => out.push({ p: l.p, lo: l.p, hi: l.p, w: l.id === "FLIP" ? 2 : 1.5, names: [l.name], src: "gex" })); }
+  if (typeof MYLV !== "undefined") MYLV.list.forEach((l) => out.push({ p: l.p, lo: l.p, hi: l.p, w: 2.5, names: [l.label && l.label !== "Mine" ? `My ${l.label}` : "My level"], src: "my" }));
+  // merge anything within 0.15% of each other
+  out.sort((x, y) => x.p - y.p); const m = [];
+  for (const l of out) { const z = m[m.length - 1]; if (z && (l.p - z.hi) / px <= 0.0015) { z.hi = Math.max(z.hi, l.hi); z.lo = Math.min(z.lo, l.lo); z.p = (z.p * z.w + l.p * l.w) / (z.w + l.w); z.w += l.w; z.names.push(...l.names); z.my = z.my || l.src === "my"; z.gex = z.gex || l.src === "gex"; } else m.push({ ...l, my: l.src === "my", gex: l.src === "gex" }); }
+  m.forEach((z) => { z.names = [...new Set(z.names)]; z.d = ((z.p - px) / px) * 100; z.str = z.w >= 5 ? 3 : z.w >= 3 ? 2 : 1; });
+  const above = m.filter((z) => z.lo > px * 1.0004).sort((x, y) => x.p - y.p).slice(0, 3), below = m.filter((z) => z.hi < px * 0.9996).sort((x, y) => y.p - x.p).slice(0, 3);
+  return { above, below };
+}
+function briefPick(list) { // the level that matters most nearby: strong and close
+  let best = null, bs = -1; for (const z of list) { const sc = z.w / (0.4 + Math.abs(z.d)); if (sc > bs) { bs = sc; best = z; } } return best;
+}
+function drawBrief(a) {
+  const el = $("#brief"); if (!el) return;
+  if (!a) { const h = `<div class="ph"><span class="pt">Trade brief</span></div><div class="unavail">Building the brief as data comes in…</div>`; if (BRIEF !== h) { el.innerHTML = h; BRIEF = h; } return; }
+  const px = a.px, { above, below } = briefLevels(a), A = aggr(), C = chartColors();
+  const oi1 = live("okxOI") ? seriesChg(D.okxOI.s, 3600) : null, oi4 = live("okxOI") ? seriesChg(D.okxOI.s, 4 * 3600) : null;
+  const prem = live("cb") && live("spot") ? ((D.cb.px - D.spot.px) / D.spot.px) * 100 : null;
+  const w1 = live("k5") ? win(D.k5.k, 12) : null, w4 = live("k5") ? win(D.k5.k, 48) : null;
+  const g = typeof gexCalc === "function" ? gexCalc("all") : null;
+  const nm = (z) => esc(z.names.slice(0, 2).join(" · ") + (z.names.length > 2 ? ` +${z.names.length - 2}` : ""));
+  const lvRow = (z, side) => `<div class="blv ${side}"><span class="blp">${n0(z.p)}</span><span class="bld ${side === "up" ? "dn" : "up"}">${z.d >= 0 ? "+" : "−"}${Math.abs(z.d).toFixed(2)}%</span><span class="bln">${nm(z)}${z.my ? ' <i class="bmy">mine</i>' : ""}</span><span class="bls" title="strength">${"●".repeat(z.str)}${"○".repeat(3 - z.str)}</span></div>`;
+
+  // headline: lean + where price is
+  const parts = [];
+  const lean = a.bias >= 25 ? "Bullish" : a.bias <= -25 ? "Bearish" : a.bias > 5 ? "Leaning up" : a.bias < -5 ? "Leaning down" : "Neutral";
+  parts.push(`<b class="${vcls(a.bias)}">${lean}</b> (${a.bias > 0 ? "+" : ""}${a.bias}): technicals ${a.mtf > 0 ? "+" : ""}${a.mtf}, flow ${a.flow > 0 ? "+" : ""}${a.flow}.`);
+  if (w1 && w4) parts.push(`Price ${pct(w1.pChg)} in 1h, ${pct(w4.pChg)} in 4h.`);
+  if (g && ok(g.flip)) parts.push(px >= g.flip ? `Above the GEX flip (${kfmt(g.flip)}), so dealers tend to dampen moves.` : `Below the GEX flip (${kfmt(g.flip)}), so moves can run further.`);
+  if (typeof FIBA !== "undefined" && FIBA.v && typeof fibPlan === "function" && CC && CC.k.length) { const pl = fibPlan(FIBA.v, CC.k); if (pl) parts.push(`Fib: ${pl.title.replace(/—/g, "–")}.`); }
+
+  // what to watch
+  const watch = [], up = briefPick(above), dn = briefPick(below), nx1 = above[0], nb1 = below[0];
+  if (up) { const next = above.find((z) => z.p > up.hi * 1.001); watch.push(`<span class="up">▲</span> A 30m close above <b>${n0(up.hi)}</b> (${nm(up)}) opens <b>${next ? n0(next.p) : "the next leg up"}</b>${a.bias < 0 ? " and would flip the lean" : ""}.`); }
+  if (dn) { const next = below.find((z) => z.p < dn.lo * 0.999); watch.push(`<span class="dn">▼</span> Losing <b>${n0(dn.lo)}</b> (${nm(dn)}) opens <b>${next ? n0(next.p) : "the next leg down"}</b>${a.bias > 0 ? " and would flip the lean" : ""}.`); }
+  if (nx1 && nb1) { const rng = ((nx1.p - nb1.p) / px) * 100; if (rng < 0.6) watch.push(`<span class="wn">◆</span> Price is boxed between <b>${n0(nb1.p)}</b> and <b>${n0(nx1.p)}</b> (${rng.toFixed(2)}% wide). Chop risk: wait for a break and retest.`); }
+  const fr = a.reasons.filter((r) => r.v && !/technicals|Biggest liquidity/.test(r.txt)).slice(0, 2);
+  fr.forEach((r) => watch.push(`<span class="${vcls(r.v)}">${r.v > 0 ? "▲" : "▼"}</span> ${esc(r.txt)}`));
+  if (a.L && a.L.shorts[0] && a.L.longs[0]) { const s0 = a.L.shorts[0], l0 = a.L.longs[0], near = Math.abs(s0.p - px) < Math.abs(l0.p - px) ? ["short", s0, "above"] : ["long", l0, "below"];
+    watch.push(`<span class="wn">◎</span> Closest big liquidity: ${near[0]} liqs ${near[2]} at <b>${n0(near[1].p)}</b> (${usd(near[1].usd)}, ${distTxt(near[1].p, px)}). Price is often pulled toward these.`); }
+  if (live("cal")) { const nx = D.cal.ev.find((e) => e.t > Date.now() - 5 * 60000 && e.impact === "High"); if (nx && nx.t - Date.now() < 48 * 36e5) watch.push(`<span class="wn">⚑</span> <b>${esc(nx.title)}</b> ${untilTxt(nx.t - Date.now())} (${new Date(nx.t).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}). Expect a volatility spike; size down or wait.`); }
+
+  // best setups
+  const bs = (arr, side) => { const s = arr[0]; if (!s) return `<div class="bset ${side}"><b>${side === "up" ? "Long" : "Short"}</b><span class="mut">No setup qualifies right now</span></div>`;
+    return `<button class="bset ${side}" data-goto="setups"><b>${side === "up" ? "Long" : "Short"}</b><span>${n0(s.entry)} → ${n0(s.tp1)} / ${kfmt(s.tp2)}</span><span class="mut">SL ${n0(s.stop)} · R:R ${s.rr.toFixed(1)} · ${esc(s.conf)}</span></button>`; };
+
+  // context chips
+  const chip = (lab, val, cls, tip) => `<span class="bchip" title="${esc(tip || "")}"><i>${lab}</i><b class="${cls || ""}">${val}</b></span>`;
+  const chips = [];
+  if (ok(A.f8)) chips.push(chip("Funding 8h", `${(A.f8 * 100).toFixed(4)}%`, A.f8 > 0.0003 ? "dn" : A.f8 < 0 ? "up" : "", "OI-weighted funding across venues. High positive = crowded longs."));
+  if (ok(oi1)) chips.push(chip("OI 1h", pct(oi1), "", `Open interest change (OKX). 4h ${ok(oi4) ? pct(oi4) : "–"}`));
+  if (w1) chips.push(chip("Spot CVD 1h", `${sgn(w1.cvd, 0)} BTC`, vcls(w1.cvd), "Binance spot buyers minus sellers, last hour"));
+  if (ok(prem)) chips.push(chip("CB premium", pct(prem, 3), vcls(prem), "Coinbase vs Binance. Positive = US buyers stronger."));
+  if (live("okxLS")) { const ls = D.okxLS.s; chips.push(chip("L/S accts", nd(ls[ls.length - 1].v, 2), "", "OKX long accounts per short account")); }
+  if (g) chips.push(chip("Gamma", ok(g.flip) ? (px >= g.flip ? "Positive" : "Negative") : g.net >= 0 ? "Positive" : "Negative", ok(g.flip) ? (px >= g.flip ? "up" : "dn") : "", "Dealer gamma regime from Deribit options"));
+  if (g && ok(g.em1)) chips.push(chip("Exp. move 1d", `±$${n0(g.em1)}`, "", "Options-implied one-day move"));
+
+  const t = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const html = `<details class="bwrap"${ST.briefOpen ? " open" : ""}><summary class="bhd"><span class="pt">Trade brief</span>${tag(a.verdict, a.bias)}<span class="bsc ${vcls(a.bias)}">${a.bias > 0 ? "+" : ""}${a.bias}</span><span class="mut bt">${t}</span></summary>
+    <p class="bhl">${parts.join(" ")}</p>
+    <div class="blvs"><div><div class="bcap">Above · resistance</div>${above.length ? above.map((z) => lvRow(z, "up")).join("") : `<div class="mut">No level within 7%</div>`}</div>
+      <div class="bnow"><span>Now</span><b>${n0(px)}</b></div>
+      <div><div class="bcap">Below · support</div>${below.length ? below.map((z) => lvRow(z, "down")).join("") : `<div class="mut">No level within 7%</div>`}</div></div>
+    <div class="bcap" style="margin-top:10px">What to watch</div><ul class="bwl">${watch.map((w) => { const m = w.match(/^(<span[^>]*>[^<]*<\/span>)\s*([\s\S]*)$/); return m ? `<li>${m[1]}<span>${m[2]}</span></li>` : `<li><span></span><span>${w}</span></li>`; }).join("")}</ul>
+    <div class="bcap">Best setups</div><div class="bsets">${bs(a.S.longs, "up")}${bs(a.S.shorts, "down")}</div>
+    <div class="bchips">${chips.join("")}</div>
+    <div class="src">Levels merge zones, swing highs/lows, opens, VWAP, liquidation clusters, GEX and your levels; ● = how many agree. Rules only, not advice.</div></details>`;
+  if (html === BRIEF) return; BRIEF = html; el.innerHTML = html;
+  el.querySelector(".bwrap").addEventListener("toggle", (e) => { ST.briefOpen = e.target.open; LS.set("briefOpen", ST.briefOpen); });
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-goto]"); if (b) { setTab(b.dataset.goto); window.scrollTo({ top: 0 }); } });
 
 </script>
 <script>new MutationObserver(()=>{try{recolorCharts();render();}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});</script>
