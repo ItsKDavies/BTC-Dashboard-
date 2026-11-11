@@ -239,7 +239,7 @@ class CChart {
     const lbls = [];
     for (const e of bubs.filter((q) => q.r >= 13).sort((x, y) => y.usd - x.usd)) {
       if (lbls.some((q) => Math.abs(q.X - e.X) < 30 && Math.abs(q.Y - e.Y) < 13)) continue; lbls.push(e); g.font = "700 10px IBM Plex Sans, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineJoin = "round";
-      const t = usd(e.usd).replace("$", ""); g.strokeStyle = rgba(C.bg, 0.9); g.lineWidth = 3; g.strokeText(t, e.X, e.Y); g.fillStyle = C.grad ? "#fff" : cssv("--fg") || C.fg; g.fillText(t, e.X, e.Y);
+      const t = usd(e.usd).replace("$", ""); g.strokeStyle = rgba(C.bg, 0.9); g.lineWidth = 3; g.strokeText(t, e.X, e.Y); g.fillStyle = C.lbl || cssv("--fg") || C.fg; g.fillText(t, e.X, e.Y);
       g.textAlign = "left"; g.textBaseline = "alphabetic"; g.font = "11.5px IBM Plex Sans, system-ui, sans-serif";
     }
     // last price line
@@ -537,7 +537,7 @@ function lowerPanes(k, C) {
 }
 function chartExtras(fromView) {
   if (!CC || !CC.k.length) return; const C = chartPal(), k = CC.k, a = AN && AN.key ? AN : null, intra = ["5m", "15m", "30m", "1h"].includes(ST.tf);
-  const key = [ST.watchLv, ST.chan, ST.chanTf.join(","), ST.cstyle, ST.fibPlan, ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
+  const key = [ST.geoPf, ST.geoFan, ST.geoGann, ST.geoTz, ST.geoHarm, ST.watchLv, ST.chan, ST.chanTf.join(","), ST.cstyle, ST.fibPlan, ST.tf, SRC.kl.st.okAt, ST.ema, ST.sma, ST.vwap, ST.avwap, ST.lv, ST.fib, ST.prof, ST.tpo, ST.zones, ST.liq, ST.liqb, ST.lpStyle, ST.tlN, ST.lineLbl, ST.fibSrc, ST.fibLock, SRC.taK ? SRC.taK.st.okAt : 0, ST.mono, ST.heat, ST.bub, ST.liqev, ST.pat, ST.trend, ST.cdl, typeof LIQ !== "undefined" ? LIQ.size : 0, ST.sess, ST.my, ST.lowers.join(","), SRC.pfc ? SRC.pfc.st.okAt : 0, SRC.okxOI.st.okAt, ST.clean, a && a.key, MYLV.at, JSON.stringify(ST.fibOff), C.bg, BIG.size, SRC.okxOI.st.okAt, ST.gexl, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0, typeof CWG !== "undefined" ? CWG.at : 0].join("|");
   if (!fromView && CH.xKey === key) return; CH.xKey = key;
   const on = (x) => x && !ST.clean, L = { mono: ST.mono, lineLbl: ST.lineLbl, lines: [], hlines: [], boxes: [] }, c = k.map((x) => x.c), T = (arr, n) => arr.map((v, i) => (ok(v) ? { t: k[i].t, v } : null)).filter(Boolean);
   if (on(ST.ema)) { L.lines.push({ pts: T(TA.ema(c, 21), 21), color: C.warn }, { pts: T(TA.ema(c, 50), 50), color: C.acc }, { pts: T(TA.ema(c, 200), 200), color: C.purple, w: 1.6 }); }
@@ -578,6 +578,7 @@ function chartExtras(fromView) {
     if ((CC.padX || 0) !== want && !CC.touching) { const was = CC.follow; CC.padX = want; if (was) CC.x0 = CC.liveX0(); }
     if (plan) drawFibPlan(L, k, C, plan, want); fibGuide(plan); LI.fib = swP ? fibInfoHTML(swP) : ""; LI.fibPlan = plan ? plan.title : ""; }
   LI.chan = on(ST.chan) ? drawChannels(L, k, C) : "";
+  if (typeof drawGeom === "function") drawGeom(L, k, C);
   LI.bub = L.bubbles ? `${L.bubbles.length} whale trade${L.bubbles.length === 1 ? "" : "s"} on this chart` : "";
   LI.my = MYLV.list.length ? `${MYLV.list.length} level${MYLV.list.length === 1 ? "" : "s"} saved` : "No levels saved yet · add them under the chart";
   LI.sess = (() => { const s0 = sessions(Date.now() / 1000 - 1, Date.now() / 1000).filter((x) => x.t0 <= Date.now() / 1000 && x.t1 > Date.now() / 1000).map((x) => x.name); return s0.length ? `Now: ${s0.join(" + ")}` : "Between sessions"; })();
@@ -831,7 +832,15 @@ function fibGuide(pl) {
 
 /* ---------- chart style: Neon (community-dashboard look) or Classic (the look before Nov 4 2026) ---------- */
 const NEON = { bg: "#0b0f1d", fg: "#d6dcec", fg2: "#9aa3b8", fg3: "#8b93ab", grid: "rgba(255,255,255,0.045)", line: "rgba(255,255,255,0.08)", up: "#22e39a", dn: "#ff4d6d", acc: "#20c3ff", warn: "#ffd23f", purple: "#7c5cff", grad: ["#121a35", "#0a0d18"], volA: 0.35 };
-function chartPal() { return ST.cstyle === "neon" ? NEON : chartColors(); }
+const THEMES = {
+  neon: { bg: "#0a0d18", fg: "#e9edf7", fg2: "#a3acc2", fg3: "#7f89a3", grid: "rgba(255,255,255,0.045)", line: "rgba(255,255,255,0.08)", up: "#22e39a", dn: "#ff4d6d", acc: "#20c3ff", warn: "#ffd23f", purple: "#7c5cff", my: "#f472d0", grad: ["#121a35", "#0a0d18"], volA: 0.35, lbl: "#fff" },
+  midnight: { bg: "#0f121a", fg: "#d1d4dc", fg2: "#a3a8b8", fg3: "#787b86", grid: "rgba(255,255,255,0.045)", line: "rgba(255,255,255,0.08)", up: "#26a69a", dn: "#ef5350", acc: "#2962ff", warn: "#f7c548", purple: "#7e57c2", my: "#ec5fa8", grad: ["#161a25", "#0f121a"], volA: 0.35, lbl: "#fff" },
+  tangerine: { bg: "#110a06", fg: "#f6ece4", fg2: "#c9b4a4", fg3: "#9a8270", grid: "rgba(255,255,255,0.045)", line: "rgba(255,255,255,0.08)", up: "#3ddc97", dn: "#ff5a4e", acc: "#ff9f1c", warn: "#ffd166", purple: "#ff6f61", my: "#ff77c8", grad: ["#24160d", "#110a06"], volA: 0.35, lbl: "#fff" },
+  ocean: { bg: "#04121c", fg: "#e3f4ff", fg2: "#9fbfd3", fg3: "#6f90a6", grid: "rgba(255,255,255,0.045)", line: "rgba(255,255,255,0.08)", up: "#2ee6c5", dn: "#ff6b8a", acc: "#3fb8ff", warn: "#ffd36e", purple: "#5b7cff", my: "#f78fd8", grad: ["#0b2638", "#04121c"], volA: 0.35, lbl: "#fff" },
+  matrix: { bg: "#020604", fg: "#c8ffd8", fg2: "#86c79c", fg3: "#5a8f6c", grid: "rgba(255,255,255,0.045)", line: "rgba(255,255,255,0.08)", up: "#00ff88", dn: "#ff3b6b", acc: "#39ff14", warn: "#e6ff3b", purple: "#00c2a8", my: "#ff66d9", grad: ["#071a0e", "#020604"], volA: 0.35, lbl: "#fff" },
+  paper: { bg: "#f5f0e6", fg: "#1d1b16", fg2: "#4d473c", fg3: "#7c7466", grid: "rgba(0,0,0,0.06)", line: "rgba(0,0,0,0.12)", up: "#138a5e", dn: "#c8364b", acc: "#3b5bdb", warn: "#b7791f", purple: "#7048e8", my: "#c2255c", grad: ["#fffdf8", "#f5f0e6"], volA: 0.3, lbl: "#1d1b16" },
+};
+function chartPal() { return ST.cstyle === "classic" ? chartColors() : THEMES[ST.cstyle] || THEMES.neon; }
 function applyCStyle() { const p = $("#chartPanel"); if (p) p.dataset.cs = ST.cstyle; document.documentElement.dataset.cs = ST.cstyle; if (typeof render === "function" && CC) setTimeout(render, 0); document.querySelectorAll("[data-cst]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.cst === ST.cstyle)); }
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-cst]"); if (!b) return; ST.cstyle = b.dataset.cst; LS.set("cstyle", ST.cstyle); applyCStyle(); if (CC) { CH.xKey = null; chartExtras(); CC.dirty(); } });
 
@@ -890,7 +899,7 @@ if (ST.chan && ST.chanTf.includes("8h")) setTimeout(() => { if (!(D.taK && D.taK
 let QN = 0, QHTML = "";
 const QT = { watchLv: ["Watch levels", "#ff6b8b"], fib: ["Fib", "#ff6ec7"], fibPlan: ["Fib plan", "#ffd166"], chan: ["Channel", "#f472b6"], ema: ["EMA", "#ffd23f"], sma: ["SMA", "#22e39a"], vwap: ["VWAP", "#9aa3b8"], avwap: ["AVWAP", "#e8c547"],
   trend: ["Trendlines", "#20c3ff"], pat: ["Patterns", "#a78bfa"], cdl: ["Candles", "#ff9f43"], my: ["My levels", "#f472d0"], lv: ["Opens", "#5c9dff"], zones: ["Zones", "#ff4d6d"], gexl: ["GEX", "#e8c547"],
-  prof: ["Profile", "#5c9dff"], tpo: ["TPO", "#20c3ff"], heat: ["Heatmap", "#22e39a"], liq: ["Liq lines", "#ff4d6d"], liqb: ["Liq bands", "#ff9f43"], liqev: ["Liqs", "#ff4d6d"], bub: ["Whales", "#22e39a"], sess: ["Sessions", "#7c5cff"], mono: ["Mono", "#cfcfcf"], lineLbl: ["Labels", "#9aa3b8"] };
+  prof: ["Profile", "#5c9dff"], tpo: ["TPO", "#20c3ff"], heat: ["Heatmap", "#22e39a"], liq: ["Liq lines", "#ff4d6d"], liqb: ["Liq bands", "#ff9f43"], liqev: ["Liqs", "#ff4d6d"], bub: ["Whales", "#22e39a"], sess: ["Sessions", "#7c5cff"], geoPf: ["Pitchfork", "#a78bfa"], geoFan: ["Fib fan", "#ff6ec7"], geoGann: ["Gann fan", "#e8c547"], geoTz: ["Time zones", "#38bdf8"], geoHarm: ["Harmonics", "#22e39a"], mono: ["Mono", "#cfcfcf"], lineLbl: ["Labels", "#9aa3b8"] };
 function drawQuick() {
   const el = $("#qbar"); if (!el) return;
   const chips = ST.quick.filter((k) => QT[k]).map((k) => `<button class="qt" data-qt="${k}" aria-pressed="${!!ST[k]}" style="--c:${QT[k][1]}"><i></i>${QT[k][0]}</button>`).join("");
