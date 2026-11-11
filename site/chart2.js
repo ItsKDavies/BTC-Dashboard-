@@ -46,7 +46,13 @@ class CChart {
   yRange() {
     if (!this.auto) return; const [a, b] = this.vis(); let lo = Infinity, hi = -Infinity;
     for (let i = a; i <= b; i++) { const x = this.k[i]; if (x.l < lo) lo = x.l; if (x.h > hi) hi = x.h; }
-    if (!isFinite(lo)) { lo = 0; hi = 1; } if (this.x0 + this.bars >= this.k.length) for (const v of this.L.yInc || []) { if (v < lo) lo = v; if (v > hi) hi = v; } /* plan targets only matter when the live edge is on screen */ const p = (hi - lo) * 0.08 || 1; this.yLo = lo - p; this.yHi = hi + p;
+    if (!isFinite(lo)) { lo = 0; hi = 1; } const p = (hi - lo) * 0.08 || 1, tLo = lo - p, tHi = hi + p;
+    // glide to the new range instead of snapping (no jolt while you pan); snap on first draw or after a big jump in data
+    const first = !isFinite(this.yLo) || this.yLo === 0 || !this.yEased || Math.abs(tHi - tLo) > 4 * Math.abs(this.yHi - this.yLo) || Math.abs(tLo - this.yLo) > 3 * (tHi - tLo);
+    if (first) { this.yLo = tLo; this.yHi = tHi; this.yEased = true; return; }
+    const dl = tLo - this.yLo, dh = tHi - this.yHi, eps = (tHi - tLo) * 0.002;
+    if (Math.abs(dl) < eps && Math.abs(dh) < eps) { this.yLo = tLo; this.yHi = tHi; return; }
+    this.yLo += dl * 0.3; this.yHi += dh * 0.3; this.dirty();
   }
   Y(p) { const L = this.layout(); return 6 + (1 - (p - this.yLo) / (this.yHi - this.yLo)) * (L.mainH - 12); }
   P(y) { const L = this.layout(); return this.yLo + (1 - (y - 6) / (L.mainH - 12)) * (this.yHi - this.yLo); }
@@ -798,7 +804,6 @@ function fibPlan(sw, k) {
 function drawFibPlan(L, k, C, pl, room) {
   const n = k.length, i0 = n - 1, axB = 64 / Math.max(1, CC.W / CC.bars), step = Math.max(2, (room - 2 - axB) / Math.max(2, pl.main.length)), // last point stays left of the price labels
     col = (a, b) => (b >= a ? C.up : C.dn), pill = (i, p, t, c) => L.draw.push({ type: "pill", i, p, text: t, color: c, anchor: "right", size: 10 });
-  L.yInc = [...pl.main.map((q) => q.p), ...(pl.zone ? [pl.zone.a, pl.zone.b] : [])]; // keep the planned path on screen
   if (pl.zone) L.draw.push({ type: "rect", i0: i0 - 1, i1: i0 + room, p0: pl.zone.a, p1: pl.zone.b, color: C.warn, alpha: 0.13, edge: true, label: pl.zone.lab });
   let pi = i0, pp = pl.px;
   pl.main.forEach((q, j) => { const ni = i0 + step * (j + 1); L.draw.push({ type: "arrow", i0: pi, p0: pp, i1: ni, p1: q.p, color: col(pp, q.p), w: 2.2, dash: [6, 4] }); L.draw.push({ type: "dot", i: ni, p: q.p, r: 3, color: col(pp, q.p) });
