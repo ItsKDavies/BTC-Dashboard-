@@ -14,6 +14,7 @@ const PX = { okx:'https://www.okx.com', kraken:'https://futures.kraken.com', mex
     if (res) return r.fulfill({ body: JSON.stringify(res), contentType:'application/json', headers:{'access-control-allow-origin':'*'} });
     return r.abort(); });
   await p.goto('http://dash.test/'); await p.waitForTimeout(5000);
+  { const y = await p.evaluate(() => ({ lo: CC.yLo, hi: CC.yHi, c: CC.k[CC.k.length - 1].c })); if (!(y.lo < y.c && y.c < y.hi)) { console.log('FAIL: price scale broken (candles would be blank)', JSON.stringify(y)); process.exit(1); } console.log('price scale ok', Math.round(y.lo), Math.round(y.hi)); }
   await p.locator('canvas.cc').scrollIntoViewIfNeeded(); const box = await p.locator('#cMain').boundingBox(); const cdp = await ctx.newCDPSession(p);
   const st = () => p.evaluate(() => ({ x0: +CC.x0.toFixed(2), bars: +CC.bars.toFixed(1), follow: CC.follow, auto: CC.auto, n: CC.k.length }));
   const touch = async (pts) => { for (const [type, tp] of pts) await cdp.send('Input.dispatchTouchEvent', { type, touchPoints: tp }); };

@@ -2316,7 +2316,7 @@ class CChart {
   yRange() {
     if (!this.auto) return; const [a, b] = this.vis(); let lo = Infinity, hi = -Infinity;
     for (let i = a; i <= b; i++) { const x = this.k[i]; if (x.l < lo) lo = x.l; if (x.h > hi) hi = x.h; }
-    if (!isFinite(lo)) { lo = 0; hi = 1; } if (this.x0 + this.bars >= this.k.length) for (const v of this.L.yInc || []) { if (v < lo) lo = v; if (v > hi) hi = v; } // plan targets only matter when the live edge is on screen const p = (hi - lo) * 0.08 || 1; this.yLo = lo - p; this.yHi = hi + p;
+    if (!isFinite(lo)) { lo = 0; hi = 1; } if (this.x0 + this.bars >= this.k.length) for (const v of this.L.yInc || []) { if (v < lo) lo = v; if (v > hi) hi = v; } /* plan targets only matter when the live edge is on screen */ const p = (hi - lo) * 0.08 || 1; this.yLo = lo - p; this.yHi = hi + p;
   }
   Y(p) { const L = this.layout(); return 6 + (1 - (p - this.yLo) / (this.yHi - this.yLo)) * (L.mainH - 12); }
   P(y) { const L = this.layout(); return this.yLo + (1 - (y - 6) / (L.mainH - 12)) * (this.yHi - this.yLo); }
