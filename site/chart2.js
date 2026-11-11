@@ -30,7 +30,7 @@ class CChart {
   nSub() { return this.L.subs ? this.L.subs.length : 0; }
   subBase(n) { return [0, 0.22, 0.38, 0.48, 0.54][Math.min(4, n)]; }
   resize() { const r = this.host.getBoundingClientRect(), d = window.devicePixelRatio || 1; this.W = Math.max(200, r.width); this.H = Math.max(160, r.height); this.d = d; this.cv.width = Math.round(this.W * d); this.cv.height = Math.round(this.H * d); this.cv.style.width = this.W + "px"; this.cv.style.height = this.H + "px"; this.draw(); }
-  setData(k, sec, keep) { const fresh = !this.k.length || !keep; this.k = k; this.sec = sec; if (fresh) this.reset(); else if (this.follow) this.x0 = this.liveX0(); this.dirty(); }
+  setData(k, sec, keep) { const fresh = !this.k.length || !keep, added = keep && this.k.length && k.length ? Math.round((k[k.length - 1].t - this.k[this.k.length - 1].t) / sec) : 0; this.k = k; this.sec = sec; if (fresh) this.reset(); else if (this.follow && added > 0) this.x0 += added; this.dirty(); }
   liveX0() { return this.k.length + this.padB() - this.bars; }
   chkFollow() { this.follow = this.k.length > 0 && this.x0 >= this.liveX0() - 0.6; } // back at the live edge → follow new candles again
   atEnd() { return !this.k.length || this.x0 + this.bars >= this.k.length - 1; }
@@ -568,7 +568,7 @@ function chartExtras(fromView) {
   }
   L.draw = []; L.hl = new Map();
   if (L.fibLeg) { const f = L.fibLeg; L.draw.push({ type: "dot", i: f.i0, p: f.p0, color: C.fg3 }, { type: "dot", i: f.i1, p: f.p1, color: C.fg3 }); }
-  { const plan = on(ST.fibPlan) && swP ? fibPlan(swP, k) : null, want = plan ? Math.max(10, Math.round(CC.defBars() * 0.36)) : 0; // fixed room (not tied to zoom) so zooming never shifts the view
+  { const plan = on(ST.fibPlan) && swP ? fibPlan(swP, k) : null, want = on(ST.fibPlan) ? Math.max(10, Math.round(CC.defBars() * 0.36)) : 0; // fixed room (not tied to zoom) so zooming never shifts the view
     if ((CC.padX || 0) !== want && !CC.touching) { const was = CC.follow; CC.padX = want; if (was) CC.x0 = CC.liveX0(); }
     if (plan) drawFibPlan(L, k, C, plan, want); fibGuide(plan); LI.fib = swP ? fibInfoHTML(swP) : ""; LI.fibPlan = plan ? plan.title : ""; }
   LI.chan = on(ST.chan) ? drawChannels(L, k, C) : "";

@@ -34,5 +34,15 @@ const PX = { okx:'https://www.okx.com', kraken:'https://futures.kraken.com', mex
   await p.evaluate(() => resetView()); const r0 = await st();
   await p.evaluate(() => { const k = D.kl.k, l = k[k.length - 1]; D.kl.k = [...k, { ...l, t: l.t + 1800 }]; updateChart(); }); await p.waitForTimeout(300);
   const r1 = await st(); console.log('reset then new candle', JSON.stringify(r0), JSON.stringify(r1), r1.x0 === r0.x0 + 1 ? 'FOLLOWS' : 'NOT FOLLOWING');
+  // park in three places and hammer with updates (price moves that change the fib swing / plan), the view must not jump
+  for (const where of ['history', 'live edge', 'future space']) {
+    await p.evaluate((w) => { resetView(); if (w === 'history') { CC.x0 -= 120; CC.follow = false; } if (w === 'future space') { CC.x0 += 8; CC.chkFollow(); } CC.dirty(); }, where);
+    await p.waitForTimeout(200); const s0 = await st(); let jumps = 0, prev = s0;
+    for (let i = 0; i < 25; i++) { await p.evaluate((i) => { const k = D.kl.k, l = k[k.length - 1], mv = (i % 5 - 2) * 180;
+        D.kl.k = i % 6 === 5 ? [...k, { ...l, t: l.t + 1800, o: l.c, c: l.c + mv, h: Math.max(l.c, l.c + mv) + 20, l: Math.min(l.c, l.c + mv) - 20 }] : k.map((x, j) => j === k.length - 1 ? { ...x, c: x.c + mv, h: Math.max(x.h, x.c + mv), l: Math.min(x.l, x.c + mv) } : x);
+        updateChart(); render(); }, i); await p.waitForTimeout(120);
+      const s1 = await st(); const added = s1.n - prev.n, dx = +(s1.x0 - prev.x0).toFixed(2); if (!(dx === 0 || (s0.follow && dx === added))) jumps++; prev = s1; }
+    const s2 = await st(); console.log(where.padEnd(13), 'follow', s0.follow, 'x0', s0.x0, '→', s2.x0, 'candles +' + (s2.n - s0.n), jumps ? 'JUMPED ' + jumps + 'x' : 'steady');
+  }
   console.log(errs.length ? errs : 'no errors'); await b.close();
 })();
