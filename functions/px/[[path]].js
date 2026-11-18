@@ -11,6 +11,10 @@ const UP = {
   bitstamp: "https://www.bitstamp.net",
   gemini: "https://api.gemini.com",
   mexcs: "https://api.mexc.com",
+  gate: "https://api.gateio.ws",
+  htx: "https://api.hbdm.com",
+  bitmex: "https://www.bitmex.com",
+  cz: "https://api.coinalyze.net", // needs the COINALYZE_KEY environment variable (Cloudflare Pages → Settings → Variables and Secrets)
   fng: "https://api.alternative.me",
   ff: "https://nfs.faireconomy.media",
   // news RSS feeds
@@ -23,16 +27,27 @@ const UP = {
 };
 const NEWS = new Set(["coindesk", "ctg", "theblock", "decrypt", "btcmag", "gnews"]);
 // Seconds Cloudflare's edge may reuse a successful response (cuts repeat calls to the exchanges).
-const TTL = { fng: 3600, ff: 1800, coindesk: 300, ctg: 300, theblock: 300, decrypt: 300, btcmag: 300, gnews: 300 };
+const TTL = { cz: 45, fng: 3600, ff: 1800, coindesk: 300, ctg: 300, theblock: 300, decrypt: 300, btcmag: 300, gnews: 300 };
 const DEFAULT_TTL = 15;
 
-export async function onRequest({ request }) {
+export async function onRequest({ request, env }) {
   const url = new URL(request.url);
   const m = /^\/px\/([a-z]+)(\/.*)?$/.exec(url.pathname);
   const base = m && UP[m[1]];
   if (!base) return new Response("Unknown route", { status: 404 });
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type", "access-control-allow-methods": "GET, POST, OPTIONS" } });
   if (request.method !== "GET" && request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (m[1] === "cz") { // Coinalyze: the key stays on the server, only read-only /v1/ GETs pass
+    const key = env && env.COINALYZE_KEY;
+    if (!key) return new Response(JSON.stringify({ error: "COINALYZE_KEY not set" }), { status: 503, headers: { "content-type": "application/json", "access-control-allow-origin": "*" } });
+    if (request.method !== "GET" || !/^\/v1\/[a-z-]+$/.test(m[2] || "")) return new Response("Not allowed", { status: 403 });
+    url.searchParams.delete("api_key");
+    const slow = /^\/v1\/(future-markets|exchanges)$/.test(m[2]);
+    let r; try { r = await fetch(base + m[2] + url.search, { headers: { accept: "application/json", api_key: key }, cf: { cacheEverything: true, cacheTtlByStatus: { "200-299": slow ? 21600 : 45, "300-599": 0 } } }); }
+    catch (e) { return new Response(JSON.stringify({ error: "upstream unreachable" }), { status: 502, headers: { "content-type": "application/json" } }); }
+    const h = new Headers(r.headers); h.set("access-control-allow-origin", "*"); h.set("cache-control", "public, max-age=30"); h.delete("set-cookie");
+    return new Response(r.body, { status: r.status, headers: h });
+  }
   const target = base + (m[2] || "/") + url.search, ttl = m[1] === "okx" && (m[2] || "").includes("/rubik/") ? 60 : TTL[m[1]] ?? DEFAULT_TTL; // OKX stats only change every 5 min
   const news = NEWS.has(m[1]);
   if (news && request.method !== "GET") return new Response("Method not allowed", { status: 405 });

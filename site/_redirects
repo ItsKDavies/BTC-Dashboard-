@@ -10,6 +10,10 @@
 /px/bitstamp/* https://www.bitstamp.net/:splat     200
 /px/gemini/*   https://api.gemini.com/:splat       200
 /px/mexcs/*    https://api.mexc.com/:splat         200
+/px/gate/*     https://api.gateio.ws/:splat        200
+/px/htx/*      https://api.hbdm.com/:splat         200
+/px/bitmex/*   https://www.bitmex.com/:splat       200
+# Coinalyze (/px/cz) needs a server-side key, so it only works on Cloudflare (functions/px)
 /px/fng/*      https://api.alternative.me/:splat   200
 /px/ff/*       https://nfs.faireconomy.media/:splat 200
 # News feeds (RSS)

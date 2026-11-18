@@ -46,7 +46,8 @@ function why(e, optional) {
 }
 // Exchanges that refuse direct browser requests go through this site's own /px/ pass-through (see _redirects).
 const PROXY = { "www.okx.com": "/px/okx", "futures.kraken.com": "/px/kraken", "contract.mexc.com": "/px/mexc", "open-api.bingx.com": "/px/bingx", "api.bybit.com": "/px/bybit", "fapi.binance.com": "/px/bnf",
-  "api.kraken.com": "/px/krakens", "www.bitstamp.net": "/px/bitstamp", "api.gemini.com": "/px/gemini", "api.mexc.com": "/px/mexcs" };
+  "api.kraken.com": "/px/krakens", "www.bitstamp.net": "/px/bitstamp", "api.gemini.com": "/px/gemini", "api.mexc.com": "/px/mexcs",
+  "api.gateio.ws": "/px/gate", "api.hbdm.com": "/px/htx", "www.bitmex.com": "/px/bitmex", "api.coinalyze.net": "/px/cz" };
 const canProxy = /^https?:$/.test(location.protocol);
 async function getJSONp(url, opt) {
   const u = new URL(url), pre = PROXY[u.host];
@@ -182,7 +183,69 @@ def("bnf", "Binance futures", "Venue: price, funding, OI", 30000, async () => {
   const [pi, oi] = await Promise.all([getJSONp("https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT"), getJSONp("https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT")]);
   return { px: +pi.markPrice, f8: +pi.lastFundingRate, oi: +oi.openInterest };
 }, true);
-const VENUES = [["okx", "OKX"], ["okxInv", "OKX coin-m"], ["bnf", "Binance"], ["bybit", "Bybit"], ["bitget", "Bitget"], ["bitgetInv", "Bitget coin-m"], ["hl", "Hyperliquid"], ["deribit", "Deribit"], ["kraken", "Kraken"], ["mexc", "MEXC"], ["bingx", "BingX"]];
+/* ---- more contracts (v3.1): USDC perps, dated futures, Gate, HTX, BitMEX ---- */
+def("okxUsdc", "OKX USDC perp", "Venue: funding, OI", 60000, async () => {
+  const [tk, fr, oi] = await Promise.all([okx("/api/v5/market/ticker?instId=BTC-USDC-SWAP"), okx("/api/v5/public/funding-rate?instId=BTC-USDC-SWAP"), okx("/api/v5/public/open-interest?instType=SWAP&instId=BTC-USDC-SWAP")]);
+  return { px: +tk[0].last, f8: +fr[0].fundingRate, oi: +oi[0].oiCcy };
+}, true);
+def("okxFut", "OKX dated futures", "Venue: OI (quarterlies, no funding)", 120000, async () => {
+  const r = await Promise.all(["BTC-USD", "BTC-USDT"].map((f) => okx(`/api/v5/public/open-interest?instType=FUTURES&instFamily=${f}`).catch(() => [])));
+  const oi = r.flat().reduce((s, x) => s + (+x.oiCcy || 0), 0); if (!oi) throw new Error("no futures OI");
+  return { px: NaN, f8: NaN, oi, n: r.flat().length };
+}, true);
+def("bitgetUsdc", "Bitget USDC perp", "Venue: funding, OI", 60000, async () => {
+  const j = await getJSON("https://api.bitget.com/api/v2/mix/market/ticker?symbol=BTCPERP&productType=usdc-futures");
+  const t = j.data && j.data[0]; if (!t) throw new Error(j.msg || "no ticker");
+  return { px: +t.lastPr, f8: +t.fundingRate, oi: +t.holdingAmount };
+}, true);
+def("deribitFut", "Deribit dated futures", "Venue: OI (no funding)", 120000, async () => {
+  const j = await getJSON("https://www.deribit.com/api/v2/public/get_book_summary_by_currency?currency=BTC&kind=future");
+  const f = (j.result || []).filter((x) => !/PERPETUAL/.test(x.instrument_name)); if (!f.length) throw new Error("no futures");
+  const oi = f.reduce((s, x) => s + (x.mark_price ? (+x.open_interest || 0) / x.mark_price : 0), 0);
+  return { px: NaN, f8: NaN, oi, n: f.length };
+}, true);
+def("gate", "Gate perp", "Venue: price, funding, OI", 60000, async () => {
+  const j = await getJSONp("https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=BTC_USDT");
+  const t = Array.isArray(j) ? j[0] : null; if (!t) throw new Error(j.message || j.label || "no ticker");
+  return { px: +t.mark_price || +t.last, f8: +t.funding_rate, oi: +t.total_size * (+t.quanto_multiplier || 0.0001) };
+}, true);
+def("htx", "HTX perp", "Venue: price, funding, OI", 60000, async () => {
+  const [oi, fr, tk] = await Promise.all([getJSONp("https://api.hbdm.com/linear-swap-api/v1/swap_open_interest?contract_code=BTC-USDT"), getJSONp("https://api.hbdm.com/linear-swap-api/v1/swap_funding_rate?contract_code=BTC-USDT"), getJSONp("https://api.hbdm.com/linear-swap-ex/market/detail/merged?contract_code=BTC-USDT")]);
+  if (oi.status !== "ok") throw new Error(oi["err-msg"] || oi.err_msg || "HTX error");
+  return { px: tk.tick ? +tk.tick.close : NaN, f8: fr.data ? +fr.data.funding_rate : NaN, oi: +oi.data[0].amount };
+}, true);
+def("bitmex", "BitMEX XBTUSD", "Venue: price, funding, OI", 60000, async () => {
+  const j = await getJSONp("https://www.bitmex.com/api/v1/instrument?symbol=XBTUSD&columns=markPrice,fundingRate,openInterest");
+  const t = Array.isArray(j) && j[0]; if (!t || !t.markPrice) throw new Error((j.error && j.error.message) || "no instrument");
+  return { px: +t.markPrice, f8: +t.fundingRate, oi: +t.openInterest / +t.markPrice }; // XBTUSD contracts are $1 each
+}, true);
+/* ---- Binance + Bybit through Coinalyze: both block US servers, Coinalyze doesn't. Key lives in Cloudflare (COINALYZE_KEY). ---- */
+def("cz", "Coinalyze (Binance + Bybit)", "Venue: Binance and Bybit funding, OI, every BTC perp", 60000, async (prev) => {
+  let mk = prev && prev.mk, mkAt = prev ? prev.mkAt : 0;
+  if (!mk || Date.now() - mkAt > 6 * 3600000) {
+    let ex, fm;
+    try { [ex, fm] = await Promise.all([getJSONp("https://api.coinalyze.net/v1/exchanges"), getJSONp("https://api.coinalyze.net/v1/future-markets")]); }
+    catch (e) { if (e.status === 503) { const x = new Error("Add your free Coinalyze key in Cloudflare: Settings → Variables and Secrets → COINALYZE_KEY"); x.soft = true; throw x; } throw e; }
+    const nm = {}; ex.forEach((e) => (nm[e.code] = e.name));
+    mk = fm.filter((m) => m.base_asset === "BTC" && m.is_perpetual && /^(binance|bybit)/i.test(nm[m.exchange] || "") && /^(USDT|USDC|USD|FDUSD)$/.test(m.quote_asset))
+      .map((m) => ({ sym: m.symbol, ex: /^binance/i.test(nm[m.exchange]) ? "Binance" : "Bybit", q: m.quote_asset, coin: m.margined === "COIN" || m.quote_asset === "USD", on: m.symbol_on_exchange })).slice(0, 10);
+    if (!mk.length) throw new Error("Coinalyze lists no Binance/Bybit BTC perps"); mkAt = Date.now();
+  }
+  const syms = mk.map((m) => m.sym).join(",");
+  const [oi, fr] = await Promise.all([getJSONp(`https://api.coinalyze.net/v1/open-interest?symbols=${syms}&convert_to_usd=true`), getJSONp(`https://api.coinalyze.net/v1/funding-rate?symbols=${syms}`)]);
+  const O = {}, F = {}; oi.forEach((x) => (O[x.symbol] = +x.value)); fr.forEach((x) => (F[x.symbol] = +x.value));
+  // Coinalyze may quote funding in percent: pick the unit that lands closest to the venues we read directly
+  const raw = mk.map((m) => F[m.sym]).filter((v) => ok(v) && v !== 0).map(Math.abs).sort((a, b) => a - b), med = raw[Math.floor(raw.length / 2)];
+  const ref = (() => { let s = 0, w = 0; for (const id of ["okx", "okxInv", "bitget", "hl", "deribit"]) if (live(id) && ok(D[id].f8) && ok(D[id].oi)) { s += Math.abs(D[id].f8) * D[id].oi; w += D[id].oi; } return w ? s / w : null; })();
+  const scale = !med ? 1 : ref ? (Math.abs(Math.log(med / ref)) <= Math.abs(Math.log((med * 0.01) / ref)) ? 1 : 0.01) : med > 0.002 ? 0.01 : 1;
+  const px = live("spot") ? D.spot.px : null, rows = {};
+  for (const m of mk) { const usdOi = O[m.sym]; if (!ok(usdOi) || !px) continue; const r = (rows[m.ex] = rows[m.ex] || { name: m.ex, oi: 0, wf: 0, w: 0, parts: [] });
+    const b = usdOi / px; r.oi += b; if (ok(F[m.sym])) { r.wf += F[m.sym] * scale * b; r.w += b; } r.parts.push({ on: m.on, q: m.q, coin: m.coin, oi: b, f8: ok(F[m.sym]) ? F[m.sym] * scale : NaN }); }
+  const v = Object.values(rows).map((r) => ({ name: r.name, px, oi: r.oi, f8: r.w ? r.wf / r.w : NaN, parts: r.parts.sort((a, b) => b.oi - a.oi) }));
+  if (!v.length) throw new Error("no Binance/Bybit numbers yet");
+  return { mk, mkAt, v, scale };
+}, true);
+const VENUES = [["okx", "OKX"], ["okxInv", "OKX coin-m"], ["okxUsdc", "OKX USDC"], ["okxFut", "OKX quarterlies"], ["bnf", "Binance"], ["bybit", "Bybit"], ["bitget", "Bitget"], ["bitgetInv", "Bitget coin-m"], ["bitgetUsdc", "Bitget USDC"], ["hl", "Hyperliquid"], ["deribit", "Deribit"], ["deribitFut", "Deribit quarterlies"], ["kraken", "Kraken"], ["gate", "Gate"], ["htx", "HTX"], ["bitmex", "BitMEX"], ["mexc", "MEXC"], ["bingx", "BingX"]];
 
 /* ---------- scheduler ---------- */
 function status(id) {
@@ -220,11 +283,17 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && ST
 function win(k, bars) { if (!k || k.length <= bars) return null; const a = k[k.length - 1 - bars], b = k[k.length - 1]; let cvd = 0; for (let i = k.length - bars; i < k.length; i++) cvd += 2 * k[i].tb - k[i].v; return { pChg: ((b.c - a.c) / a.c) * 100, cvd }; }
 function seriesChg(s, sec) { if (!s || s.length < 2) return null; const last = s[s.length - 1]; let base = null; for (let i = s.length - 1; i >= 0; i--) if (s[i].t <= last.t - sec) { base = s[i]; break; } return base && base.v ? ((last.v - base.v) / base.v) * 100 : null; }
 function takerImb(s, sec) { if (!s || !s.length) return null; const t0 = s[s.length - 1].t - sec; let b = 0, x = 0; for (const r of s) if (r.t > t0) { b += r.buy; x += r.sell; } return b + x ? ((b - x) / (b + x)) * 100 : null; }
+// Binance and Bybit come from Coinalyze when it answers (all their BTC perps combined); the direct rows are used otherwise
 function venues() {
-  return VENUES.map(([id, name]) => ({ id, name, st: status(id), d: live(id) ? D[id] : null }));
+  const cz = live("cz") ? D.cz.v : [], via = new Set(cz.map((r) => r.name));
+  const out = VENUES.filter(([id, name]) => !via.has(name)).map(([id, name]) => ({ id, name, st: status(id), d: live(id) ? D[id] : null }));
+  cz.forEach((r) => out.push({ id: "cz", name: `${r.name} · all perps`, st: status("cz"), d: r, via: "Coinalyze" }));
+  return out;
 }
+// which of the big venues are not in the totals right now
+function missingBig() { const have = venues().filter((v) => v.d && ok(v.d.oi)).map((v) => v.name.split(" ")[0]); return ["Binance", "Bybit", "OKX", "Bitget", "Gate"].filter((n) => !have.includes(n)); }
 // OKX history stats (rubik, ccy=BTC) cover every OKX BTC contract, so scale them by all-venue OI over OKX's own total
-function okxScale(dflt) { const A = aggr(), o = (live("okx") ? D.okx.oi : 0) + (live("okxInv") ? D.okxInv.oi : 0); return A.oi && o ? A.oi / o : dflt; }
+function okxScale(dflt) { const A = aggr(), o = ["okx", "okxInv", "okxUsdc", "okxFut"].reduce((s, id) => s + (live(id) && ok(D[id].oi) ? D[id].oi : 0), 0); return A.oi && o ? A.oi / o : dflt; }
 function aggr() {
   const vs = venues().filter((v) => v.d); let oi = 0, wf = 0, w = 0, n = 0, fmin = Infinity, fmax = -Infinity;
   for (const v of vs) { if (ok(v.d.oi)) { oi += v.d.oi; n++; if (ok(v.d.f8)) { wf += v.d.f8 * v.d.oi; w += v.d.oi; } } if (ok(v.d.f8)) { fmin = Math.min(fmin, v.d.f8); fmax = Math.max(fmax, v.d.f8); } }
@@ -422,8 +491,8 @@ function kpi(title, ids, body) {
 function drawKpis(C) {
   const A = aggr(), out = [];
   const oi1 = live("okxOI") ? seriesChg(D.okxOI.s, 3600) : null, oi4 = live("okxOI") ? seriesChg(D.okxOI.s, 4 * 3600) : null;
-  out.push(kpi("Aggregate OI", VENUES.map((v) => v[0]), A.oi ? `<div class="kpi-row"><div><div class="big">${kfmt(A.oi)} BTC</div><div class="sub">${A.n} venues · ${usd(A.oi * (live("spot") ? D.spot.px : 0))}</div></div>${live("okxOI") ? spark(D.okxOI.s.slice(-96).map((x) => x.v), 90, 30, C.warn) : ""}</div><div class="sub">OKX OI 1h <b class="${cls(oi1)}">${pct(oi1)}</b> · 4h <b class="${cls(oi4)}">${pct(oi4)}</b></div>` : `<div class="unavail">No venue answered yet</div>`));
-  out.push(kpi("Funding · OI-weighted", VENUES.map((v) => v[0]), ok(A.f8) ? `<div class="big ${cls(A.f8)}">${(A.f8 * 100).toFixed(4)}%</div><div class="sub">per 8h · APR ${pct(A.f8 * 3 * 365 * 100, 1)}</div><div class="sub">range ${(A.fmin * 100).toFixed(4)}% to ${(A.fmax * 100).toFixed(4)}% · ${A.nf} venues</div>` : `<div class="unavail">No funding yet</div>`));
+  out.push(kpi("Aggregate OI", [...VENUES.map((v) => v[0]), "cz"], A.oi ? `<div class="kpi-row"><div><div class="big">${kfmt(A.oi)} BTC</div><div class="sub">${A.n} venues · ${usd(A.oi * (live("spot") ? D.spot.px : 0))}</div>${missingBig().length ? `<div class="sub wn">Not counted: ${missingBig().join(", ")}</div>` : ""}</div>${live("okxOI") ? spark(D.okxOI.s.slice(-96).map((x) => x.v), 90, 30, C.warn) : ""}</div><div class="sub">OKX OI 1h <b class="${cls(oi1)}">${pct(oi1)}</b> · 4h <b class="${cls(oi4)}">${pct(oi4)}</b></div>` : `<div class="unavail">No venue answered yet</div>`));
+  out.push(kpi("Funding · OI-weighted", [...VENUES.map((v) => v[0]), "cz"], ok(A.f8) ? `<div class="big ${cls(A.f8)}">${(A.f8 * 100).toFixed(4)}%</div><div class="sub">per 8h · APR ${pct(A.f8 * 3 * 365 * 100, 1)}</div><div class="sub">range ${(A.fmin * 100).toFixed(4)}% to ${(A.fmax * 100).toFixed(4)}% · ${A.nf} venues</div>` : `<div class="unavail">No funding yet</div>`));
   const w1 = live("k5") ? win(D.k5.k, 12) : null, w4 = live("k5") ? win(D.k5.k, 48) : null;
   let cum = 0; const cvdS = live("k5") ? D.k5.k.map((r) => (cum += 2 * r.tb - r.v)) : [];
   out.push(kpi("Spot CVD · Binance", ["k5"], w1 ? `<div class="kpi-row"><div><div class="big ${cls(w1.cvd)}">${sgn(w1.cvd, 0)} BTC</div><div class="sub">last 1h</div></div>${spark(cvdS, 90, 30, C.acc)}</div><div class="sub">4h <b class="${cls(w4 && w4.cvd)}">${sgn(w4 && w4.cvd, 0)} BTC</b> · 24h <b class="${cls(cvdS[cvdS.length - 1])}">${sgn(cvdS[cvdS.length - 1], 0)}</b></div>` : `<div class="unavail">Waiting for 5m candles</div>`));
@@ -464,9 +533,12 @@ function drawDerivs(C) {
     const d = v.d; const s = status(v.id);
     if (!d) return `<tr><td>${v.name}</td><td colspan="6" class="l mut">${s === "blocked" ? "Blocked in your region" : s === "off" ? "Turned off" : s === "wait" ? "Loading…" : esc(SRC[v.id].st.err || "Unavailable")}</td><td>${stPill(v.id)}</td></tr>`;
     const share = A.oi && ok(d.oi) ? (d.oi / A.oi) * 100 : null;
-    return `<tr><td>${v.name}</td><td>${n0(d.px)}</td><td class="${cls(d.f8)}">${ok(d.f8) ? (d.f8 * 100).toFixed(4) + "%" : "–"}</td><td class="${cls(d.f8)}">${ok(d.f8) ? pct(d.f8 * 3 * 365 * 100, 1) : "–"}</td><td>${ok(d.oi) ? kfmt(d.oi) : "–"}</td><td>${ok(d.oi) && px ? usd(d.oi * px) : "–"}</td><td>${ok(share) ? share.toFixed(1) + "%" : "–"}</td><td>${stPill(v.id)}</td></tr>`;
+    const parts = d.parts ? `<div class="mut" style="font-size:11px;white-space:normal">${d.parts.map((p) => `${esc(p.on)} ${kfmt(p.oi)}${ok(p.f8) ? ` · ${(p.f8 * 100).toFixed(4)}%` : ""}`).join("<br>")}<br>via Coinalyze</div>` : "";
+    return `<tr><td class="l">${v.name}${parts}</td><td>${ok(d.px) ? n0(d.px) : "–"}</td><td class="${cls(d.f8)}">${ok(d.f8) ? (d.f8 * 100).toFixed(4) + "%" : "–"}</td><td class="${cls(d.f8)}">${ok(d.f8) ? pct(d.f8 * 3 * 365 * 100, 1) : "–"}</td><td>${ok(d.oi) ? kfmt(d.oi) : "–"}</td><td>${ok(d.oi) && px ? usd(d.oi * px) : "–"}</td><td>${ok(share) ? share.toFixed(1) + "%" : "–"}</td><td>${stPill(v.id)}</td></tr>`;
   }).join("");
   $("#venTbl").innerHTML = `<thead><tr><th>Venue</th><th>Price</th><th>Funding/8h</th><th>APR</th><th>OI (BTC)</th><th>OI ($)</th><th>Share</th><th>Status</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td><b>All live</b></td><td></td><td class="${cls(A.f8)}"><b>${ok(A.f8) ? (A.f8 * 100).toFixed(4) + "%" : "–"}</b></td><td></td><td><b>${kfmt(A.oi)}</b></td><td><b>${A.oi && px ? usd(A.oi * px) : "–"}</b></td><td></td><td></td></tr></tfoot>`;
+  const miss = missingBig(), czw = status("cz") === "wait" || /COINALYZE_KEY/.test(SRC.cz.st.err);
+  $("#venCov").innerHTML = miss.length ? `<b class="wn">Not in the totals: ${miss.join(", ")}.</b> ${miss.includes("Binance") || miss.includes("Bybit") ? (czw ? "Binance and Bybit block US servers; add the free Coinalyze key in Cloudflare to bring them in." : "Binance and Bybit block US servers and Coinalyze isn't answering right now.") : ""} Totals are understated until they're back.` : `<b class="up">All the big venues are counted.</b> Binance and Bybit include every BTC perp (USDT, USDC and coin-margined).`;
   const nl = vs.filter((v) => v.d).length; $("#venSt").className = "st " + (nl ? "ok" : "wait"); $("#venSt").textContent = `${nl} of ${vs.filter((v) => status(v.id) !== "blocked" && status(v.id) !== "off").length} live`;
   const fv = vs.filter((v) => v.d && ok(v.d.f8)), fm = Math.max(0.0001, ...fv.map((v) => Math.abs(v.d.f8)));
   $("#fBars").innerHTML = fv.length ? fv.map((v) => { const w = (Math.abs(v.d.f8) / fm) * 50; return `<div class="fbar"><span>${v.name}</span><span class="track"><b></b><i style="${v.d.f8 >= 0 ? `left:50%;width:${w}%;background:${C.up}` : `right:50%;width:${w}%;background:${C.dn}`}"></i></span><span class="${cls(v.d.f8)}" style="text-align:right">${(v.d.f8 * 100).toFixed(4)}%</span></div>`; }).join("") : `<div class="unavail">Waiting for venues</div>`;
@@ -486,7 +558,7 @@ function drawSources() {
   $("#srcTbl").innerHTML = `<thead><tr><th>Source</th><th class="l">Feeds</th><th>Every</th><th>Status</th><th>Last OK</th><th>Latency</th><th class="l">Detail</th><th></th></tr></thead><tbody>${rows}</tbody>`;
 }
 function report() {
-  const lines = [`BTC Dashboard v2.0 stage 4 status · ${new Date().toString()}`, `Browser: ${navigator.userAgent}`, `Page: ${location.href}`, ""];
+  const lines = [`BTC Dashboard v3.1 status · ${new Date().toString()}`, `Browser: ${navigator.userAgent}`, `Page: ${location.href}`, ""];
   for (const s of Object.values(SRC)) lines.push(`${s.id.padEnd(8)} ${status(s.id).padEnd(8)} lastOK=${ago(s.st.okAt)} fails=${s.st.fails} ${s.st.err}`);
   return lines.join("\n");
 }

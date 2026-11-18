@@ -26,6 +26,8 @@ This document describes the project exactly as it exists. Nothing was rebuilt or
 
 **Tests.** `node tests/sigtest.js` (engine on synthetic candles), `node tests/v3test.js 390 [outdir]` (every tab with mocks, overflow and error check, then counts requests in 60 s idle on Signals). Mocks for alts and voices were added to `tests/mock.js` and `preview/shim.js`.
 
+**v3.1 (Nov 18, 2026): more venues.** Added OKX USDC perp, OKX quarterlies, Bitget USDC perp, Deribit quarterlies, Gate, HTX and BitMEX (new proxy routes `gate`, `htx`, `bitmex`). Binance and Bybit block US servers (the Cloudflare edge serving a US visitor is in the US), so they now come through Coinalyze (`/px/cz`, all their BTC perps: USDT, USDC and coin-margined, OI converted to USD then BTC). The Coinalyze key lives only in Cloudflare as the secret `COINALYZE_KEY`; the function adds it server-side, allows only read-only `/v1/...` GETs and caches answers 45 s (market list 6 h) so one key serves every open tab within the free 40 calls/min. Funding from Coinalyze is auto-scaled (percent vs fraction) against the venues read directly. When Coinalyze answers, the direct Binance/Bybit rows are replaced by "Binance · all perps" / "Bybit · all perps"; when it doesn't, the venue panel and the Aggregate OI tile say which big venues are missing from the totals.
+
 ---
 
 ## Contents

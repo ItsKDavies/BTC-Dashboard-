@@ -4,7 +4,7 @@ site = ROOT / 'site'; out = ROOT / 'preview' / 'btc-dashboard-v2-preview.html'
 h = (site/'index.html').read_text()
 head = h[h.index('<head>')+6 : h.index('</head>')]
 body = h[h.index('<body>')+6 : h.index('</body>')]
-head = re.sub(r'<meta charset[^>]*>\s*', '', head); head = re.sub(r'<meta name="viewport"[^>]*>\s*', '', head)
+head = re.sub(r'<meta charset[^>]*>\s*', '', head)
 head = head.replace('<title>BTC Dashboard v3</title>', '<title>BTC Dashboard v3 Preview</title>')
 head = re.sub(r'<link rel="(manifest|apple-touch-icon)"[^>]*>\s*', '', head)
 # theme toggle support (explicit light/dark from the viewer)
@@ -17,5 +17,5 @@ js = ''.join(f'<script>\n{(site/f).read_text().replace("</script", "<\\/script")
 shim = '<script>\n' + (ROOT / 'preview' / 'shim.js').read_text() + '\n</script>\n'
 banner = '<div style="background:color-mix(in srgb,var(--warn) 18%,var(--bg));color:var(--fg);font-size:13px;padding:7px max(14px,env(safe-area-inset-left));border-bottom:1px solid var(--line)"><b>Preview with sample data.</b> Prices and flows here are made up so you can try the layout, chart and layers. Real data runs on your live Cloudflare site.</div>'
 theme = '<script>new MutationObserver(()=>{try{recolorCharts();render();}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});</script>'
-out.write_text(head.strip() + '\n' + banner + '\n' + shim + body.strip() + '\n' + js + theme + '\n')
+out.write_text('<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' + head.strip() + '\n</head>\n<body>\n' + banner + '\n' + shim + body.strip() + '\n' + js + theme + '\n</body>\n</html>\n')
 print(out, round(out.stat().st_size/1024), 'KB')

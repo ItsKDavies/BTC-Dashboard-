@@ -62,6 +62,21 @@
     const items = T.filter((_, i) => i % 3 === g).map(([t, h], i) => `<item><title>Sample: ${t} - CoinDesk</title><link>https://example.com/v${g}/${i}</link><pubDate>${new Date(Date.now() - h * 36e5).toUTCString()}</pubDate><source>CoinDesk</source></item>`).join("");
     return `<?xml version="1.0"?><rss version="2.0"><channel><title>Google News</title>${items}</channel></rss>`;
   }
+  // ---- v3.1 venues: Gate, HTX, BitMEX, Coinalyze (Binance + Bybit) ----
+  function venueAnswer(h, path, q, pxNow) {
+    if (h === "api.gateio.ws") return [{ contract: "BTC_USDT", last: String(pxNow - 6), mark_price: String(pxNow - 5), funding_rate: "0.000061", total_size: "565931200", quanto_multiplier: "0.0001" }];
+    if (h === "api.hbdm.com") { if (path.includes("open_interest")) return { status: "ok", data: [{ amount: 21500.4, contract_code: "BTC-USDT" }] }; if (path.includes("funding_rate")) return { status: "ok", data: { funding_rate: "0.000045" } }; return { status: "ok", tick: { close: pxNow - 9 } }; }
+    if (h === "www.bitmex.com") return [{ markPrice: pxNow + 4, fundingRate: 0.0001, openInterest: Math.round(pxNow * 5200) }];
+    if (h === "api.coinalyze.net") {
+      if (path.endsWith("/exchanges")) return [{ name: "Binance", code: "A" }, { name: "Bybit", code: "6" }, { name: "OKX", code: "3" }];
+      if (path.endsWith("/future-markets")) return [["BTCUSDT_PERP.A", "A", "BTCUSDT", "USDT", "STABLE"], ["BTCUSDC_PERP.A", "A", "BTCUSDC", "USDC", "STABLE"], ["BTCUSD_PERP.A", "A", "BTCUSD_PERP", "USD", "COIN"], ["BTCUSDT.6", "6", "BTCUSDT", "USDT", "STABLE"], ["BTCUSD.6", "6", "BTCUSD", "USD", "COIN"], ["BTCPERP.6", "6", "BTCPERP", "USDC", "STABLE"], ["ETHUSDT_PERP.A", "A", "ETHUSDT", "USDT", "STABLE"], ["BTCUSDT_PERP.3", "3", "BTC-USDT-SWAP", "USDT", "STABLE"]]
+        .map(([symbol, exchange, symbol_on_exchange, quote_asset, margined]) => ({ symbol, exchange, symbol_on_exchange, base_asset: symbol.slice(0, 3), quote_asset, is_perpetual: true, margined }));
+      const S = (q.symbols || "").split(","), OI = { "BTCUSDT_PERP.A": 6.2e9, "BTCUSDC_PERP.A": 6.5e8, "BTCUSD_PERP.A": 1.1e9, "BTCUSDT.6": 4.3e9, "BTCUSD.6": 9.5e8, "BTCPERP.6": 2.1e8 }, FR = { "BTCUSDT_PERP.A": 0.0062, "BTCUSDC_PERP.A": 0.0041, "BTCUSD_PERP.A": 0.0078, "BTCUSDT.6": 0.0055, "BTCUSD.6": 0.0049, "BTCPERP.6": 0.0035 };
+      if (path.endsWith("/open-interest")) return S.map((s) => ({ symbol: s, value: OI[s] || 0, update: Date.now() }));
+      if (path.endsWith("/funding-rate")) return S.map((s) => ({ symbol: s, value: FR[s] || 0, update: Date.now() }));
+    }
+    return undefined;
+  }
   function answer(url) {
     const u = new URL(url, "https://demo.local"), q = Object.fromEntries(u.searchParams), h = u.host, path = u.pathname;
     if (h === "data-api.binance.vision") {
@@ -74,17 +89,18 @@
       if (path.endsWith("/trades")) return Array.from({ length: 200 }, (_, i) => ({ trade_id: 9e6 - i - Math.floor(Date.now() / 1000), time: new Date(Date.now() - i * 3000).toISOString(), size: String(rnd() * 0.6), side: rnd() > 0.5 ? "buy" : "sell", price: P(-30) }));
       return { price: P(-33) };
     }
+    { const va = venueAnswer(h, path, q, px()); if (va !== undefined) return va; }
     if (h === "www.okx.com") {
       if (path.includes("market/ticker")) return { code: "0", data: [{ last: P(-12), open24h: "80900", vol24h: "5200", high24h: "81600", low24h: "79300" }] };
       if (path.includes("liquidation-orders")) return { code: "0", data: [{ instFamily: q.instFamily, instId: q.instFamily + "-SWAP", details: Array.from({ length: 30 }, (_, i) => ({ side: i % 3 ? "sell" : "buy", posSide: i % 3 ? "long" : "short", bkPx: P(-200 + i * 25), sz: String(Math.round(20 + rnd() * 300)), ts: String(Date.now() - i * 1700000) })) }] };
       if (path.includes("funding-rate")) return { code: "0", data: [{ fundingRate: "0.0000361" }] };
-      if (path.includes("public/open-interest")) return { code: "0", data: [{ oiCcy: "25000.5" }] };
+      if (path.includes("public/open-interest")) return { code: "0", data: [{ oiCcy: q.instType === "FUTURES" ? "3100.2" : q.instId === "BTC-USDC-SWAP" ? "1850.7" : "25000.5" }] };
       if (path.includes("open-interest-volume")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => [String(2.05e9 - i * (sec / 1500) * 1e3 + Math.sin(i / 7) * 2.5e7 + Math.sin(i / 2.3) * 4e6), "1e9"], sec) }; }
       if (path.includes("taker-volume")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => { const tilt = Math.sin(i / 9) * 25; return [String(100 - tilt + rnd() * 40), String(100 + tilt + rnd() * 40)]; }, sec) }; }
       if (path.includes("long-short")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => [String(1.6 + Math.sin(i / 40) * 0.2 + Math.sin(i / 3) * 0.03)], sec) }; }
     }
     if (h === "api.hyperliquid.xyz") { const nm = ["BTC", "ETH", "SOL", "DOGE", "kPEPE", "SUI"], f = [0.0000125, 0.00007, -0.00004, 0.00009, 0.0001, 0.00002]; return [{ universe: nm.map((name) => ({ name })) }, nm.map((x, i) => ({ markPx: i ? String(ALTB[x.replace(/^k/, "")] || 1) : P(-2), funding: String(f[i]), openInterest: i ? "100000" : "31000", prevDayPx: "1", dayNtlVlm: "1" }))]; }
-    if (h === "api.bitget.com") return path.includes("/spot/") ? { code: "00000", data: [{ lastPr: P(-15), open: "80850", baseVolume: "3100", high24h: "81580", low24h: "79230" }] } : { code: "00000", data: [{ lastPr: P(-8), fundingRate: "0.00005", holdingAmount: "42000" }] };
+    if (h === "api.bitget.com") return path.includes("/spot/") ? { code: "00000", data: [{ lastPr: P(-15), open: "80850", baseVolume: "3100", high24h: "81580", low24h: "79230" }] } : { code: "00000", data: [{ lastPr: P(-8), fundingRate: "0.00005", holdingAmount: q.productType === "usdc-futures" ? "2400" : "42000" }] };
     if (h === "www.deribit.com") {
       if (path.includes("book_summary") && q.kind === "future") return { result: [{ instrument_name: "BTC-PERPETUAL", mark_price: px(), open_interest: 9e8, volume_usd: 1e9 }, { instrument_name: "BTC-27NOV26", mark_price: px() * 1.004, open_interest: 1e8, volume_usd: 2e7 }, { instrument_name: "BTC-25DEC26", mark_price: px() * 1.011, open_interest: 3e8, volume_usd: 5e7 }, { instrument_name: "BTC-26MAR27", mark_price: px() * 1.027, open_interest: 2e8, volume_usd: 3e7 }] };
       if (path.includes("book_summary")) { const r = []; const E = [1, 3, 8, 29, 57].map((d) => { const x = new Date(Date.now() + d * 864e5); return x.getUTCDate() + ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][x.getUTCMonth()] + String(x.getUTCFullYear()).slice(2); }); for (const e of E) for (let k = 64000; k <= 100000; k += 1000) for (const cp of ["C", "P"]) r.push({ instrument_name: `BTC-${e}-${k}-${cp}`, open_interest: Math.max(0, 900 - Math.abs(k - (cp === "C" ? 86000 : 76000)) / 30) * (e === E[3] ? 3 : 1) * (k % 2000 ? 0.4 : 1) * (k === 80000 ? 2.2 : 1), volume: 10, mark_iv: 42 + Math.abs(k - 80000) / 1500, underlying_price: px() }); return { result: r }; }
@@ -107,7 +123,7 @@
     if (h === "fapi.binance.com") return { __status: 451 };
     return null;
   }
-  const PXMAP = { okx: "https://www.okx.com", kraken: "https://futures.kraken.com", mexc: "https://contract.mexc.com", bingx: "https://open-api.bingx.com", bybit: "https://api.bybit.com", bnf: "https://fapi.binance.com", krakens: "https://api.kraken.com", bitstamp: "https://www.bitstamp.net", gemini: "https://api.gemini.com", mexcs: "https://api.mexc.com", fng: "https://api.alternative.me", ff: "https://nfs.faireconomy.media", coindesk: "https://www.coindesk.com", ctg: "https://cointelegraph.com", theblock: "https://www.theblock.co", decrypt: "https://decrypt.co", btcmag: "https://bitcoinmagazine.com", gnews: "https://news.google.com" };
+  const PXMAP = { gate: "https://api.gateio.ws", htx: "https://api.hbdm.com", bitmex: "https://www.bitmex.com", cz: "https://api.coinalyze.net", okx: "https://www.okx.com", kraken: "https://futures.kraken.com", mexc: "https://contract.mexc.com", bingx: "https://open-api.bingx.com", bybit: "https://api.bybit.com", bnf: "https://fapi.binance.com", krakens: "https://api.kraken.com", bitstamp: "https://www.bitstamp.net", gemini: "https://api.gemini.com", mexcs: "https://api.mexc.com", fng: "https://api.alternative.me", ff: "https://nfs.faireconomy.media", coindesk: "https://www.coindesk.com", ctg: "https://cointelegraph.com", theblock: "https://www.theblock.co", decrypt: "https://decrypt.co", btcmag: "https://bitcoinmagazine.com", gnews: "https://news.google.com" };
   function sampleRss(host) {
     const H = [["Sample: Spot bitcoin ETFs log $480M net inflows as BTC holds near $78K", 0.4], ["Sample: SEC delays decision on staking in ether ETFs", 2.2], ["Sample: Fed's Powell signals patience on rate cuts after hot CPI print", 1.1],
       ["Sample: DeFi lender drained of $40M in bridge exploit", 3.5], ["Sample: Bitcoin options worth $5B expire Friday; max pain near $80K", 5], ["Sample: Bitcoin slides as $300M in longs liquidated", 0.9],

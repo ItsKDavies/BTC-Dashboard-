@@ -707,7 +707,8 @@ tr.lvr td:first-child{border-left:2px solid var(--dn)}tr.lvs td:first-child{bord
       <div class="src">OKX BTC contracts. Longs and shorts are OI split by OKX's long/short account ratio (an estimate). Bars are green/red when longs/shorts grew that bar, grey when they shrank. Tap or hover for values.</div>
     </div>
     <div class="panel">
-      <div class="ph"><span class="pt">Perp venues</span><span class="st" id="venSt"></span></div>
+      <div class="ph"><span class="pt">Futures venues · funding &amp; open interest</span><span class="st" id="venSt"></span></div>
+      <div class="sub" id="venCov" style="margin:0 0 8px"></div>
       <div class="tw"><table id="venTbl"></table></div>
       <div class="src">Each venue is fetched on its own timer. Funding shown per 8h (hourly venues ×8). APR = 8h rate × 3 × 365.</div>
     </div>
