@@ -1,5 +1,9 @@
-<title>BTC Dashboard v2 Preview</title>
-<meta name="theme-color" content="#0d1015">
+<title>BTC Dashboard v3 Preview</title>
+<meta name="theme-color" content="#07090f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BTC Dash">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -303,10 +307,10 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
 /* compact header on phones */
 @media (max-width:520px){
   header{backdrop-filter:none;-webkit-backdrop-filter:none}
-  .hd{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"px auto now" "stats stats stats" "lean lean lean" "live live live";gap:6px 8px;padding-block:8px 6px;align-items:center}
+  .hd{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;grid-template-areas:"px auto now set" "stats stats stats stats" "lean lean live live";gap:6px 8px;padding-block:8px 6px;align-items:center}
   .hd>div:first-child{grid-area:px}#hStats{grid-area:stats;font-size:12px;gap:8px}#hLean{grid-area:lean;min-width:0}
-  .hright{display:contents}#hLive{grid-area:live;justify-self:start;min-width:0;max-width:100%;overflow:hidden;padding:3px 9px;font-size:11.5px}#hLive span:last-child{overflow:hidden;text-overflow:ellipsis;min-width:0}#hStats{min-width:0;overflow:hidden;flex-wrap:nowrap;white-space:nowrap}
-  #bAuto{grid-area:auto}#bNow{grid-area:now;font-size:0;width:34px;padding:0}#bNow:before{content:"↻";font-size:17px}.hd .btn{padding:4px 10px;min-height:32px;font-size:12.5px;white-space:nowrap}
+  .hright{display:contents}#hLive{grid-area:live;justify-self:end;min-width:0;max-width:100%;overflow:hidden;padding:3px 9px;font-size:11.5px}#hLive span:last-child{overflow:hidden;text-overflow:ellipsis;min-width:0}#hStats{min-width:0;overflow:hidden;flex-wrap:nowrap;white-space:nowrap}
+  #bAuto{grid-area:auto}#bNow{grid-area:now}#bSet{grid-area:set}.hlx{display:none}.hd .btn{padding:4px 10px;min-height:32px;font-size:12.5px;white-space:nowrap}
   .hd>div:first-child>div:last-child{flex-wrap:nowrap;gap:8px!important}.chg{white-space:nowrap;font-size:13px;padding:2px 7px}.px{font-size:25px}
   #hLean{font-size:12.5px;flex-wrap:nowrap;overflow:hidden}#hLean>*{white-space:nowrap}
 }
@@ -344,6 +348,108 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
 .bset{display:grid;gap:2px;text-align:left;padding:8px 10px;border-radius:12px;border:1px solid var(--weak);background:color-mix(in srgb,var(--fg) 3%,transparent);font-size:13px}.bset b{font-size:12px;text-transform:uppercase;letter-spacing:.06em}.bset.up{border-left:3px solid var(--up)}.bset.up b{color:var(--up)}.bset.down{border-left:3px solid var(--dn)}.bset.down b{color:var(--dn)}.bset span:nth-of-type(1){font-weight:650}.bset .mut{font-size:12px}
 .bchips{display:flex;flex-wrap:wrap;gap:6px}.bchip{display:inline-flex;gap:6px;align-items:baseline;padding:4px 9px;border-radius:999px;border:1px solid var(--weak);background:color-mix(in srgb,var(--fg) 3%,transparent);font-size:12px}.bchip i{font-style:normal;color:var(--fg3)}.bchip b{font-weight:650}
 @media (max-width:520px){.blvs{grid-template-columns:1fr}.bnow{justify-self:start;display:flex;gap:8px;align-items:baseline;padding:4px 10px}.bsets{grid-template-columns:1fr}}
+
+/* ===================== v3 revamp: Signals, Alts, Voices, new look ===================== */
+html:not([data-cs="classic"]) body{background:var(--bg)}
+html:not([data-cs="classic"]) body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(1200px 600px at 10% -10%,var(--r1) 0%,transparent 60%),radial-gradient(900px 500px at 110% 10%,var(--r2) 0%,transparent 55%)}
+.hib{width:34px;padding:0!important;display:inline-grid;place-items:center;font-size:17px}.hib svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+#hLive b{font-weight:700}
+.tabs{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);scrollbar-width:none;padding-right:24px}.tabs::-webkit-scrollbar{display:none}
+.tabs .tab{flex:none}
+body[data-tab="sources"] .tabs{display:none}
+.ph{position:relative}
+.lnk{margin-left:auto;border:0;background:none;color:var(--acc);font-size:12.5px;font-weight:600;padding:2px 4px;min-height:24px}
+.ib{margin-left:6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--fg3);font:italic 700 11px/18px Georgia,serif;padding:0;flex:none}
+.ph .st~.ib,.ph .lnk~.ib{margin-left:6px}.ph>.pt+.ib{margin-left:auto}
+.src{display:none}body.notes .src,.panel.showsrc .src{display:block}.panel.showsrc .ib{background:var(--acc);color:#000;border-color:var(--acc)}
+.view:not([data-view="overview"]):not([data-view="now"]) .panel{content-visibility:auto;contain-intrinsic-size:auto 260px}
+body.lite *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}body.lite .panel{box-shadow:none!important}body.lite::before{display:none}
+/* hero */
+.heroP{padding:14px 16px}
+.hero{display:grid;gap:12px;grid-template-columns:minmax(220px,260px) 1fr;align-items:center}
+.hg{display:grid;justify-items:center;gap:2px}.gauge{width:100%;max-width:240px;display:block}
+.hgl{display:grid;justify-items:center;text-align:center}.hgl b{font-size:17px}.hgl span{font-size:12px;color:var(--fg3)}
+.htiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.htile{display:grid;gap:2px;padding:10px 12px;border-radius:14px;background:var(--tint,color-mix(in srgb,var(--fg) 4%,transparent));border:1px solid var(--edge,var(--weak));min-width:0}
+.htile span{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--fg3);font-weight:600}.htile b{font-size:15px;line-height:1.25}.htile small{font-size:12px;color:var(--fg2)}
+.htile.rg-up{border-color:color-mix(in srgb,var(--up) 45%,transparent)}.htile.rg-down{border-color:color-mix(in srgb,var(--dn) 45%,transparent)}.htile.rg-squeeze{border-color:color-mix(in srgb,var(--warn) 55%,transparent)}
+.hins{grid-column:1/-1;margin:0;font-size:14px;line-height:1.5;color:var(--fg)}.hcoil{grid-column:1/-1;margin:0;font-size:13.5px;color:var(--warn);font-weight:600}
+.erng{grid-column:1/-1;display:grid;gap:6px}.erc{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}.erc span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3);font-weight:600;width:100%}.erc b{font-size:16px}.erc small{color:var(--fg3)}
+.erbar{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,color-mix(in srgb,var(--dn) 35%,transparent),color-mix(in srgb,var(--fg3) 18%,transparent) 50%,color-mix(in srgb,var(--up) 35%,transparent))}
+.erbar i{position:absolute;top:-3px;bottom:-3px;width:3px;margin-left:-1.5px;border-radius:2px}.erbar i.now{background:var(--fg);top:-5px;bottom:-5px}.erbar i.r{background:var(--dn)}.erbar i.s{background:var(--up)}
+.erl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--fg3)}
+@media (max-width:640px){.hero{grid-template-columns:1fr}.htiles{grid-template-columns:1fr 1fr}.htiles .htile:last-child{grid-column:1/-1}.gauge{max-width:220px}}
+/* moves, magnets, stars, odds */
+.mvs{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.mvc{display:grid;gap:8px;padding:12px;border-radius:14px;border:1px solid var(--edge,var(--weak));background:var(--tint,transparent)}
+.mvc.up{border-left:3px solid var(--up)}.mvc.dn{border-left:3px solid var(--dn)}
+.mvh{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.mvh b{font-size:14px}.mvc.up .mvh b{color:var(--up)}.mvc.dn .mvh b{color:var(--dn)}.mvh small{width:100%;font-size:11px;color:var(--fg3)}
+.mvp{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.mvp>div{display:grid;gap:1px}.mvp span{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3)}.mvp b{font-size:18px;font-variant-numeric:tabular-nums}.mvp small{font-size:11.5px;color:var(--fg3)}.mva{font-size:20px;color:var(--fg3)}
+.mvw{font-size:12px;color:var(--fg2)}.mvn{margin:0;padding-left:16px;font-size:12.5px;color:var(--fg2);line-height:1.45}
+.stars{color:var(--warn);letter-spacing:-1px;font-size:12px;white-space:nowrap}.stars i{font-style:normal;color:var(--fg3);opacity:.35}
+.odds{display:inline-block;min-width:38px;text-align:center;font-weight:700;font-size:12px;padding:1px 6px;border-radius:7px}
+.odds.hi{color:#000;background:var(--up)}.odds.md{color:var(--fg);background:color-mix(in srgb,var(--warn) 30%,transparent)}.odds.lo{color:var(--fg2);background:color-mix(in srgb,var(--fg3) 20%,transparent)}
+.mags{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.mag{display:grid;gap:4px;padding:9px 11px;border-radius:12px;border:1px solid var(--edge,var(--weak));background:var(--tint,transparent)}.mag.r{border-left:3px solid var(--dn)}.mag.s{border-left:3px solid var(--up)}
+.magp{display:flex;gap:8px;align-items:baseline}.magp b{font-size:16px}.magp .stars{margin-left:auto}.mago{display:flex;gap:12px;font-size:12px;color:var(--fg3)}.magw{font-size:12px;color:var(--fg2)}
+.kchip{display:inline-block;font-size:10.5px;font-weight:650;padding:0 6px;border-radius:5px;margin:0 3px 2px 0;background:color-mix(in srgb,var(--fg3) 18%,transparent);color:var(--fg2)}
+.k-struct{background:color-mix(in srgb,var(--warn) 22%,transparent);color:var(--warn)}.k-liq{background:color-mix(in srgb,var(--dn) 20%,transparent);color:var(--dn)}.k-gex{background:color-mix(in srgb,#e8c547 22%,transparent);color:#e8c547}.k-pool{background:color-mix(in srgb,var(--purple) 24%,transparent);color:var(--purple)}.k-my,.k-cw{background:color-mix(in srgb,var(--my) 22%,transparent);color:var(--my)}.k-fib{background:color-mix(in srgb,#ff6ec7 20%,transparent);color:#ff6ec7}.k-vp{background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc)}
+tr.lvr td:first-child{border-left:2px solid var(--dn)}tr.lvs td:first-child{border-left:2px solid var(--up)}
+/* confluence matrix + regime */
+.cfh{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:center;margin-bottom:10px}@media (max-width:560px){.cfh{grid-template-columns:1fr}.cfh .gauge{max-width:200px;margin:0 auto}}
+.cfg{table-layout:fixed}.cfg th{font-size:11.5px;color:var(--fg3);text-align:center}.cfg td{text-align:center;font-weight:700;border-radius:6px;padding:7px 2px;border:2px solid transparent;background-clip:padding-box}
+.cfg th:first-child{width:36%}.cfg td.l{text-align:left;font-weight:400;overflow:hidden}.cfg td.l b{display:block;font-size:13.5px}.cfg td.l small{display:block;font-size:11px;color:var(--fg3);line-height:1.3}
+.c2{background:color-mix(in srgb,var(--up) 50%,transparent);color:#fff}.c1{background:color-mix(in srgb,var(--up) 22%,transparent);color:var(--up)}.c0{background:color-mix(in srgb,var(--fg3) 12%,transparent);color:var(--fg3)}
+.c-1{background:color-mix(in srgb,var(--dn) 22%,transparent);color:var(--dn)}.c-2{background:color-mix(in srgb,var(--dn) 50%,transparent);color:#fff}.na{opacity:.4}
+.cfavg td{font-size:12px}.cfavg td.l b{font-size:12.5px}
+.cfnow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-top:10px}.cfn{display:grid;gap:1px;padding:8px 10px;border-radius:10px;text-align:left}.cfn b{font-size:13px;color:var(--fg)}.cfn span{font-size:13px;font-weight:700}.cfn small{font-size:11px;color:var(--fg2);font-weight:400}
+.rgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.rgc{border-left:3px solid var(--fg3)}.rgc.rg-up{border-left-color:var(--up)}.rgc.rg-down{border-left-color:var(--dn)}.rgc.rg-squeeze{border-left-color:var(--warn)}.rgc.rg-expand{border-left-color:var(--purple)}.rgc.rg-range{border-left-color:var(--acc)}
+.rgl{margin-left:auto;font-weight:700;font-size:14px}.rg-up .rgl{color:var(--up)}.rg-down .rgl{color:var(--dn)}.rg-squeeze .rgl{color:var(--warn)}.rg-range .rgl{color:var(--acc)}.rg-expand .rgl{color:var(--purple)}
+.rgb{display:grid;grid-template-columns:minmax(0,1.2fr) 1fr 64px;gap:8px;align-items:center;font-size:12.5px;color:var(--fg2);padding:3px 0}.rgb i{height:6px;border-radius:3px;background:color-mix(in srgb,var(--fg3) 20%,transparent);overflow:hidden}.rgb i b{display:block;height:100%;background:linear-gradient(90deg,var(--ga,var(--acc)),var(--gb,var(--acc)))}.rgb em{font-style:normal;text-align:right;font-weight:650;color:var(--fg)}
+/* structure + logs */
+.mono{font-family:var(--mono);font-size:12px}
+.slog{display:grid}.sle{display:grid;grid-template-columns:10px 96px 1fr;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--weak);font-size:13px}.sle:last-child{border-bottom:0}
+.sld{width:8px;height:8px;border-radius:50%;background:var(--fg3);display:inline-block}.sld.up{background:var(--up)}.sld.dn{background:var(--dn)}.sld.wn{background:var(--warn)}
+.slt{font-size:11.5px;color:var(--fg3);white-space:nowrap}
+.stz{display:grid;grid-template-columns:auto auto 1fr;gap:4px 10px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--weak);font-size:13px}.stz span:last-child{grid-column:1/-1;color:var(--fg2);font-size:12.5px}.pu{color:var(--purple)}
+/* chart brief strip */
+.bstrip:empty{display:none}.bstrip{min-width:0}
+.bsx{max-width:100%;min-width:0;display:flex;flex-wrap:nowrap;gap:6px 12px;align-items:center;width:100%;overflow-x:auto;scrollbar-width:none;text-align:left;border:1px solid var(--edge,var(--weak));background:var(--tint,var(--panel));border-radius:14px;padding:8px 12px;font-size:13px}.bsx::-webkit-scrollbar{display:none}
+.bsx .ftag{margin:0;white-space:nowrap}.bsi{white-space:nowrap}.bsi i{font-style:normal;color:var(--fg3);font-size:11px;margin-right:4px;text-transform:uppercase}.bsgo{margin-left:auto;color:var(--fg3);font-size:18px}
+/* alts */
+.agrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr))}
+.acard{display:grid;gap:6px;padding:12px 13px;border-radius:16px;border:1px solid var(--edge,var(--weak));background:linear-gradient(180deg,var(--p1,var(--panel)),var(--p2,var(--panel)))}
+.acard.up{border-left:3px solid var(--up)}.acard.dn{border-left:3px solid var(--dn)}
+.ach{display:flex;align-items:center;gap:8px;min-width:0}.asym{font-size:17px}.apx{font-variant-numeric:tabular-nums;color:var(--fg2);font-size:13.5px}.ach24{font-size:12.5px;font-weight:600}.ach .spark{margin-left:auto}
+.asc{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}.asc.up{color:var(--up);background:color-mix(in srgb,var(--up) 14%,transparent)}.asc.dn{color:var(--dn);background:color-mix(in srgb,var(--dn) 14%,transparent)}
+.atags{display:flex;flex-wrap:wrap;gap:4px}.atag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,currentColor 12%,transparent)}.atag.mut{color:var(--fg2)}
+.aplan{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.aplan>span{display:grid;gap:0;padding:6px 7px;border-radius:9px;background:color-mix(in srgb,var(--fg) 4%,transparent);font-size:13px;min-width:0}.aplan i{font-style:normal;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--fg3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.aplan b{font-variant-numeric:tabular-nums;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.aplan small{font-size:10.5px;color:var(--fg3)}
+.abr{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.abr>div{display:grid;gap:1px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--fg) 4%,transparent)}.abr span{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--fg3)}.abr b{font-size:17px}.abr small{font-size:11.5px;color:var(--fg3)}
+.pt.up{color:var(--up)!important}.pt.dn{color:var(--dn)!important}.pt.wn{color:var(--warn)!important}.pt.acc{color:var(--acc)!important}
+.altrow{display:grid;grid-template-columns:58px 74px 58px auto 1fr;gap:8px;align-items:center;width:100%;text-align:left;border:0;border-bottom:1px solid var(--weak);background:none;padding:7px 0;font-size:13px}.altrow:last-child{border-bottom:0}.altrow .mut{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:359px){.aplan{grid-template-columns:repeat(2,1fr)}}@media (max-width:420px){.aplan>span{padding:5px}.aplan b{font-size:12px}.altrow{grid-template-columns:52px 70px 54px auto}.altrow .mut{display:none}}
+/* voices */
+.vmeter{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-weight:700;font-size:13px}.vmeter i{display:flex;height:10px;border-radius:5px;overflow:hidden;background:color-mix(in srgb,var(--fg3) 20%,transparent)}.vmeter .vb{background:var(--up)}.vmeter .vr{background:var(--dn);margin-left:auto}
+.vtg{display:flex;flex-wrap:wrap;gap:6px}.vtg a{text-decoration:none;color:inherit}
+.vgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.vcard{display:grid;gap:8px;align-content:start}.vh{display:flex;align-items:center;gap:10px}.vh small{display:block;color:var(--fg3);font-size:12px}
+.vav{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;flex:none}
+.vav.g0{background:linear-gradient(135deg,#7c5cff,#20c3ff)}.vav.g1{background:linear-gradient(135deg,#ff6a00,#ffb347)}.vav.g2{background:linear-gradient(135deg,#00a152,#39d98a)}.vav.g3{background:linear-gradient(135deg,#d6336c,#ff8787)}.vav.g4{background:linear-gradient(135deg,#1c7ed6,#74c0fc)}.vav.g5{background:linear-gradient(135deg,#7048e8,#e599f7)}
+.vlast{display:grid;gap:2px;text-decoration:none;color:var(--fg);font-size:13.5px;line-height:1.4;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--fg) 4%,transparent)}.vlast small{color:var(--fg3);font-size:11.5px}
+.vrow{display:grid;grid-template-columns:12px 1fr;gap:6px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--weak);text-decoration:none;color:var(--fg);font-size:13.5px;line-height:1.4}
+#voBody .ctl{min-width:0;margin:0}#voBody .seg{max-width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}#voBody .seg button{white-space:nowrap;flex:none}
+.hlb{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;font-size:13px}.hlb .ftag{margin:0}
+.stsq{display:block;font-family:var(--mono);font-size:11px;color:var(--fg3);font-weight:400}
+@media (min-width:521px){.mtab .nbadge.mb{position:static;margin-left:2px}}
+/* toasts */
+#toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));z-index:80;display:grid;gap:8px;width:min(92vw,420px);pointer-events:none}
+@media (max-width:520px){#toasts{bottom:calc(76px + env(safe-area-inset-bottom))}}
+.toast{pointer-events:auto;display:grid;gap:2px;padding:10px 14px;border-radius:14px;background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);box-shadow:0 12px 30px rgba(0,0,0,.45);font-size:13.5px;animation:tin .25s ease-out;cursor:pointer;border-left:4px solid var(--fg3)}
+.toast.up{border-left-color:var(--up)}.toast.dn{border-left-color:var(--dn)}.toast b{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--fg3)}.toast.out{opacity:0;transform:translateY(8px);transition:all .5s}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}}
+/* settings rows outside the chart sheet */
+#sources .srow,section[data-view="sources"] .srow{border-bottom:1px solid var(--weak);border-radius:0}
 </style>
 <script>try{document.documentElement.dataset.cs=JSON.parse(localStorage.getItem("v2.cstyle")||'"neon"')}catch(e){document.documentElement.dataset.cs="neon"}</script>
 <div style="background:color-mix(in srgb,var(--warn) 18%,var(--bg));color:var(--fg);font-size:13px;padding:7px max(14px,env(safe-area-inset-left));border-bottom:1px solid var(--line)"><b>Preview with sample data.</b> Prices and flows here are made up so you can try the layout, chart and layers. Real data runs on your live Cloudflare site.</div>
@@ -377,9 +483,45 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
   const kl = (iv, lim) => series(iv).slice(-lim).map((b) => [b.t * 1000, b.o.toFixed(2), b.h.toFixed(2), b.l.toFixed(2), b.c.toFixed(2), b.v.toFixed(4), (b.t + SEC[iv]) * 1000 - 1, (b.v * b.c).toFixed(2), 1000, b.tb.toFixed(4), "0", "0"]);
   const rub = (n, f, sec = 300) => Array.from({ length: n }, (_, i) => [String((Math.floor(now() / sec) * sec - i * sec) * 1000), ...f(i)]);
   const P = (o) => (+px() + o).toFixed(1);
+  // ---- sample alts + voices (v3) ----
+  const ALTB = { ETH: 3150, SOL: 182, XRP: 2.31, BNB: 905, DOGE: 0.172, ADA: 0.61, AVAX: 19.4, LINK: 15.2, SUI: 2.4, TON: 2.9, DOT: 3.6, LTC: 92, BCH: 480, NEAR: 2.7, APT: 4.6, ARB: 0.31, OP: 0.52, INJ: 8.9, TIA: 1.4, SEI: 0.21, RENDER: 2.9, FET: 0.33, TAO: 340, ENA: 0.34, ONDO: 0.66, AAVE: 205, UNI: 7.6, PEPE: 0.0000081, WIF: 0.55, HBAR: 0.17, TRX: 0.29, XLM: 0.27 };
+  const AS = {};
+  function altSeries(b, iv) {
+    const key = b + iv; if (AS[key]) return AS[key];
+    let sd = [...b].reduce((a, c) => a * 31 + c.charCodeAt(0), 7) % 2147483647 || 11; const r = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+    const n = iv === "1d" ? 400 : 150, sec = iv === "1d" ? 86400 : 14400, base = ALTB[b] || 1, trend = (r() - 0.45) * (iv === "1d" ? 0.004 : 0.003), vol = iv === "1d" ? 0.035 : 0.012, out = [];
+    let p = base * (1 - trend * n * 0.9), t = (Math.floor(Date.now() / 1000 / sec) - n + 1) * sec;
+    for (let i = 0; i < n; i++) { const o = p, c = o * (1 + trend + (r() - 0.5) * vol * 2 + Math.sin(i / (9 + r() * 6)) * vol * 0.3); const h = Math.max(o, c) * (1 + r() * vol * 0.5), l = Math.min(o, c) * (1 - r() * vol * 0.5), v = (1e6 / base) * (0.5 + r()) * (i > n - 4 && r() > 0.6 ? 3 : 1); out.push([(t + i * sec) * 1000, o, h, l, c, v]); p = c; }
+    const k = base / out[n - 1][4]; out.forEach((x) => { for (let j = 1; j <= 4; j++) x[j] *= k; });
+    return (AS[key] = out);
+  }
+  function altAnswer(u, q) {
+    if (u.pathname.endsWith("/ticker/24hr") && (q.symbols || (q.symbol && q.symbol !== "BTCUSDT"))) {
+      const list = q.symbols ? JSON.parse(q.symbols) : [q.symbol];
+      const one = (s) => { const b = s.replace(/USDT$/, ""); if (!ALTB[b]) return null; const k = altSeries(b, "4h"), lst = k[k.length - 1], o = k[k.length - 7][4]; return { symbol: s, lastPrice: String(lst[4]), priceChangePercent: (((lst[4] - o) / o) * 100).toFixed(2), quoteVolume: String(lst[5] * lst[4] * 6 * 50), highPrice: String(lst[2]), lowPrice: String(lst[3]) }; };
+      if (q.symbols) { const r = list.map(one); if (r.some((x) => !x)) return { __status: 400 }; return r; }
+      return one(q.symbol) || { __status: 400 };
+    }
+    if (u.pathname.endsWith("/klines") && q.symbol && q.symbol !== "BTCUSDT") {
+      const b = q.symbol.replace(/USDT$/, ""); if (!ALTB[b]) return { __status: 400 };
+      return altSeries(b, q.interval === "1d" ? "1d" : "4h").slice(-(+q.limit || 150)).map((x) => [x[0], x[1].toPrecision(8), x[2].toPrecision(8), x[3].toPrecision(8), x[4].toPrecision(8), x[5].toFixed(2), x[0] + 1, (x[5] * x[4]).toFixed(2), 100, (x[5] * 0.5).toFixed(2), "0", "0"]);
+    }
+    return undefined;
+  }
+  function voicesRss(q) {
+    const T = [["Michael Saylor says Strategy will keep buying bitcoin, sees $1 million BTC by 2030", 3], ["Arthur Hayes warns bitcoin could drop to $70K before Fed liquidity returns", 9], ["Tom Lee predicts bitcoin at $200,000 by year-end despite pullback", 20],
+      ["Peter Schiff calls bitcoin rally a bubble as gold hits record", 30], ["Standard Chartered's Kendrick cuts bitcoin target to $150K", 40], ["Cathie Wood: ARK still bullish, sees bitcoin at $1.5 million in bull case", 50],
+      ["Willy Woo: on-chain data shows long-term holders distributing", 60], ["Raoul Pal says liquidity cycle points higher for crypto into 2026", 70], ["Peter Brandt flags possible bearish bitcoin chart pattern", 80],
+      ["Brian Armstrong says Coinbase will expand bitcoin lending", 90], ["Matt Hougan: ETF inflows to accelerate as advisers buy bitcoin", 100], ["Jamie Dimon repeats bitcoin skepticism at JPMorgan event", 120],
+      ["Lyn Alden explains why bitcoin is undervalued against the money supply", 130], ["Ki Young Ju: CryptoQuant data shows whales accumulating bitcoin", 140]];
+    const g = /Hayes|Pal/.test(q) ? 1 : /Zhao|Schiff/.test(q) ? 2 : 0;
+    const items = T.filter((_, i) => i % 3 === g).map(([t, h], i) => `<item><title>Sample: ${t} - CoinDesk</title><link>https://example.com/v${g}/${i}</link><pubDate>${new Date(Date.now() - h * 36e5).toUTCString()}</pubDate><source>CoinDesk</source></item>`).join("");
+    return `<?xml version="1.0"?><rss version="2.0"><channel><title>Google News</title>${items}</channel></rss>`;
+  }
   function answer(url) {
     const u = new URL(url, "https://demo.local"), q = Object.fromEntries(u.searchParams), h = u.host, path = u.pathname;
     if (h === "data-api.binance.vision") {
+      const am = altAnswer(u, q); if (am !== undefined) return am;
       if (path.endsWith("/ticker/24hr")) { const s = series("1h"), o = s.at(-25).c; return { lastPrice: P(0), priceChangePercent: (((px() - o) / o) * 100).toFixed(2), highPrice: String(Math.max(...s.slice(-24).map((b) => b.h))), lowPrice: String(Math.min(...s.slice(-24).map((b) => b.l))), volume: "11000", quoteVolume: "889222877" }; }
       if (path.endsWith("/klines")) return kl(q.interval, +q.limit);
     }
@@ -397,7 +539,7 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
       if (path.includes("taker-volume")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => { const tilt = Math.sin(i / 9) * 25; return [String(100 - tilt + rnd() * 40), String(100 + tilt + rnd() * 40)]; }, sec) }; }
       if (path.includes("long-short")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => [String(1.6 + Math.sin(i / 40) * 0.2 + Math.sin(i / 3) * 0.03)], sec) }; }
     }
-    if (h === "api.hyperliquid.xyz") return [{ universe: [{ name: "BTC" }] }, [{ markPx: P(-2), funding: "0.0000125", openInterest: "31000" }]];
+    if (h === "api.hyperliquid.xyz") { const nm = ["BTC", "ETH", "SOL", "DOGE", "kPEPE", "SUI"], f = [0.0000125, 0.00007, -0.00004, 0.00009, 0.0001, 0.00002]; return [{ universe: nm.map((name) => ({ name })) }, nm.map((x, i) => ({ markPx: i ? String(ALTB[x.replace(/^k/, "")] || 1) : P(-2), funding: String(f[i]), openInterest: i ? "100000" : "31000", prevDayPx: "1", dayNtlVlm: "1" }))]; }
     if (h === "api.bitget.com") return path.includes("/spot/") ? { code: "00000", data: [{ lastPr: P(-15), open: "80850", baseVolume: "3100", high24h: "81580", low24h: "79230" }] } : { code: "00000", data: [{ lastPr: P(-8), fundingRate: "0.00005", holdingAmount: "42000" }] };
     if (h === "www.deribit.com") {
       if (path.includes("book_summary") && q.kind === "future") return { result: [{ instrument_name: "BTC-PERPETUAL", mark_price: px(), open_interest: 9e8, volume_usd: 1e9 }, { instrument_name: "BTC-27NOV26", mark_price: px() * 1.004, open_interest: 1e8, volume_usd: 2e7 }, { instrument_name: "BTC-25DEC26", mark_price: px() * 1.011, open_interest: 3e8, volume_usd: 5e7 }, { instrument_name: "BTC-26MAR27", mark_price: px() * 1.027, open_interest: 2e8, volume_usd: 3e7 }] };
@@ -435,8 +577,10 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
   window.fetch = async function (input, opt) {
     let url = typeof input === "string" ? input : input.url; const m = /^\/px\/(\w+)(\/.*)$/.exec(url); if (m) url = PXMAP[m[1]] + m[2];
     await new Promise((r) => setTimeout(r, 60 + rnd() * 120));
+    if (/rss\/search/.test(url) && /when%3A7d|when:7d/.test(url)) return new Response(voicesRss(decodeURIComponent(url)), { status: 200, headers: { "content-type": "application/rss+xml" } });
     if (NEWS_HOSTS.includes(new URL(url).host)) return new Response(sampleRss(new URL(url).host), { status: 200, headers: { "content-type": "application/rss+xml" } });
     const d = answer(url); if (d === null) throw new TypeError("Failed to fetch");
+    if (d && d.__status) return new Response("{}", { status: d.__status });
     return new Response(JSON.stringify(d), { status: d.__status || 200, headers: { "content-type": "application/json" } });
   };
   class FakeWS {
@@ -472,19 +616,81 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
       <div class="hright">
         <span class="pill" id="hLive"><span class="dot"></span><span>Starting…</span></span>
         <button class="btn" id="bAuto" aria-pressed="true" title="Pause or resume automatic updates">Auto</button>
-        <button class="btn" id="bNow" title="Fetch everything now">↻ Refresh</button>
+        <button class="btn hib" id="bNow" title="Fetch everything now" aria-label="Refresh now">↻</button>
+        <button class="btn hib" id="bSet" data-goto="sources" title="Settings, appearance and data sources" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
       </div>
     </div>
-    <nav class="mtabs" aria-label="Main sections"><button class="mtab" data-main="chart" aria-label="Chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg><span>Chart</span></button><button class="mtab" data-main="trade" aria-label="Trade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17l4-5 3 3 5-7"/><path d="M14 8h4v4"/></svg><span>Trade</span></button><button class="mtab" data-main="flow" aria-label="Flow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-6 6 6 9 0s6 6 9 0"/><path d="M3 18c3-4 6 4 9 0s6 4 9 0" opacity=".5"/></svg><span>Flow</span></button><button class="mtab" data-main="markets" aria-label="Markets"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 2.5 14.5 0 17M12 3.5c-2.5 2.5-2.5 14.5 0 17"/></svg><span>Markets</span></button><button class="mtab" data-main="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span>Settings</span></button></nav>
-    <nav class="tabs" role="tablist" aria-label="Sub-sections"><button class="tab" role="tab" data-tab="overview" data-grp="chart">Chart</button><button class="tab" role="tab" data-tab="setups" data-grp="trade">Setups</button><button class="tab" role="tab" data-tab="ta" data-grp="trade">Technicals</button><button class="tab" role="tab" data-tab="pat" data-grp="trade">Patterns</button><button class="tab" role="tab" data-tab="flow" data-grp="flow">CVD</button><button class="tab" role="tab" data-tab="derivs" data-grp="flow">Derivatives</button><button class="tab" role="tab" data-tab="liq" data-grp="flow">Liquidations</button><button class="tab" role="tab" data-tab="gex" data-grp="flow">Options · GEX</button><button class="tab" role="tab" data-tab="news" data-grp="markets">News</button><button class="tab" role="tab" data-tab="mkts" data-grp="markets">Markets & macro</button><button class="tab" role="tab" data-tab="sess" data-grp="markets">Sessions</button><button class="tab" role="tab" data-tab="sources" data-grp="settings">Data & settings</button></nav>
+    <nav class="mtabs" aria-label="Main sections"><button class="mtab" data-main="signals" aria-label="Signals"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6"/></svg><span>Signals</span></button><button class="mtab" data-main="chart" aria-label="Chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg><span>Chart</span></button><button class="mtab" data-main="trade" aria-label="Trade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17l4-5 3 3 5-7"/><path d="M14 8h4v4"/></svg><span>Trade</span></button><button class="mtab" data-main="flow" aria-label="Flow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-6 6 6 9 0s6 6 9 0"/><path d="M3 18c3-4 6 4 9 0s6 4 9 0" opacity=".5"/></svg><span>Flow</span></button><button class="mtab" data-main="intel" aria-label="Intel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/><path d="M9 9h6M9 12h4"/></svg><span>Intel</span></button></nav>
+    <nav class="tabs" role="tablist" aria-label="Sub-sections"><button class="tab" role="tab" data-tab="now" data-grp="signals">Now</button><button class="tab" role="tab" data-tab="regime" data-grp="signals">Regime & confluence</button><button class="tab" role="tab" data-tab="struct" data-grp="signals">Structure</button><button class="tab" role="tab" data-tab="levels" data-grp="signals">Levels & moves</button><button class="tab" role="tab" data-tab="overview" data-grp="chart">Chart</button><button class="tab" role="tab" data-tab="setups" data-grp="trade">Setups</button><button class="tab" role="tab" data-tab="alts" data-grp="trade">Alts</button><button class="tab" role="tab" data-tab="ta" data-grp="trade">Technicals</button><button class="tab" role="tab" data-tab="pat" data-grp="trade">Patterns</button><button class="tab" role="tab" data-tab="sess" data-grp="trade">Sessions</button><button class="tab" role="tab" data-tab="derivs" data-grp="flow">Positions</button><button class="tab" role="tab" data-tab="flow" data-grp="flow">CVD</button><button class="tab" role="tab" data-tab="liq" data-grp="flow">Liquidations</button><button class="tab" role="tab" data-tab="gex" data-grp="flow">Options</button><button class="tab" role="tab" data-tab="news" data-grp="intel">News</button><button class="tab" role="tab" data-tab="voices" data-grp="intel">Voices</button><button class="tab" role="tab" data-tab="mkts" data-grp="intel">Macro & markets</button><button class="tab" role="tab" data-tab="sources" data-grp="settings">Settings</button></nav>
   </div>
 </header>
 
 <div class="wrap">
 <main>
   <!-- OVERVIEW -->
-  <section data-view="overview" class="view" style="display:grid;gap:14px">
+  <!-- SIGNALS · NOW -->
+  <section data-view="now" class="view" style="display:grid;gap:14px">
+    <div class="panel heroP" id="sigHero"></div>
+    <div class="panel"><div class="ph"><span class="pt">Big-move watch</span><button class="lnk" data-goto="levels">All levels ›</button></div><div id="sigMoves"></div></div>
     <div class="panel brief" id="brief"></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">What changed</span><button class="lnk" data-goto="struct">Full log ›</button></div><div id="sigLogNow"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
+    </div>
+    <div class="grid" id="kpis"></div>
+    <div class="two">
+      <div class="panel">
+      <div class="ph"><span class="pt">Flow read</span><span class="st" id="flowSt"></span></div>
+      <div class="flow" id="flow"></div>
+      <div class="src">Price and spot CVD from Binance spot 5m · OI, taker flow from OKX 5m stats · rules only, not advice</div>
+    </div>
+      <div class="panel">
+      <div class="ph"><span class="pt">Assessment</span></div>
+      <div id="ovAssess"></div>
+      <div class="src">Multi-timeframe technicals (15m–1D) weighted 70%, live flow 30%. Full breakdown in the TA tab, entries in Setups. Not advice.</div>
+    </div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Alts on the move</span><button class="lnk" data-goto="alts">Alts ›</button></div><div id="ovAlts"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Big names · latest</span></div><div id="ovVoices"></div></div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Top crypto headlines · 24h</span></div><div id="ovNews" class="nov"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Options gamma (GEX)</span></div><div id="ovGex"></div></div>
+    </div>
+  </section>
+  <section data-view="regime" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Confluence</span></div><div id="cfHead"></div><div class="tw" id="cfGrid"></div>
+      <div class="src">Each cell is a vote: ▲ long, ▼ short, – neutral, darker = stronger. Timeframe weights 15m 10%, 30m 20%, 1h 20%, 4h 30%, 1D 20% make 65% of the score; the four live signals on the right make 35%. Agreement counts every vote that isn't neutral. Rules only, not advice.</div></div>
+    <div class="ph" style="margin:4px 2px -4px"><span class="pt">Regime by timeframe</span></div>
+    <div class="rgrid" id="rgGrid"></div>
+    <div id="rgDeriv"></div>
+    <div class="panel"><div class="ph"><span class="pt">How regimes are read</span></div><div class="src" style="display:block">Trend strength is ADX(14): 25+ trending, under 20 ranging. Efficiency is net move ÷ total path over 20 bars (1 = straight line). Squeeze = Bollinger width in the bottom 15% of the last 150 bars with ADX under 23. Expansion = width and ATR both in the top quarter. Regime colours the playbook: trends reward pullback entries, ranges reward fading edges, squeezes reward waiting for the break.</div></div>
+  </section>
+  <section data-view="struct" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Market structure</span></div><div class="tw" id="stTbl"></div>
+      <div class="src">Swings are 3-bar pivots (2 on 1D). BOS = a close beyond the last swing in the trend's direction (continuation). CHoCH = the first close beyond the protected swing against it (the trend changes character). Next BOS is where the trend continues; CHoCH at is where it flips. ×N = breaks in a row.</div></div>
+    <div class="panel"><div class="ph"><span class="pt">Structure map</span></div><div class="ctl"><span class="seg" id="stSeg"></span></div><div id="stRead" class="sub" style="margin:0 0 8px;line-height:1.55"></div><div id="stChart"></div>
+      <div class="src">Dashed lines: BOS (green/red) and CHoCH (amber) at the swing that broke. Shaded boxes: open fair value gaps. Dotted outlines: order blocks still intact. Purple dotted: equal highs/lows where stops collect.</div></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Breaks · last 4 days</span></div><div id="stEvents"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Gaps, order blocks, stop pools</span></div><div id="stZones"></div></div>
+    </div>
+    <div class="panel"><div class="ph"><span class="pt">Change log</span></div><div id="sigLogFull"></div><div class="src">Logged on this phone while the dashboard is open: structure breaks (30m–1D), regime changes (1h–1D), confluence flips, gamma flips, positioning changes and 4★+ levels crossed. Kept for the last 120 changes.</div></div>
+  </section>
+  <section data-view="levels" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Big-move scenarios</span></div><div id="lvMoves"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">Magnets · levels most likely to pull price</span></div><div class="mags" id="lvMags"></div>
+      <div class="src">Ranked by strength × odds of a touch in 24h, with extra pull for liquidation clusters, equal highs/lows (resting stops), open gaps and GEX magnets.</div></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Level ladder · ±5%</span></div><div id="lvLadder"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Every level within 7%</span></div><div class="tw" id="lvTbl"></div></div>
+    </div>
+    <div class="panel"><div class="ph"><span class="pt">Where the levels come from</span></div><div class="src" style="display:block">Swing highs/lows (30m, 4h), structure triggers and protected swings (30m–1D), equal highs/lows, fair value gaps and order blocks (1h–1D), estimated liquidation clusters, GEX flip/walls/magnets, 4h fib retracements and extensions, 7-day and 30-day volume profile, previous week/month high-low, day/week/month opens, PDH/PDL, VWAP, round numbers, your levels and pasted CoinWise levels. Anything within 0.18% is merged; stars rank the merged score (weight × how many different kinds agree) against the other levels on screen.</div></div>
+  </section>
+  <section data-view="overview" class="view" hidden style="display:grid;gap:14px">
+    <div class="bstrip" id="briefStrip"></div>
+    
     <div class="panel" id="chartPanel">
       <div class="ph"><span class="pt">BTC / USDT · Binance spot</span><span class="st" id="chartSt"></span></div>
       <div class="ctl">
@@ -511,20 +717,6 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
       <div id="fibGuide" class="fibg" hidden></div>
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
     </div>
-    <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
-    <div class="panel"><div class="ph"><span class="pt">Options gamma (GEX)</span></div><div id="ovGex"></div></div>
-    <div class="panel"><div class="ph"><span class="pt">Top crypto headlines · 24h</span></div><div id="ovNews" class="nov"></div></div>
-    <div class="grid" id="kpis"></div>
-    <div class="panel">
-      <div class="ph"><span class="pt">Assessment</span></div>
-      <div id="ovAssess"></div>
-      <div class="src">Multi-timeframe technicals (15m–1D) weighted 70%, live flow 30%. Full breakdown in the TA tab, entries in Setups. Not advice.</div>
-    </div>
-    <div class="panel">
-      <div class="ph"><span class="pt">Flow read</span><span class="st" id="flowSt"></span></div>
-      <div class="flow" id="flow"></div>
-      <div class="src">Price and spot CVD from Binance spot 5m · OI, taker flow from OKX 5m stats · rules only, not advice</div>
-    </div>
 
     <div class="panel">
       <div class="ph"><span class="pt">My levels · CoinWise</span></div>
@@ -532,6 +724,7 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
       <textarea id="myTxt" rows="4" placeholder="Daily VAH 81,240&#10;POC 80,610&#10;Support 79,750 / 79.2k" style="width:100%;font:13px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px"></textarea>
       <div class="ctl" style="margin-top:6px"><button class="btn" id="bMySave">Save levels</button><button class="btn" id="bMyClear">Clear</button><span class="mut" id="myMsg" style="font-size:13px"></span></div>
       <div id="myList"></div>
+    </div>
   </section>
 
   <!-- TA -->
@@ -566,6 +759,11 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
     <div class="panel"><div class="ph"><span class="pt">Divergences and double tops/bottoms</span></div><div id="chartPats"></div></div>
   </section>
 
+  <!-- ALTS -->
+  <section data-view="alts" class="view" hidden style="display:grid;gap:14px">
+    <div class="ctl" style="margin:0"><span class="seg" id="altSeg"></span></div>
+    <div id="altBody" style="display:grid;gap:14px"></div>
+  </section>
   <!-- SETUPS -->
   <section data-view="setups" class="view" hidden style="display:grid;gap:14px">
     <div class="panel">
@@ -633,6 +831,8 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
     </div>
   </section>
 
+  <!-- VOICES -->
+  <section data-view="voices" class="view" hidden style="display:grid;gap:14px"><div id="voBody" style="display:grid;gap:14px"></div></section>
   <!-- MARKETS -->
   <section data-view="mkts" class="view" hidden style="display:grid;gap:14px">
     <div class="panel"><div class="ph"><span class="pt">US economic calendar · this week</span></div><div id="calList"></div><div class="src">ForexFactory's weekly feed, high (red) and medium (amber) impact USD events. Times in your time zone. Next week's list appears over the weekend.</div></div>
@@ -677,6 +877,12 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
     <div class="panel"><div class="ph"><span class="pt">By weekday · biggest moves</span></div><div id="sessDays"></div><div class="src">Binance spot BTC/USDT 30m candles · refreshes every 10 minutes · history, not a prediction</div></div>
   </section>
   <section data-view="sources" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Signals &amp; display</span></div>
+      <button class="srow" data-tog="sigToast"><i class="sw" style="--c:var(--acc)"></i><span class="sn">Pop-up when a signal changes<small>Structure breaks, regime and confluence flips, key levels crossed (while the dashboard is open)</small></span><span class="tg" aria-hidden="true"></span></button>
+      <button class="srow" id="bNotif" data-tog="sigNotif"><i class="sw" style="--c:var(--warn)"></i><span class="sn">Phone notifications<small>Also notify when the dashboard is in the background. iPhone: add it to the Home Screen first (Share → Add to Home Screen)</small></span><span class="tg" aria-hidden="true"></span></button>
+      <button class="srow" data-tog="notes"><i class="sw" style="--c:var(--fg3)"></i><span class="sn">Show explanations<small>The small print under each panel. Off keeps screens clean; tap ⓘ on a panel to read its note</small></span><span class="tg" aria-hidden="true"></span></button>
+      <button class="srow" data-tog="lite"><i class="sw" style="--c:var(--up)"></i><span class="sn">Battery saver<small>Slower refresh (×2), fewer redraws, no glass effects</small></span><span class="tg" aria-hidden="true"></span></button>
+    </div>
     <div class="panel"><div class="ph"><span class="pt">Appearance</span></div>
       <div style="display:grid;gap:8px"><div><b style="font-size:14px">Dashboard style</b><div class="sub">Changes the whole dashboard and the chart. Saved on this device.</div></div><div class="thg"><button class="thc" data-cst="neon"><span class="sw3"><i style="background:#07090f"></i><i style="background:#22e39a"></i><i style="background:#ff4d6d"></i><i style="background:linear-gradient(135deg,#7c5cff,#20c3ff)"></i></span><span>Neon<small>Glass, purple & cyan</small></span></button><button class="thc" data-cst="midnight"><span class="sw3"><i style="background:#0b0e14"></i><i style="background:#26a69a"></i><i style="background:#ef5350"></i><i style="background:linear-gradient(135deg,#2962ff,#5b8cff)"></i></span><span>Midnight<small>TradingView-style</small></span></button><button class="thc" data-cst="tangerine"><span class="sw3"><i style="background:#0e0906"></i><i style="background:#3ddc97"></i><i style="background:#ff5a4e"></i><i style="background:linear-gradient(135deg,#ff6a00,#ffb347)"></i></span><span>Tangerine<small>Warm orange</small></span></button><button class="thc" data-cst="ocean"><span class="sw3"><i style="background:#03111b"></i><i style="background:#2ee6c5"></i><i style="background:#ff6b8a"></i><i style="background:linear-gradient(135deg,#0077ff,#00d4ff)"></i></span><span>Ocean<small>Deep blue & teal</small></span></button><button class="thc" data-cst="matrix"><span class="sw3"><i style="background:#020604"></i><i style="background:#00ff88"></i><i style="background:#ff3b6b"></i><i style="background:linear-gradient(135deg,#00a152,#39ff14)"></i></span><span>Matrix<small>Terminal green</small></span></button><button class="thc" data-cst="paper"><span class="sw3"><i style="background:#f3efe6"></i><i style="background:#138a5e"></i><i style="background:#c8364b"></i><i style="background:linear-gradient(135deg,#3b5bdb,#7048e8)"></i></span><span>Paper<small>Light & warm</small></span></button><button class="thc" data-cst="classic"><span class="sw3"><i style="background:linear-gradient(90deg,#f6f7f9 50%,#0e1117 50%)"></i><i style="background:#16a34a"></i><i style="background:#dc2626"></i><i style="background:#2563eb"></i></span><span>Classic<small>Follows phone light/dark</small></span></button></div></div>
       <div class="src">Every past version is also saved on GitHub (branches <b>pre-revamp</b> and <b>chart-classic</b>), so anything can be restored.</div></div>
@@ -689,7 +895,7 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
     </div>
   </section>
 </main>
-<footer>BTC Market Dashboard v2.0 · stage 4 + news + GEX · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
+<footer>BTC Dashboard v3.0 · signals, alts, voices · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
 </div>
 <script>
 /* BTC Dashboard v2 analysis engine: pure functions, no network or DOM.
@@ -1098,7 +1304,7 @@ const LS = {
   set(k, v) { try { localStorage.setItem("v2." + k, JSON.stringify(v)); } catch (e) {} },
 };
 const ST = {
-  tf: LS.get("tf", "30m"), auto: LS.get("auto", true), tab: LS.get("tab", "overview"),
+  tf: LS.get("tf", "30m"), auto: LS.get("auto", true), tab: LS.get("tab", "now"),
   ema: LS.get("ema", true), vwap: LS.get("vwap", true), lv: LS.get("lv", true), cvd: LS.get("cvd", true), oi: LS.get("oi", true),
   off: LS.get("off", {}),
 };
@@ -1224,7 +1430,9 @@ def("okxLS", "OKX long/short ratio", "Long/short accounts", 60000, async () => {
 def("hl", "Hyperliquid", "Venue: price, funding, OI", 30000, async () => {
   const j = await getJSON("https://api.hyperliquid.xyz/info", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "metaAndAssetCtxs" }) });
   const i = j[0].universe.findIndex((u) => u.name === "BTC"); const c = j[1][i];
-  if (!c) throw new Error("BTC not listed"); return { px: +c.markPx, f8: +c.funding * 8, oi: +c.openInterest };
+  if (!c) throw new Error("BTC not listed");
+  const all = {}; j[0].universe.forEach((u, k) => { const x = j[1][k]; if (x) all[u.name.replace(/^k/, "")] = { px: +x.markPx, f8: +x.funding * 8, oiUsd: +x.openInterest * +x.markPx, prev: +x.prevDayPx, vol: +x.dayNtlVlm }; }); // alts tab reuses this
+  return { px: +c.markPx, f8: +c.funding * 8, oi: +c.openInterest, all };
 });
 def("bitget", "Bitget perp", "Venue: price, funding, OI", 30000, async () => {
   const j = await getJSON("https://api.bitget.com/api/v2/mix/market/ticker?symbol=BTCUSDT&productType=usdt-futures");
@@ -1276,7 +1484,7 @@ const VENUES = [["okx", "OKX"], ["okxInv", "OKX coin-m"], ["bnf", "Binance"], ["
 /* ---------- scheduler ---------- */
 function status(id) {
   const s = SRC[id]; if (ST.off[id]) return "off";
-  if (s.st.s === "ok" && Date.now() - s.st.okAt > Math.max(3 * s.ms, 90000)) return "stale";
+  if (s.st.s === "ok" && Date.now() - s.st.okAt > Math.max(3 * s.ms, 90000) && !(s.when && !s.when())) return "stale";
   return s.st.s;
 }
 const live = (id) => { const x = status(id); return (x === "ok" || x === "stale") && D[id]; };
@@ -1292,17 +1500,18 @@ async function tick(id) {
     if (window.console) console.warn("[source]", id, e);
   } finally {
     s.busy = false;
-    const back = s.st.s === "ok" ? s.ms : s.st.s === "blocked" ? 30 * 60000 : Math.min(s.ms * 2 ** s.st.fails, 5 * 60000);
+    const back = s.st.s === "ok" ? s.ms * (ST.lite ? 2 : 1) : s.st.s === "blocked" ? 30 * 60000 : Math.min(s.ms * 2 ** s.st.fails, 5 * 60000);
     s.st.next = Date.now() + back; render();
   }
 }
-function tickAll() { for (const id in SRC) tick(id); }
+const gated = (s) => s.when && !s.when(); // sources only needed by one view wait until that view is open
+function tickAll() { for (const id in SRC) if (!gated(SRC[id])) tick(id); }
 setInterval(() => {
   if (!ST.auto || document.hidden) return;
-  const now = Date.now(); for (const id in SRC) if (!SRC[id].busy && SRC[id].st.next <= now) tick(id);
+  const now = Date.now(); for (const id in SRC) if (!SRC[id].busy && SRC[id].st.next <= now && !gated(SRC[id])) tick(id);
 }, 1000);
 setInterval(() => render(), 5000); // keep "ago" labels and stale states fresh
-document.addEventListener("visibilitychange", () => { if (!document.hidden && ST.auto) for (const id in SRC) if (Date.now() - SRC[id].st.okAt > SRC[id].ms) tick(id); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && ST.auto) for (const id in SRC) if (Date.now() - SRC[id].st.okAt > SRC[id].ms && !gated(SRC[id])) tick(id); });
 
 /* ---------- derived numbers ---------- */
 function win(k, bars) { if (!k || k.length <= bars) return null; const a = k[k.length - 1 - bars], b = k[k.length - 1]; let cvd = 0; for (let i = k.length - bars; i < k.length; i++) cvd += 2 * k[i].tb - k[i].v; return { pChg: ((b.c - a.c) / a.c) * 100, cvd }; }
@@ -1472,8 +1681,17 @@ function recolorCharts() {
 }
 
 /* ---------- rendering ---------- */
-let rq = false;
-function render() { if (rq) return; rq = true; requestAnimationFrame(() => { rq = false; try { draw(); } catch (e) { console.error(e); } }); }
+// Redraws are batched: at most one every 0.6s (1.5s in battery saver) unless you just tapped something, and none while the page is hidden.
+let rq = false, rqHidden = false, lastDraw = 0, lastUser = 0;
+["pointerdown", "keydown", "click"].forEach((ev) => document.addEventListener(ev, () => (lastUser = performance.now()), true));
+function render(now) {
+  if (document.hidden) { rqHidden = true; return; }
+  if (rq) return; rq = true;
+  const t = performance.now(), wait = now || t - lastUser < 500 ? 0 : Math.max(0, (ST.lite ? 1500 : 600) - (t - lastDraw));
+  const go = () => requestAnimationFrame(() => { rq = false; lastDraw = performance.now(); try { draw(); } catch (e) { console.error(e); } });
+  wait ? setTimeout(go, wait) : go();
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && rqHidden) { rqHidden = false; render(true); } });
 function draw() {
   const C = chartColors();
   // header
@@ -1483,11 +1701,12 @@ function draw() {
   const hc = $("#hChg"); hc.textContent = sp ? `${sp.chg >= 0 ? "▲" : "▼"} ${pct(sp.chg)} 24h` : "–"; hc.className = "chg " + (sp ? (sp.chg >= 0 ? "up" : "dn") : "");
   document.title = px ? `${n0(px)} · BTC Dashboard v2` : "BTC Market Dashboard v2";
   $("#hStats").innerHTML = sp ? `<span>24h range <b>${n0(sp.lo)}–${n0(sp.hi)}</b></span><span>Vol <b>${usd(sp.qv)}</b></span>` : "";
-  const ids = Object.keys(SRC).filter((id) => !ST.off[id]), counted = ids.filter((id) => status(id) !== "blocked"), nLive = counted.filter((id) => ["ok", "stale"].includes(status(id))).length;
+  const ids = Object.keys(SRC).filter((id) => !ST.off[id] && !(SRC[id].when && !SRC[id].when() && SRC[id].st.s === "wait")), counted = ids.filter((id) => status(id) !== "blocked"), nLive = counted.filter((id) => ["ok", "stale"].includes(status(id))).length;
   const last = Math.max(0, ...ids.map((id) => SRC[id].st.okAt));
-  $("#hLive").innerHTML = `<span class="dot ${ST.auto && !document.hidden ? "live" : ""}"></span><span>${nLive} of ${counted.length} sources live · ${ST.auto ? "updated " + ago(last) : "paused"}</span>`;
+  $("#hLive").innerHTML = `<span class="dot ${ST.auto && !document.hidden ? "live" : ""}"></span><span><b>${nLive}</b>/${counted.length}<span class="hlx"> sources</span> · ${ST.auto ? ago(last).replace(" ago", "") : "paused"}</span>`; $("#hLive").title = `${nLive} of ${counted.length} sources live · ${ST.auto ? "updated " + ago(last) : "paused"}`;
   $("#bAuto").setAttribute("aria-pressed", ST.auto); $("#bAuto").textContent = ST.auto ? "● Live" : "❚❚ Paused"; $("#bAuto").title = ST.auto ? "Auto-refresh is on · tap to pause" : "Paused · tap to resume auto-refresh";
-  if (ST.tab === "overview") { drawKpis(C); drawFlow(); const ks = status("kl"); $("#chartSt").className = "st " + ks; $("#chartSt").textContent = STL[ks]; updateChart(); }
+  if (ST.tab === "now") { drawKpis(C); drawFlow(); }
+  if (ST.tab === "overview") { const ks = status("kl"); $("#chartSt").className = "st " + ks; $("#chartSt").textContent = STL[ks]; updateChart(); }
   if (ST.tab === "derivs") drawDerivs(C);
   if (ST.tab === "sources") drawSources();
   if (typeof drawStage2 === "function") drawStage2(ST.tab);
@@ -1571,7 +1790,7 @@ function report() {
 
 /* ---------- controls ---------- */
 function setTab(t) {
-  if (!document.querySelector(`.tab[data-tab="${t}"]`)) t = "overview";
+  if (!document.querySelector(`.tab[data-tab="${t}"]`)) t = "now";
   ST.tab = t; LS.set("tab", t);
   document.querySelectorAll(".tab").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === t));
   // main tab + its sub-tabs
@@ -1580,7 +1799,9 @@ function setTab(t) {
   let nSub = 0; document.querySelectorAll(".tabs .tab").forEach((b) => { b.hidden = b.dataset.grp !== grp; if (!b.hidden) nSub++; });
   const tn = document.querySelector(".tabs"); if (tn) tn.classList.toggle("one", nSub < 2);
   document.querySelectorAll(".view").forEach((v) => (v.hidden = v.dataset.view !== t));
-  render();
+  document.body.dataset.tab = t; render(true);
+  // the chart is built while its tab may be hidden (zero width): size it properly the first time it's shown
+  if (t === "overview" && typeof CC !== "undefined" && CC && !CC.shown) requestAnimationFrame(() => { if (!CC.k.length) return; CC.shown = true; CC.resize(); CC.reset(); });
 }
 document.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
 document.querySelectorAll(".mtab").forEach((b) => b.addEventListener("click", () => { const g = b.dataset.main, last = LS.get("sub." + g, null), first = document.querySelector(`.tab[data-grp="${g}"]`);
@@ -1674,6 +1895,8 @@ function wsDef(id, name, feeds, url, onOpen, onMsg, opt = {}) {
     ws.onerror = () => { W.err = opt.optional ? "Connection refused (likely blocked in your region)" : "Connection dropped or refused"; };
     ws.onclose = () => { clearInterval(W.pt); if (!W.err) W.err = "Disconnected, reconnecting"; };
   };
+  // iOS kills background sockets anyway: close them after a minute in the background, reopen on return
+  document.addEventListener("visibilitychange", () => { clearTimeout(W.hideT); if (document.hidden) W.hideT = setTimeout(() => { if (W.sock) { const s = W.sock; W.sock = null; clearInterval(W.pt); try { s.onclose = s.onerror = null; s.close(); } catch (e) {} } }, 60000); });
   def(id, name, feeds, 5000, async () => {
     if (W.sock && W.sock.readyState === 1) return { since: W.since, n: W.n };
     if (W.sock && W.sock.readyState === 3) { // report the failure once, reconnect on the next try
@@ -2173,7 +2396,6 @@ function initExtras() {
   const host = $("#cMain"); host.style.position = "relative"; OV = document.createElement("canvas"); OV.className = "ov"; host.appendChild(OV);
   let q = 0; const later = () => { if (q) return; q = setTimeout(() => { q = 0; chartExtras(true); }, 120); };
   CH.main.timeScale().subscribeVisibleLogicalRangeChange(later);
-  setInterval(() => { if (ST.tab === "overview" && !document.hidden) drawOverlay(); }, 700);
 }
 function chartExtras(fromScroll) {
   if (!CH.ready) return; initExtras(); const C = chartColors(), k = D.kl && D.kl.tf === ST.tf ? D.kl.k : null;
@@ -2230,9 +2452,11 @@ function drawStage2(tab) {
   const hl = $("#hLean"); if (hl) hl.innerHTML = a ? `${tag(`Lean ${a.verdict}`, a.bias)}<span class="mut" style="font-size:12.5px">${a.bias > 0 ? "+" : ""}${a.bias}</span>` : "";
   const need = (sel, fn) => { const el = $(sel); if (!el) return; if (!a) { el.innerHTML = `<div class="unavail">${esc(SRC.taK.st.err || "Loading candles for analysis…")}</div>`; return; } fn(a); };
   try {
-    if (tab === "overview") {
+    if (tab === "now") {
       need("#ovAssess", (x) => ($("#ovAssess").innerHTML = assessHTML(x, false)));
       if (typeof drawBrief === "function") drawBrief(a);
+    }
+    if (tab === "overview") {
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
       if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
         const swi = ST.fibSrc === "auto" ? (typeof FIBA !== "undefined" ? FIBA.v : null) : ST.fibSrc !== "vis" && typeof fibSwing === "function" ? fibSwing(ST.fibSrc) : null;
@@ -3004,7 +3228,7 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("#bMyClear")) { MYLV = { at: 0, list: [] }; LS.set("myLevels", MYLV); $("#myTxt").value = ""; $("#myMsg").textContent = "Cleared."; drawMyLevels(); CH.xKey = null; chartExtras(); }
 });
 const _draw2 = drawStage2;
-drawStage2 = function (tab) { _draw2(tab); if (tab === "overview") { drawMood(); } };
+drawStage2 = function (tab) { _draw2(tab); if (tab === "now") { drawMood(); } };
 function syncLow() { document.querySelectorAll("[data-low]").forEach((b) => b.setAttribute("aria-pressed", ST.lowers.includes(b.dataset.low))); document.querySelectorAll("[data-lps]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lps === ST.lpStyle)); document.querySelectorAll("[data-tln]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tln === ST.tlN)); }
 syncLow(); $("#tfSeg").addEventListener("click", () => setTimeout(() => { if (D.pfc && D.pfc.per !== PFC_PER[ST.tf]) tick("pfc"); }, 0));
 if ($("#bClean")) $("#bClean").setAttribute("aria-pressed", ST.clean);
@@ -3817,7 +4041,7 @@ function newsBadge() {
   const b = document.querySelector('.tab[data-tab="news"]'); if (!b) return;
   const n = ST.tab === "news" ? 0 : newsAll().filter((s) => s.lvl > 0 && s.t > ST.newsSeen && Date.now() - s.t < 24 * 36e5).length;
   const want = n ? `News <span class="nbadge">${n > 9 ? "9+" : n}</span>` : "News"; if (b.innerHTML !== want) b.innerHTML = want;
-  const m = document.querySelector('.mtab[data-main="markets"]'); if (m) { let d = m.querySelector(".nbadge"); if (n && !d) { d = document.createElement("span"); d.className = "nbadge mb"; m.appendChild(d); } if (d) { if (n) d.textContent = n > 9 ? "9+" : n; else d.remove(); } }
+  const m = document.querySelector('.mtab[data-main="intel"]'); if (m) { let d = m.querySelector(".nbadge"); if (n && !d) { d = document.createElement("span"); d.className = "nbadge mb"; m.appendChild(d); } if (d) { if (n) d.textContent = n > 9 ? "9+" : n; else d.remove(); } }
 }
 document.addEventListener("click", (e) => {
   const s = e.target.closest("[data-nscope]"); if (s) { ST.newsScope = s.dataset.nscope; LS.set("newsScope", ST.newsScope); drawNews(); return; }
@@ -3832,7 +4056,7 @@ drawStage2 = function (tab) {
   try {
     if (tab === "news") { if (!newsWasOpen) { NEWS_PREV_SEEN = ST.newsSeen; newsWasOpen = true; } ST.newsSeen = Date.now(); LS.set("newsSeen", ST.newsSeen); drawNews(); }
     else newsWasOpen = false;
-    if (tab === "overview") drawNewsOverview();
+    if (tab === "now") drawNewsOverview();
     newsBadge();
   } catch (e) { console.error(e); }
 };
@@ -3993,7 +4217,7 @@ document.addEventListener("click", (e) => {
 const _d5 = drawStage2;
 drawStage2 = function (tab) {
   _d5(tab);
-  try { if (tab === "gex") drawGex(); if (tab === "overview") drawGexOverview(); } catch (e) { console.error(e); }
+  try { if (tab === "gex") drawGex(); if (tab === "now") drawGexOverview(); } catch (e) { console.error(e); }
 };
 if (typeof syncCtl === "function") syncCtl();
 render();
@@ -4165,6 +4389,862 @@ function drawBrief(a) {
   el.querySelector(".bwrap").addEventListener("toggle", (e) => { ST.briefOpen = e.target.open; LS.set("briefOpen", ST.briefOpen); });
 }
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-goto]"); if (b) { setTab(b.dataset.goto); window.scrollTo({ top: 0 }); } });
+
+</script>
+<script>
+"use strict";
+/* ===================== Signals engine (pure functions, no DOM) =====================
+   Regime, market structure (BOS / CHoCH, swings, equal highs/lows, fair value gaps, order blocks),
+   level clustering and touch odds. Candles are {t,o,h,l,c,v} oldest first. Runs in the browser
+   (window.SG) and in Node for tests (module.exports). Rules only: nothing here is backtested. */
+(function (root) {
+  const ok = (v) => typeof v === "number" && Number.isFinite(v);
+  const last = (a) => a[a.length - 1];
+  const mean = (a) => (a.length ? a.reduce((s, x) => s + x, 0) / a.length : NaN);
+  const std = (a) => { const m = mean(a); return Math.sqrt(mean(a.map((x) => (x - m) ** 2))); };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  function ema(v, n) { const o = new Array(v.length).fill(NaN), a = 2 / (n + 1); let e = NaN; for (let i = 0; i < v.length; i++) { if (!ok(v[i])) continue; e = ok(e) ? v[i] * a + e * (1 - a) : v[i]; if (i >= n - 1) o[i] = e; } return o; }
+  function rma(v, n) { const o = new Array(v.length).fill(NaN); let s = 0, c = 0, e = NaN; for (let i = 0; i < v.length; i++) { if (!ok(v[i])) continue; if (!ok(e)) { s += v[i]; c++; if (c === n) { e = s / n; o[i] = e; } } else { e = (e * (n - 1) + v[i]) / n; o[i] = e; } } return o; }
+  // share of past values below v (0–100)
+  function pctRank(arr, v) { const a = arr.filter(ok); if (!a.length || !ok(v)) return NaN; return (a.filter((x) => x < v).length / a.length) * 100; }
+
+  /* ---------- trend strength / volatility ---------- */
+  function adx(k, n = 14) {
+    const tr = [NaN], pdm = [NaN], mdm = [NaN];
+    for (let i = 1; i < k.length; i++) {
+      const up = k[i].h - k[i - 1].h, dn = k[i - 1].l - k[i].l;
+      pdm.push(up > dn && up > 0 ? up : 0); mdm.push(dn > up && dn > 0 ? dn : 0);
+      tr.push(Math.max(k[i].h - k[i].l, Math.abs(k[i].h - k[i - 1].c), Math.abs(k[i].l - k[i - 1].c)));
+    }
+    const atr = rma(tr, n), p = rma(pdm, n), m = rma(mdm, n);
+    const pdi = p.map((x, i) => (ok(x) && atr[i] ? (100 * x) / atr[i] : NaN)), mdi = m.map((x, i) => (ok(x) && atr[i] ? (100 * x) / atr[i] : NaN));
+    const dx = pdi.map((x, i) => (ok(x) && ok(mdi[i]) && x + mdi[i] ? (100 * Math.abs(x - mdi[i])) / (x + mdi[i]) : NaN));
+    return { adx: rma(dx, n), pdi, mdi, atr };
+  }
+  function effRatio(c, n = 20) { const N = c.length; if (N <= n) return NaN; let path = 0; for (let i = N - n; i < N; i++) path += Math.abs(c[i] - c[i - 1]); return path ? Math.abs(c[N - 1] - c[N - 1 - n]) / path : 0; }
+  function bbWidth(c, n = 20) { const o = new Array(c.length).fill(NaN); for (let i = n - 1; i < c.length; i++) { const s = c.slice(i - n + 1, i + 1), m = mean(s); o[i] = m ? (4 * std(s)) / m * 100 : NaN; } return o; }
+
+  /* ---------- regime ---------- */
+  const PLAY = {
+    up: "Trend up: buy pullbacks into support or the rising averages; breakouts tend to follow through. Don't short strength without a structure break.",
+    down: "Trend down: sell rallies into resistance; breakdowns tend to follow through. Don't catch knives without a structure break.",
+    range: "Range: fade the edges, take profit near the middle. Breakouts often fail until volume and open interest confirm.",
+    squeeze: "Squeeze: volatility is coiled tight. A big move usually follows; wait for the break and trade the retest, or size down.",
+    expand: "Expansion: volatility is high. Wider stops, smaller size; moves can overshoot levels before reversing.",
+    trans: "Transition: the old trend is fading and no new one is clear. Be selective; wait for structure to confirm.",
+  };
+  function regime(k, tf) {
+    if (!k || k.length < 80) return null;
+    const c = k.map((x) => x.c), n = c.length, A = adx(k), px = c[n - 1];
+    const ad = A.adx[n - 1], pdi = A.pdi[n - 1], mdi = A.mdi[n - 1], atr = A.atr[n - 1];
+    const er = effRatio(c, 20), bw = bbWidth(c), bwNow = bw[n - 1], bwPct = pctRank(bw.slice(-150, -1), bwNow);
+    const atrP = A.atr.map((a, i) => (ok(a) ? (a / c[i]) * 100 : NaN)), atrPct = pctRank(atrP.slice(-150, -1), atrP[n - 1]);
+    const e50 = ema(c, 50), slope = atr ? (e50[n - 1] - e50[n - 11]) / atr : 0; // EMA50 drift over 10 bars, in ATRs
+    const dir = pdi > mdi ? 1 : -1, hi30 = Math.max(...k.slice(-30).map((x) => x.h)), lo30 = Math.min(...k.slice(-30).map((x) => x.l));
+    let key, label;
+    if (bwPct <= 15 && ad < 23) { key = "squeeze"; label = "Squeeze"; }
+    else if (ad >= 25 && er >= 0.28 && Math.sign(slope) === dir) { key = dir > 0 ? "up" : "down"; label = dir > 0 ? "Trending up" : "Trending down"; }
+    else if (bwPct >= 85 && atrPct >= 75) { key = "expand"; label = "Volatile expansion"; }
+    else if (ad < 20 || er < 0.18) { key = "range"; label = "Range"; }
+    else { key = "trans"; label = ad >= 25 ? (dir > 0 ? "Trend up, losing steam" : "Trend down, losing steam") : "Transition"; }
+    const d = key === "up" ? 1 : key === "down" ? -1 : key === "expand" ? Math.sign(c[n - 1] - c[n - 11]) : key === "trans" && ad >= 25 ? dir * 0.5 : 0;
+    const strength = clamp(Math.round(ad || 0), 0, 100);
+    return { tf, key, label, dir: d, adx: ad, pdi, mdi, er, bw: bwNow, bwPct, atr, atrPct, atrPctNow: atrP[n - 1], slope, px, hi30, lo30, strength, play: PLAY[key] };
+  }
+
+  /* ---------- market structure ---------- */
+  function pivots(k, L) {
+    const hi = [], lo = [];
+    for (let i = L; i < k.length - L; i++) {
+      let H = true, Lw = true;
+      for (let j = i - L; j <= i + L; j++) { if (j === i) continue; if (j < i ? k[j].h > k[i].h : k[j].h >= k[i].h) H = false; if (j < i ? k[j].l < k[i].l : k[j].l <= k[i].l) Lw = false; }
+      if (H) hi.push({ i, p: k[i].h, t: k[i].t, kind: "H" }); if (Lw) lo.push({ i, p: k[i].l, t: k[i].t, kind: "L" });
+    }
+    return { hi, lo };
+  }
+  function structure(k, tf, L = 3) {
+    if (!k || k.length < 40) return null;
+    const n = k.length, P = pivots(k, L), px = k[n - 1].c;
+    // label swings against the previous swing of the same kind
+    P.hi.forEach((s, j) => (s.lab = j ? (s.p > P.hi[j - 1].p ? "HH" : "LH") : "H"));
+    P.lo.forEach((s, j) => (s.lab = j ? (s.p > P.lo[j - 1].p ? "HL" : "LL") : "L"));
+    // walk forward: a swing becomes usable L bars after it prints; a close through it is a break
+    let trend = 0, ih = 0, il = 0, H = null, Lo = null, prot = null; const ev = [];
+    for (let i = 0; i < n; i++) {
+      while (ih < P.hi.length && P.hi[ih].i + L <= i) { H = { ...P.hi[ih], broken: false }; ih++; }
+      while (il < P.lo.length && P.lo[il].i + L <= i) { Lo = { ...P.lo[il], broken: false }; il++; }
+      const x = k[i];
+      if (H && !H.broken && x.c > H.p) {
+        const type = trend < 0 ? "CHoCH" : "BOS"; H.broken = true;
+        let lo = Infinity, li = H.i; for (let j = H.i; j <= i; j++) if (k[j].l < lo) { lo = k[j].l; li = j; }
+        ev.push({ i, t: x.t, type, dir: 1, p: H.p, from: H.lab, tf });
+        prot = { side: "low", p: lo, i: li, t: k[li].t }; trend = 1;
+      }
+      if (Lo && !Lo.broken && x.c < Lo.p) {
+        const type = trend > 0 ? "CHoCH" : "BOS"; Lo.broken = true;
+        let hi = -Infinity, hi_i = Lo.i; for (let j = Lo.i; j <= i; j++) if (k[j].h > hi) { hi = k[j].h; hi_i = j; }
+        ev.push({ i, t: x.t, type, dir: -1, p: Lo.p, from: Lo.lab, tf });
+        prot = { side: "high", p: hi, i: hi_i, t: k[hi_i].t }; trend = -1;
+      }
+    }
+    const lastEv = last(ev) || null;
+    // the extreme of the current leg = where the next BOS would trigger
+    let legX = null;
+    if (lastEv) { const seg = k.slice(lastEv.i); legX = trend > 0 ? Math.max(...seg.map((x) => x.h)) : Math.min(...seg.map((x) => x.l)); }
+    const bosLv = trend > 0 ? (H && !H.broken && H.p > px ? H.p : legX) : trend < 0 ? (Lo && !Lo.broken && Lo.p < px ? Lo.p : legX) : null;
+    const chochLv = prot ? prot.p : null;
+    const seq = [...P.hi.slice(-3), ...P.lo.slice(-3)].sort((a, b) => a.i - b.i).slice(-5).map((s) => s.lab);
+    // strength of the current trend: how many BOS in a row since the last CHoCH
+    let run = 0; for (let j = ev.length - 1; j >= 0 && ev[j].dir === trend; j--) { run++; if (ev[j].type === "CHoCH") break; }
+    // liquidity pools: equal highs / lows nobody has traded through yet
+    const a = atrOf(k), tol = Math.max(px * 0.0008, a * 0.15), pools = [];
+    const pool = (arr, side) => {
+      const live = arr.slice(-12).filter((s) => { const after = k.slice(s.i + 1); return side > 0 ? after.every((x) => x.h <= s.p + tol * 0.3) : after.every((x) => x.l >= s.p - tol * 0.3); });
+      for (let x = 0; x < live.length; x++) for (let y = x + 1; y < live.length; y++) if (Math.abs(live[x].p - live[y].p) <= tol && live[y].i - live[x].i >= 3) {
+        const p = side > 0 ? Math.max(live[x].p, live[y].p) : Math.min(live[x].p, live[y].p);
+        if (!pools.some((q) => q.side === side && Math.abs(q.p - p) <= tol)) pools.push({ side, p, t: live[y].t, n: 2, tf });
+        else pools.find((q) => q.side === side && Math.abs(q.p - p) <= tol).n++;
+      }
+    };
+    pool(P.hi, 1); pool(P.lo, -1);
+    return { tf, trend, ev, lastEv, bosLv, chochLv, prot, seq, run, pools, swings: P, fvg: fvgs(k, tf), ob: orderBlocks(k, ev, tf), px, n, t: k[n - 1].t };
+  }
+  function atrOf(k, n = 14) { let s = 0, c = 0; for (let i = Math.max(1, k.length - n); i < k.length; i++) { s += Math.max(k[i].h - k[i].l, Math.abs(k[i].h - k[i - 1].c), Math.abs(k[i].l - k[i - 1].c)); c++; } return c ? s / c : 0; }
+  // fair value gaps (3-candle imbalances) still open
+  function fvgs(k, tf) {
+    const out = [], n = k.length, px = k[n - 1].c, minSz = px * 0.0008;
+    for (let i = 2; i < n; i++) {
+      if (k[i].l > k[i - 2].h && k[i].l - k[i - 2].h >= minSz) out.push({ dir: 1, top: k[i].l, bot: k[i - 2].h, i, t: k[i - 1].t, tf });
+      if (k[i].h < k[i - 2].l && k[i - 2].l - k[i].h >= minSz) out.push({ dir: -1, top: k[i - 2].l, bot: k[i].h, i, t: k[i - 1].t, tf });
+    }
+    const open = [];
+    for (const g of out) {
+      let top = g.top, bot = g.bot, filled = false;
+      for (let j = g.i + 1; j < n && !filled; j++) {
+        if (g.dir > 0) { if (k[j].l <= bot) filled = true; else if (k[j].l < top) top = k[j].l; }
+        else { if (k[j].h >= top) filled = true; else if (k[j].h > bot) bot = k[j].h; }
+      }
+      if (!filled && top - bot >= minSz * 0.5) open.push({ ...g, top, bot, mid: (top + bot) / 2, size: ((top - bot) / px) * 100 });
+    }
+    return open.filter((g) => Math.abs(g.mid - px) / px < 0.08).slice(-8);
+  }
+  // order block = last opposite candle before the impulse that broke structure, until price closes through it
+  function orderBlocks(k, ev, tf) {
+    const out = [], n = k.length;
+    for (const e of ev.slice(-8)) {
+      let j = e.i - 1; const lim = Math.max(0, e.i - 15);
+      while (j > lim && !(e.dir > 0 ? k[j].c < k[j].o : k[j].c > k[j].o)) j--;
+      if (j <= lim) continue;
+      const ob = { dir: e.dir, top: k[j].h, bot: k[j].l, t: k[j].t, i: j, tf, from: e.type };
+      let dead = false; for (let x = e.i + 1; x < n; x++) if (e.dir > 0 ? k[x].c < ob.bot : k[x].c > ob.top) { dead = true; break; }
+      if (!dead) out.push({ ...ob, mid: (ob.top + ob.bot) / 2 });
+    }
+    return out.slice(-3);
+  }
+
+  /* ---------- volume profile (POC / value area) ---------- */
+  function vprofile(k, bins = 60) {
+    if (!k || k.length < 10) return null;
+    const lo = Math.min(...k.map((x) => x.l)), hi = Math.max(...k.map((x) => x.h)), step = (hi - lo) / bins || 1, vol = new Array(bins).fill(0);
+    for (const x of k) { const a = Math.floor((x.l - lo) / step), b = Math.min(bins - 1, Math.floor((x.h - lo) / step)), per = x.v / (b - a + 1); for (let i = Math.max(0, a); i <= b; i++) vol[i] += per; }
+    let pi = 0; vol.forEach((v, i) => { if (v > vol[pi]) pi = i; });
+    const tot = vol.reduce((s, v) => s + v, 0); let acc = vol[pi], a = pi, b = pi;
+    while (acc < tot * 0.7 && (a > 0 || b < bins - 1)) { const va = a > 0 ? vol[a - 1] : -1, vb = b < bins - 1 ? vol[b + 1] : -1; if (va >= vb) { a--; acc += va; } else { b++; acc += vb; } }
+    return { poc: lo + (pi + 0.5) * step, val: lo + a * step, vah: lo + (b + 1) * step };
+  }
+
+  /* ---------- levels: cluster and rank ---------- */
+  // raw: [{p, kind, label, w, tf?, usd?}]; returns clusters sorted by price
+  function cluster(raw, px, tolPct = 0.18) {
+    const L = raw.filter((r) => ok(r.p) && r.p > 0 && Math.abs(r.p - px) / px < 0.12).sort((a, b) => a.p - b.p), out = [];
+    for (const r of L) {
+      const z = last(out);
+      if (z && ((r.p - z.hi) / px) * 100 <= tolPct) { z.items.push(r); z.hi = Math.max(z.hi, r.p); z.lo = Math.min(z.lo, r.p); }
+      else out.push({ items: [r], lo: r.p, hi: r.p });
+    }
+    for (const z of out) {
+      const W = z.items.reduce((s, r) => s + r.w, 0); z.p = z.items.reduce((s, r) => s + r.p * r.w, 0) / W;
+      z.kinds = [...new Set(z.items.map((r) => r.kind))]; z.w = W;
+      z.score = W * (1 + 0.3 * (z.kinds.length - 1));
+      z.usd = z.items.reduce((s, r) => s + (r.usd || 0), 0);
+      z.d = ((z.p - px) / px) * 100; z.side = z.p >= px ? 1 : -1;
+      z.labels = [...new Set(z.items.sort((a, b) => b.w - a.w).map((r) => r.label))];
+    }
+    const sc = out.map((z) => z.score).sort((a, b) => a - b), q = (f) => sc[Math.floor(f * (sc.length - 1))] || 0;
+    out.forEach((z) => (z.stars = z.score >= q(0.92) ? 5 : z.score >= q(0.78) ? 4 : z.score >= q(0.55) ? 3 : z.score >= q(0.3) ? 2 : 1));
+    return out;
+  }
+
+  /* ---------- touch odds (random walk with a small drift) ---------- */
+  const Phi = (x) => { const t = 1 / (1 + 0.2316419 * Math.abs(x)), d = 0.3989423 * Math.exp((-x * x) / 2), p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x > 0 ? 1 - p : p; };
+  // dist: signed % to the level; sig: hourly stdev of % returns; drift: % per hour (signed); hours
+  function touchOdds(dist, sig, hours, drift = 0) {
+    if (!ok(dist) || !ok(sig) || sig <= 0) return NaN;
+    const m = Math.abs(dist), mu = drift * Math.sign(dist) * hours, s = sig * Math.sqrt(hours);
+    const p = Phi((mu - m) / s) + Math.exp((2 * mu * m) / (s * s)) * Phi((-m - mu) / s);
+    return clamp(p * 100, 1, 97);
+  }
+  function hourlySigma(k1h, n = 72) { const r = []; for (let i = Math.max(1, k1h.length - n); i < k1h.length; i++) r.push(((k1h[i].c - k1h[i - 1].c) / k1h[i - 1].c) * 100); return std(r); }
+
+  const api = { ema, adx, effRatio, bbWidth, pctRank, regime, pivots, structure, fvgs, orderBlocks, vprofile, cluster, touchOdds, hourlySigma, atrOf, PLAY };
+  if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SG = api;
+})(typeof window !== "undefined" ? window : globalThis);
+
+</script>
+<script>
+"use strict";
+/* ===================== Signals tab =====================
+   Now · Regime · Structure · Levels. Built on SG (sigta.js) and the data the dashboard already loads:
+   Binance spot candles 15m–1D (taK), analysis() (technicals, zones, liquidation model, setups), OKX OI/taker/LS,
+   funding across venues, Deribit GEX, your levels. Also keeps a change log (regime flips, structure breaks,
+   confluence flips, key levels crossed) on this device and can pop a toast when something changes. */
+const SIG_TFS = ["15m", "30m", "1h", "4h", "1d"], SIG_TW = { "15m": 0.6, "30m": 0.8, "1h": 1, "4h": 1.6, "1d": 2.2 };
+const SIG_CW = { "15m": 0.1, "30m": 0.2, "1h": 0.2, "4h": 0.3, "1d": 0.2 }; // confluence weight per timeframe
+ST.sigTf = LS.get("sigTf", "1h"); ST.sigToast = LS.get("sigToast", true); ST.sigNotif = LS.get("sigNotif", false);
+let SIGC = { key: "", v: null }, SIGLOG = LS.get("sigLog", []), SIGSTATE = LS.get("sigState", null);
+
+/* ---------- compute ---------- */
+function sigFib(k) { // biggest recent 4h leg, same rules as the chart's auto fib
+  if (!k || k.length < 40 || typeof fibLegs !== "function") return null;
+  const legs = fibLegs(k.slice(-180)); if (!legs.length) return null;
+  const mx = Math.max(...legs.map((l) => l.size)), L = [...legs].reverse().find((l) => l.size >= mx * 0.6);
+  return { up: L.b.p > L.a.p, hi: Math.max(L.a.p, L.b.p), lo: Math.min(L.a.p, L.b.p) };
+}
+function sigWeekMonth(k) { // previous week / month high-low from daily candles (UTC)
+  if (!k || k.length < 40) return [];
+  const out = [], now = new Date(), dow = (now.getUTCDay() + 6) % 7;
+  const wk0 = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dow) / 1000, pw = k.filter((x) => x.t >= wk0 - 7 * 86400 && x.t < wk0);
+  if (pw.length) out.push({ p: Math.max(...pw.map((x) => x.h)), label: "Prev week high", kind: "hl", w: 1.6 }, { p: Math.min(...pw.map((x) => x.l)), label: "Prev week low", kind: "hl", w: 1.6 });
+  const m0 = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1) / 1000, pm0 = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1) / 1000, pm = k.filter((x) => x.t >= pm0 && x.t < m0);
+  if (pm.length) out.push({ p: Math.max(...pm.map((x) => x.h)), label: "Prev month high", kind: "hl", w: 1.8 }, { p: Math.min(...pm.map((x) => x.l)), label: "Prev month low", kind: "hl", w: 1.8 });
+  return out;
+}
+function sigCompute(a) {
+  a = a || analysis(); if (!a || !live("taK")) return null;
+  const px = curPx() || a.px, key = [a.key, Math.round(px / 20), MYLV.at, typeof CWG !== "undefined" ? CWG.at : 0, SRC.dbOpt ? SRC.dbOpt.st.okAt : 0].join("|");
+  if (SIGC.key === key) return SIGC.v;
+  const K = D.taK, reg = {}, st = {};
+  SIG_TFS.forEach((tf) => { const k = K[tf]; reg[tf] = k ? SG.regime(k, tf) : null; st[tf] = k ? SG.structure(k, tf, tf === "1d" ? 2 : 3) : null; });
+
+  /* confluence grid */
+  const avgV = (t, keys) => { if (!t) return null; const v = t.votes.filter((x) => keys.includes(x.key)); return v.length ? v.reduce((s, x) => s + x.v, 0) / v.length : null; };
+  const rowsTf = [
+    ["Trend", "EMA stack and the 200 EMA", (tf) => avgV(a.tfm[tf], ["ema", "e200"])],
+    ["Momentum", "RSI, MACD, Stoch RSI", (tf) => avgV(a.tfm[tf], ["rsi", "macd", "stoch"])],
+    ["Structure", "Last break of structure (BOS / CHoCH)", (tf) => (st[tf] ? st[tf].trend : null)],
+    ["Regime", "Trending up / down (ADX, efficiency)", (tf) => (reg[tf] ? reg[tf].dir : null)],
+    ["Location", "Price vs VWAP (intraday) or BB middle", (tf) => avgV(a.tfm[tf], ["vwap", "bb"])],
+  ];
+  const grid = rowsTf.map(([name, why, f]) => ({ name, why, cells: SIG_TFS.map((tf) => { const v = f(tf); return ok(v) ? Math.max(-1, Math.min(1, v)) : null; }) }));
+  const tfAvg = SIG_TFS.map((tf, j) => { const v = grid.map((r) => r.cells[j]).filter(ok); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; });
+  let tfs = 0, tfw = 0; SIG_TFS.forEach((tf, j) => { if (ok(tfAvg[j])) { tfs += tfAvg[j] * SIG_CW[tf]; tfw += SIG_CW[tf]; } });
+  const tfScore = tfw ? tfs / tfw : 0;
+  // "now" signals: flow, positioning, premium, liquidity pull
+  const A = aggr(), now = [];
+  now.push({ name: "Flow", why: "OI vs price, spot CVD, perp takers (1h)", v: Math.max(-1, Math.min(1, a.flow / 50)), w: 0.4 });
+  let pos = 0, posTxt = [];
+  if (ok(A.f8)) { if (A.f8 > 0.0003) { pos -= 0.7; posTxt.push("funding hot"); } else if (A.f8 < -0.0001) { pos += 0.7; posTxt.push("shorts paying"); } }
+  const ls = live("okxLS") ? lastOf(D.okxLS.s).v : null; if (ok(ls)) { if (ls > 2.2) { pos -= 0.4; posTxt.push("crowded long accounts"); } else if (ls < 0.95) { pos += 0.4; posTxt.push("more short accounts"); } }
+  now.push({ name: "Positioning", why: posTxt.length ? posTxt.join(", ") + " (contrarian)" : "Funding and long/short ratio (contrarian)", v: Math.max(-1, Math.min(1, pos)), w: 0.25 });
+  const prem = live("cb") && live("spot") ? ((D.cb.px - D.spot.px) / D.spot.px) * 100 : null;
+  now.push({ name: "US spot bid", why: ok(prem) ? `Coinbase premium ${pct(prem, 3)}` : "Coinbase premium", v: ok(prem) ? Math.max(-1, Math.min(1, prem / 0.05)) : null, w: 0.15 });
+  let pull = null, pullTxt = "Biggest liquidation clusters within 3%";
+  if (a.L) { const s3 = a.L.shorts.filter((c) => Math.abs(c.dist) <= 3).reduce((s, c) => s + c.usd, 0), l3 = a.L.longs.filter((c) => Math.abs(c.dist) <= 3).reduce((s, c) => s + c.usd, 0);
+    if (s3 + l3 > 0) { pull = (s3 - l3) / (s3 + l3); pullTxt = `Shorts ${usd(s3)} above vs longs ${usd(l3)} below`; } }
+  now.push({ name: "Liquidity pull", why: pullTxt, v: ok(pull) ? pull : null, w: 0.2 });
+  let ns = 0, nw = 0; now.forEach((x) => { if (ok(x.v)) { ns += x.v * x.w; nw += x.w; } });
+  const nowScore = nw ? ns / nw : 0, score = Math.round(100 * (0.65 * tfScore + 0.35 * nowScore));
+  const cells = [...grid.flatMap((r) => r.cells), ...now.map((x) => x.v)].filter((v) => ok(v) && Math.abs(v) >= 0.25);
+  const agree = cells.filter((v) => Math.sign(v) === Math.sign(score || 1)).length, against = cells.filter((v) => Math.sign(v) === -Math.sign(score || 1)).length;
+  const avgOf = (tfl) => { const v = tfl.map((tf) => tfAvg[SIG_TFS.indexOf(tf)]).filter(ok); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0; };
+  const htf = avgOf(["4h", "1d"]), ltf = avgOf(["15m", "30m", "1h"]);
+  const strength = Math.abs(score) >= 45 && agree >= against * 2.5 ? "Strong" : Math.abs(score) >= 22 ? "Moderate" : "Weak";
+  const conf = { grid, now, tfAvg, score, agree, against, n: cells.length, htf, ltf, strength,
+    label: Math.abs(score) < 10 ? "No clear edge" : `${strength} ${score > 0 ? "long" : "short"} confluence` };
+  conf.insight = htf > 0.2 && ltf < -0.2 ? "Pullback inside a higher-timeframe uptrend. Longs usually wait for 15m–30m structure to turn back up (a CHoCH up) at support."
+    : htf < -0.2 && ltf > 0.2 ? "Bounce inside a higher-timeframe downtrend. Rallies into resistance are where shorts usually reload, unless 4h structure breaks up."
+    : htf > 0.2 && ltf > 0.2 ? "Timeframes aligned up. Pullbacks to support are the cleaner entries; chasing extended candles is the main risk."
+    : htf < -0.2 && ltf < -0.2 ? "Timeframes aligned down. Bounces into resistance are the cleaner shorts; capitulation wicks are the main risk."
+    : "Timeframes disagree or are flat. Expect chop; trade the edges of the range or wait for a break.";
+
+  /* derivatives + gamma regime */
+  const oi4 = live("okxOI") ? seriesChg(D.okxOI.s, 4 * 3600) : null, oi24 = live("okxOI") ? seriesChg(D.okxOI.s, 23 * 3600) : null, w4 = live("k5") ? win(D.k5.k, 48) : null;
+  let dreg = { key: "na", label: "Waiting for OI data", txt: "", dir: 0 };
+  if (ok(oi4) && w4) {
+    const pu = w4.pChg >= 0, ou = oi4 >= 0, flat = Math.abs(oi4) < 0.5, f = A.f8;
+    if (flat) dreg = { key: "spot", label: Math.abs(w4.cvd) > 300 ? "Spot-led" : "Quiet positioning", dir: Math.sign(w4.cvd) * 0.5, txt: `OI ${pct(oi4)} in 4h: leverage isn't driving this. ${Math.abs(w4.cvd) > 300 ? `Spot CVD ${sgn(w4.cvd, 0)} BTC is.` : "Wait for OI to commit."}` };
+    else if (pu && ou) dreg = ok(f) && f > 0.00025 ? { key: "lcrowd", label: "Longs piling in · crowded", dir: -0.3, txt: `Price ${pct(w4.pChg)} and OI ${pct(oi4)} in 4h with hot funding. Trend can continue, but a flush below support liquidates late longs fast.` }
+      : { key: "lbuild", label: "Longs opening · healthy", dir: 1, txt: `Price ${pct(w4.pChg)} with OI ${pct(oi4)} in 4h and funding calm: new longs are driving the move.` };
+    else if (!pu && ou) dreg = ok(f) && f < 0 ? { key: "sfuel", label: "Shorts piling in · squeeze fuel", dir: 0.3, txt: `Price ${pct(w4.pChg)} with OI ${pct(oi4)} and negative funding: shorts are crowded. A reclaim of resistance can squeeze them.` }
+      : { key: "sbuild", label: "Shorts opening", dir: -1, txt: `Price ${pct(w4.pChg)} with OI ${pct(oi4)} in 4h: new shorts are pressing.` };
+    else if (pu && !ou) dreg = { key: "scover", label: "Short covering", dir: 0.4, txt: `Price ${pct(w4.pChg)} while OI ${pct(oi4)}: shorts closing. Often weaker follow-through unless spot buys.` };
+    else dreg = { key: "delev", label: "Deleveraging · longs out", dir: -0.4, txt: `Price ${pct(w4.pChg)} with OI ${pct(oi4)}: longs closing or getting liquidated. Selling often exhausts once OI stops falling.` };
+    dreg.oi4 = oi4; dreg.oi24 = oi24; dreg.p4 = w4.pChg; dreg.cvd4 = w4.cvd;
+  }
+  const g = typeof gexCalc === "function" ? gexCalc("all") : null;
+  const gam = g ? { pos: ok(g.flip) ? px >= g.flip : g.net >= 0, flip: g.flip, em1: g.em1, em7: g.em7 } : null;
+
+  /* level map */
+  const raw = [], TW = SIG_TW;
+  (a.Z || []).forEach((z) => raw.push({ p: z.c, kind: "zone", label: z.names.slice(0, 2).join(" · "), w: z.w }));
+  ["30m", "1h", "4h", "1d"].forEach((tf) => { const s = st[tf]; if (!s) return;
+    if (ok(s.bosLv)) raw.push({ p: s.bosLv, kind: "struct", label: `${tf} ${s.trend > 0 ? "high · BOS trigger" : "low · BOS trigger"}`, w: 1.1 * TW[tf], tf });
+    if (ok(s.chochLv)) raw.push({ p: s.chochLv, kind: "struct", label: `${tf} ${s.trend > 0 ? "protected low · CHoCH" : "protected high · CHoCH"}`, w: 1.3 * TW[tf], tf });
+    s.pools.forEach((q) => raw.push({ p: q.p, kind: "pool", label: `${tf} equal ${q.side > 0 ? "highs" : "lows"} · stops`, w: 1.1 * TW[tf], tf, pool: q.side }));
+    if (tf !== "30m") s.fvg.forEach((f) => raw.push({ p: f.mid, kind: "fvg", label: `${tf} ${f.dir > 0 ? "bullish" : "bearish"} FVG`, w: 0.75 * TW[tf], tf, lo: f.bot, hi: f.top }));
+    if (tf === "1h" || tf === "4h") s.ob.forEach((o) => raw.push({ p: o.mid, kind: "ob", label: `${tf} ${o.dir > 0 ? "bullish" : "bearish"} order block`, w: 0.85 * TW[tf], tf, lo: o.bot, hi: o.top }));
+  });
+  if (a.L) [...a.L.shorts.slice(0, 4), ...a.L.longs.slice(0, 4)].forEach((c) => raw.push({ p: c.p, kind: "liq", label: `${c.dist < 0 ? "Long" : "Short"} liquidations ${usd(c.usd)}`, w: 0.8 + Math.max(0, Math.log10(c.usd / 1e6)) * 0.6, usd: c.usd }));
+  if (g && typeof gexLevels === "function") gexLevels(g).forEach((l) => raw.push({ p: l.p, kind: "gex", label: l.name, w: l.id === "FLIP" ? 2 : /Magnet/.test(l.name) ? 1.6 : 1.3 }));
+  const fb = sigFib(K["4h"]);
+  if (fb) { const R = fb.hi - fb.lo; [[0.382, 1], [0.5, 1], [0.618, 1.4], [0.786, 1.1]].forEach(([r, w]) => raw.push({ p: fb.up ? fb.hi - r * R : fb.lo + r * R, kind: "fib", label: `4h fib ${r}`, w }));
+    [[1.272, 1], [1.618, 1.2]].forEach(([r, w]) => raw.push({ p: fb.up ? fb.lo + r * R : fb.hi - r * R, kind: "fib", label: `4h fib ext ${r}`, w })); }
+  const vp7 = SG.vprofile(K["1h"].slice(-168)), vp30 = SG.vprofile(K["4h"].slice(-180));
+  if (vp7) raw.push({ p: vp7.poc, kind: "vp", label: "7d POC", w: 1.4 }, { p: vp7.vah, kind: "vp", label: "7d VAH", w: 1 }, { p: vp7.val, kind: "vp", label: "7d VAL", w: 1 });
+  if (vp30) raw.push({ p: vp30.poc, kind: "vp", label: "30d POC", w: 1.7 });
+  sigWeekMonth(K["1d"]).forEach((l) => raw.push(l));
+  for (let r = Math.ceil((px * 0.95) / 1000) * 1000; r <= px * 1.05; r += 1000) raw.push({ p: r, kind: "round", label: r % 10000 === 0 ? `${r / 1000}k big round` : `${r / 1000}k round`, w: r % 10000 === 0 ? 1.4 : r % 5000 === 0 ? 0.8 : 0.35 });
+  MYLV.list.forEach((l) => raw.push({ p: l.p, kind: "my", label: l.label && l.label !== "Mine" ? `My ${l.label}` : "My level", w: 2 }));
+  if (typeof CWG !== "undefined") CWG.list.forEach((l) => raw.push({ p: l.p, kind: "cw", label: `CoinWise ${l.label || l.name || "GEX"}`, w: 1.5 }));
+  const lv = SG.cluster(raw, px);
+
+  /* odds and big-move scenarios */
+  const sig = SG.hourlySigma(K["1h"]), drift = (score / 100) * 0.03 * (ok(sig) ? sig : 0);
+  lv.forEach((z) => { z.o24 = SG.touchOdds(z.d, sig, 24, drift); z.o72 = SG.touchOdds(z.d, sig, 72, drift); z.pool = z.items.some((r) => r.kind === "pool"); z.fvg = z.items.some((r) => r.kind === "fvg"); z.liqUsd = z.items.reduce((s, r) => s + (r.kind === "liq" ? r.usd || 0 : 0), 0); });
+  const strong = (z) => z.stars >= 3 && Math.abs(z.d) >= 0.12;
+  const up = lv.filter((z) => z.side > 0 && strong(z)).sort((x, y) => x.p - y.p), dn = lv.filter((z) => z.side < 0 && strong(z)).sort((x, y) => y.p - x.p);
+  const liqBetween = (p1, p2, side) => (a.L ? (side > 0 ? a.L.shorts : a.L.longs).filter((c) => c.p > Math.min(p1, p2) && c.p < Math.max(p1, p2)).reduce((s, c) => s + c.usd, 0) : 0);
+  const scen = (arr, side) => {
+    const trig = arr.find((z) => Math.abs(z.d) <= 2.5) || arr[0]; if (!trig) return null;
+    const tgt = arr.find((z) => side * (z.p - trig.p) / px * 100 >= 0.6 && z.stars >= 3) || null;
+    const fuel = tgt ? liqBetween(trig.p, tgt.p, side) : 0, notes = [];
+    if (fuel > 0) notes.push(`${usd(fuel)} of estimated ${side > 0 ? "short" : "long"} liquidations sit between them`);
+    if (tgt && tgt.pool) notes.push(`equal ${side > 0 ? "highs" : "lows"} at the target: stops resting there`);
+    if (gam && ok(gam.flip)) { if (side < 0 && trig.p <= gam.flip) notes.push("below the GEX flip dealers chase moves, so drops can run"); if (side > 0 && px < gam.flip && trig.p >= gam.flip) notes.push("reclaiming the GEX flip calms volatility, so a grind is likelier than a spike"); }
+    if (side > 0 && dreg.key === "sfuel") notes.push("shorts are crowded (negative funding, rising OI): squeeze risk");
+    if (side < 0 && dreg.key === "lcrowd") notes.push("longs are crowded (hot funding, rising OI): flush risk");
+    const st4 = st["4h"]; if (st4 && ok(st4.chochLv) && Math.abs(st4.chochLv - trig.p) / px < 0.004) notes.push(`it is also the 4h ${st4.trend > 0 ? "protected low" : "protected high"}: a close through it flips 4h structure`);
+    return { side, trig, tgt, fuel, notes, odds: trig.o24, tOdds: tgt ? tgt.o72 : null };
+  };
+  const scUp = scen(up, 1), scDn = scen(dn, -1);
+  const mags = lv.filter((z) => z.stars >= 3 && Math.abs(z.d) <= 6).map((z) => ({ z, pull: z.stars + (z.liqUsd > 0 ? Math.log10(z.liqUsd / 1e6 + 1) * 1.5 : 0) + (z.pool ? 1 : 0) + (z.fvg ? 0.6 : 0) + (z.kinds.includes("gex") ? 0.6 : 0) }))
+    .map((m) => ({ ...m, rank: m.pull * (m.z.o24 / 100) })).sort((x, y) => y.rank - x.rank).slice(0, 6);
+  const rng = gam && ok(gam.em1) ? { half: gam.em1, src: "options" } : ok(sig) ? { half: (sig / 100) * Math.sqrt(24) * px, src: "recent volatility" } : null;
+  const squeeze = ["1h", "4h"].filter((tf) => reg[tf] && reg[tf].key === "squeeze");
+  const coil = squeeze.length ? { tfs: squeeze, lev: ok(oi4) && oi4 > 1, txt: `${squeeze.join(" and ")} volatility is coiled (Bollinger width in the bottom 15% of the last 150 bars)${ok(oi4) && oi4 > 1 ? ` while open interest built ${pct(oi4)} in 4h` : ""}. A large move usually follows; the side that breaks first tends to run.` } : null;
+
+  const v = { px, reg, st, conf, dreg, gam, lv, up, dn, scUp, scDn, mags, sig, rng, coil, t: Date.now() };
+  SIGC = { key, v }; sigTrack(v); return v;
+}
+
+/* ---------- change log ---------- */
+function sigTrack(v) {
+  const cur = { px: v.px, conf: v.conf.score >= 22 ? 1 : v.conf.score <= -22 ? -1 : 0, gam: v.gam ? v.gam.pos : null, dreg: v.dreg.key, rg: {}, ev: {}, tr: {}, lv: v.lv.filter((z) => z.stars >= 4).map((z) => [Math.round(z.p), z.labels[0], z.stars]) };
+  SIG_TFS.forEach((tf) => { if (v.reg[tf]) cur.rg[tf] = v.reg[tf].key; const s = v.st[tf]; if (s) { cur.tr[tf] = s.trend; if (s.lastEv) cur.ev[tf] = s.lastEv.t + ":" + s.lastEv.type + ":" + s.lastEv.dir; } });
+  const P = SIGSTATE, add = [], now = Date.now();
+  if (P) {
+    ["30m", "1h", "4h", "1d"].forEach((tf) => {
+      const s = v.st[tf]; if (s && s.lastEv && P.ev[tf] && P.ev[tf] !== cur.ev[tf] && s.lastEv.t * 1000 > now - 3 * 864e5) {
+        const e = s.lastEv; add.push({ t: now, dir: e.dir, tf, kind: "struct", txt: `${tf} ${e.type === "CHoCH" ? "change of character" : "break of structure"} ${e.dir > 0 ? "up" : "down"}: closed ${e.dir > 0 ? "above" : "below"} ${n0(e.p)}${e.type === "CHoCH" ? `. ${tf} trend flips ${e.dir > 0 ? "up" : "down"}` : ""}` });
+      }
+      if (P.rg[tf] && cur.rg[tf] && P.rg[tf] !== cur.rg[tf] && tf !== "30m") add.push({ t: now, dir: v.reg[tf].dir, tf, kind: "regime", txt: `${tf} regime: ${sigRegName(P.rg[tf])} → ${v.reg[tf].label}` });
+    });
+    if (P.conf !== cur.conf) add.push({ t: now, dir: cur.conf, kind: "conf", txt: `Confluence ${cur.conf ? `turned ${cur.conf > 0 ? "long" : "short"}` : "went neutral"} (${v.conf.score > 0 ? "+" : ""}${v.conf.score})` });
+    if (P.gam != null && cur.gam != null && P.gam !== cur.gam) add.push({ t: now, dir: cur.gam ? 0 : 0, kind: "gamma", txt: `Gamma regime flipped ${cur.gam ? "positive (dealers dampen moves)" : "negative (moves can extend)"}` });
+    if (P.dreg && P.dreg !== cur.dreg && cur.dreg !== "na" && P.dreg !== "na") add.push({ t: now, dir: v.dreg.dir, kind: "deriv", txt: `Positioning: ${v.dreg.label}` });
+    if (ok(P.px)) (P.lv || []).forEach(([p, lab, s]) => { if ((P.px < p && v.px >= p) || (P.px > p && v.px <= p)) add.push({ t: now, dir: v.px >= p ? 1 : -1, kind: "level", txt: `Price crossed ${v.px >= p ? "above" : "below"} ${n0(p)} (${lab}, ${"★".repeat(s)})` }); });
+  }
+  SIGSTATE = cur; LS.set("sigState", cur);
+  if (add.length) {
+    SIGLOG = [...add, ...SIGLOG].slice(0, 120); LS.set("sigLog", SIGLOG);
+    if (P) add.slice(0, 3).forEach(sigToast);
+  }
+}
+const sigRegName = (k) => ({ up: "Trending up", down: "Trending down", range: "Range", squeeze: "Squeeze", expand: "Volatile expansion", trans: "Transition" }[k] || k);
+function sigToast(e) {
+  if (ST.sigToast) {
+    let box = $("#toasts"); if (!box) { box = document.createElement("div"); box.id = "toasts"; document.body.appendChild(box); }
+    const d = document.createElement("div"); d.className = "toast " + vcls(e.dir); d.innerHTML = `<b>${e.tf ? e.tf + " · " : ""}Signal</b><span>${esc(e.txt)}</span>`;
+    d.addEventListener("click", () => { setTab("now"); d.remove(); }); box.appendChild(d); setTimeout(() => d.classList.add("out"), 6500); setTimeout(() => d.remove(), 7200);
+  }
+  if (ST.sigNotif && document.hidden && "Notification" in window && Notification.permission === "granted") {
+    try { navigator.serviceWorker && navigator.serviceWorker.ready ? navigator.serviceWorker.ready.then((r) => r.showNotification("BTC signal", { body: e.txt, tag: "sig" + e.kind })) : new Notification("BTC signal", { body: e.txt }); } catch (x) {}
+  }
+}
+function sigUnseen() { const seen = LS.get("sigSeen", 0); return SIGLOG.filter((e) => e.t > seen).length; }
+function sigBadge() {
+  const m = document.querySelector('.mtab[data-main="signals"]'); if (!m) return; const n = sigUnseen(); let d = m.querySelector(".nbadge");
+  if (n && !d) { d = document.createElement("span"); d.className = "nbadge mb"; m.appendChild(d); } if (d) { if (n) d.textContent = n > 9 ? "9+" : n; else d.remove(); }
+}
+
+/* ---------- small pieces ---------- */
+const stars = (n) => `<span class="stars" title="${n} of 5">${"★".repeat(n)}<i>${"★".repeat(5 - n)}</i></span>`;
+const oddsTag = (p) => (ok(p) ? `<span class="odds ${p >= 60 ? "hi" : p >= 30 ? "md" : "lo"}">${Math.round(p)}%</span>` : "–");
+const agoS = (t) => { const h = (Date.now() / 1000 - t) / 3600; return h >= 48 ? `${Math.round(h / 24)}d ago` : ago(t * 1000); };
+const KIND = { zone: "Zone", struct: "Structure", pool: "Stops", fvg: "FVG", ob: "Order block", liq: "Liquidations", gex: "GEX", fib: "Fib", vp: "Volume", hl: "Week/month", round: "Round", my: "Mine", cw: "CoinWise" };
+function gaugeSVG(score, label) {
+  const W = 220, H = 128, cx = 110, cy = 112, r = 92, C = chartColors(), ang = (v) => Math.PI * (1 - (v + 100) / 200);
+  const P = (v, rr) => [cx + rr * Math.cos(ang(v)), cy - rr * Math.sin(ang(v))];
+  const arc = (v0, v1, col, w) => { const [x0, y0] = P(v0, r), [x1, y1] = P(v1, r); return `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`; };
+  const sv = Math.max(-100, Math.min(100, score)), [mx, my] = P(sv, r), col = score > 9 ? C.up : score < -9 ? C.dn : cssv("--fg");
+  return `<svg class="gauge" viewBox="0 0 ${W} ${H}" aria-label="Confluence ${score}">${arc(-100, -35, C.dn, 12)}${arc(-33, 33, C.fg3, 12).replace('stroke-width="12"', 'stroke-width="12" opacity=".35"')}${arc(35, 100, C.up, 12)}
+    <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="11" fill="${cssv("--panel")}" stroke="${cssv("--fg")}" stroke-width="4"/>
+    <text x="${cx}" y="${cy - 10}" text-anchor="middle" font-size="38" font-weight="700" fill="${col}">${score > 0 ? "+" : ""}${score}</text>
+    <text x="14" y="${H - 2}" font-size="11" fill="${C.fg3}">Short</text><text x="${W - 14}" y="${H - 2}" font-size="11" fill="${C.fg3}" text-anchor="end">Long</text></svg>`;
+}
+const cellCls = (v) => (!ok(v) ? "c0 na" : v >= 0.6 ? "c2" : v >= 0.2 ? "c1" : v <= -0.6 ? "c-2" : v <= -0.2 ? "c-1" : "c0");
+const cellTxt = (v) => (!ok(v) ? "·" : v >= 0.2 ? "▲" : v <= -0.2 ? "▼" : "–");
+function structLine(s) {
+  if (!s) return `<span class="mut">loading</span>`;
+  const tr = s.trend > 0 ? `<b class="up">Bullish</b>` : s.trend < 0 ? `<b class="dn">Bearish</b>` : `<b class="mut">No trend</b>`, e = s.lastEv;
+  return `${tr}${e ? ` <span class="mut">· ${e.type} ${e.dir > 0 ? "↑" : "↓"} ${agoS(e.t)}</span>` : ""}`;
+}
+function sigEvTxt(e) { return `<b>${e.type === "CHoCH" ? "CHoCH" : "BOS"}</b> ${e.dir > 0 ? "up" : "down"} · closed ${e.dir > 0 ? "above" : "below"} ${n0(e.p)}${e.from && e.from.length === 2 ? ` (${e.from})` : ""}`; }
+
+/* ---------- renderers ---------- */
+function drawSigNow(a) {
+  const el = $("#sigHero"); if (!el) return; const v = sigCompute(a);
+  if (!v) { el.innerHTML = `<div class="unavail">Loading candles for signals…</div>`; return; }
+  const c = v.conf, r4 = v.reg["4h"], r1 = v.reg["1h"], s4 = v.st["4h"], s30 = v.st["30m"], s1 = v.st["1h"];
+  const tile = (cap, main, sub, extra = "") => `<div class="htile${extra}"><span>${cap}</span><b>${main}</b><small>${sub}</small></div>`;
+  let range = "";
+  if (v.rng) { const lo = v.px - v.rng.half, hi = v.px + v.rng.half, inside = v.lv.filter((z) => z.p > lo && z.p < hi && z.stars >= 4).slice(0, 6);
+    range = `<div class="erng"><div class="erc"><span>Expected 24h range · ${v.rng.src}</span><b>${n0(lo)} – ${n0(hi)}</b><small>±$${n0(v.rng.half)} (${pct((v.rng.half / v.px) * 100, 1).replace("+", "±")})</small></div>
+      <div class="erbar"><i class="now" style="left:50%"></i>${inside.map((z) => `<i class="lv ${z.side > 0 ? "r" : "s"}" style="left:${(((z.p - lo) / (hi - lo)) * 100).toFixed(1)}%" title="${n0(z.p)} ${esc(z.labels[0])}"></i>`).join("")}</div>
+      <div class="erl"><span>${n0(lo)}</span><span>now ${n0(v.px)}</span><span>${n0(hi)}</span></div></div>`; }
+  el.innerHTML = `<div class="hero">
+    <div class="hg">${gaugeSVG(c.score)}<div class="hgl"><b class="${vcls(c.score)}">${esc(c.label)}</b><span>${c.agree} of ${c.n} signals agree · ${c.against} against</span></div></div>
+    <div class="htiles">
+      ${tile("Regime · 4h", r4 ? esc(r4.label) : "–", r1 ? `1h ${esc(r1.label.toLowerCase())}` : "", r4 ? " rg-" + r4.key : "")}
+      ${tile("Structure · 4h", structLine(s4), `1h ${s1 ? (s1.trend > 0 ? "bull" : s1.trend < 0 ? "bear" : "flat") : "–"} · 30m ${s30 ? (s30.trend > 0 ? "bull" : s30.trend < 0 ? "bear" : "flat") : "–"}`)}
+      ${tile("Positioning", esc(v.dreg.label), v.gam ? `${v.gam.pos ? "Positive" : "Negative"} gamma${ok(v.gam.flip) ? ` · flip ${kfmt(v.gam.flip)}` : ""}` : "gamma loading")}
+    </div>
+    <p class="hins">${esc(c.insight)}</p>${v.coil ? `<p class="hcoil">⚡ ${esc(v.coil.txt)}</p>` : ""}${range}</div>`;
+  drawMoves(v, "#sigMoves", false);
+  drawSigLog(5, "#sigLogNow");
+  LS.set("sigSeen", Date.now()); sigBadge();
+}
+function moveCard(s, full) {
+  if (!s) return "";
+  const side = s.side > 0, t = s.trig, g = s.tgt;
+  return `<div class="mvc ${side ? "up" : "dn"}"><div class="mvh"><b>${side ? "▲ Upside move" : "▼ Downside move"}</b>${oddsTag(s.odds)}<small>odds of tagging the trigger in 24h</small></div>
+    <div class="mvp"><div><span>Trigger</span><b>${n0(t.p)}</b><small>${distTxt(t.p, SIGC.v.px)} · ${stars(t.stars)}</small></div><div class="mva">→</div><div><span>Target</span><b>${g ? n0(g.p) : "next leg"}</b><small>${g ? `${distTxt(g.p, SIGC.v.px)} · ${stars(g.stars)}` : "no strong level within 12%"}</small></div></div>
+    <div class="mvw">${esc(t.labels.slice(0, 3).join(" · "))}</div>
+    ${s.notes.length ? `<ul class="mvn">${s.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>` : ""}
+    ${full && g ? `<div class="mut" style="font-size:12px">Odds of reaching the target within 3 days: ${oddsTag(s.tOdds)}</div>` : ""}</div>`;
+}
+function drawMoves(v, sel, full) {
+  const el = $(sel); if (!el) return;
+  el.innerHTML = `<div class="mvs">${moveCard(v.scUp, full) || `<div class="unavail">No strong resistance found above</div>`}${moveCard(v.scDn, full) || `<div class="unavail">No strong support found below</div>`}</div>
+    <div class="src">Trigger = the nearest strong level (3★+) within 2.5%. Target = the next strong level beyond it. Odds are from the last 3 days of hourly volatility as a random walk, nudged a little toward the confluence lean. Estimates, not predictions.</div>`;
+}
+function drawSigLog(n, sel) {
+  const el = $(sel); if (!el) return; const L = SIGLOG.slice(0, n || 60);
+  el.innerHTML = L.length ? `<div class="slog">${L.map((e) => `<div class="sle"><span class="sld ${vcls(e.dir)}"></span><span class="slt">${new Date(e.t).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}</span><span>${esc(e.txt)}</span></div>`).join("")}</div>`
+    : `<div class="unavail">Nothing has changed since this page started watching. Structure breaks, regime flips, confluence flips and key levels crossed will show up here (and as a pop-up while the page is open).</div>`;
+}
+function drawRegime(a) {
+  const v = sigCompute(a), el = $("#rgGrid"); if (!el) return;
+  if (!v) { el.innerHTML = `<div class="unavail">Loading…</div>`; return; }
+  const c = v.conf;
+  $("#cfHead").innerHTML = `<div class="cfh">${gaugeSVG(c.score)}<div><b class="${vcls(c.score)}" style="font-size:18px">${esc(c.label)}</b><div class="sub">${c.agree} agree · ${c.against} against · higher timeframes ${c.htf > 0.2 ? "<b class=up>up</b>" : c.htf < -0.2 ? "<b class=dn>down</b>" : "flat"} · lower timeframes ${c.ltf > 0.2 ? "<b class=up>up</b>" : c.ltf < -0.2 ? "<b class=dn>down</b>" : "flat"}</div><p class="hins" style="margin:8px 0 0">${esc(c.insight)}</p></div></div>`;
+  $("#cfGrid").innerHTML = `<table class="cfg"><thead><tr><th></th>${SIG_TFS.map((tf) => `<th>${tf}</th>`).join("")}</tr></thead><tbody>
+    ${c.grid.map((r) => `<tr><td class="l"><b>${r.name}</b><small>${r.why}</small></td>${r.cells.map((x) => `<td class="${cellCls(x)}">${cellTxt(x)}</td>`).join("")}</tr>`).join("")}
+    <tr class="cfavg"><td class="l"><b>Timeframe total</b></td>${c.tfAvg.map((x) => `<td class="${cellCls(x)}">${ok(x) ? (x > 0 ? "+" : "") + Math.round(x * 100) : "·"}</td>`).join("")}</tr></tbody></table>
+    <div class="cfnow">${c.now.map((x) => `<div class="cfn ${cellCls(x.v)}"><b>${x.name}</b><span>${ok(x.v) ? (x.v >= 0.2 ? "▲ Long" : x.v <= -0.2 ? "▼ Short" : "– Neutral") : "· No data"}</span><small>${esc(x.why)}</small></div>`).join("")}</div>`;
+  el.innerHTML = ["30m", "1h", "4h", "1d"].map((tf) => { const r = v.reg[tf]; if (!r) return `<div class="panel"><div class="unavail">${tf}: loading</div></div>`;
+    const bar = (lab, val, max, txt) => `<div class="rgb"><span>${lab}</span><i><b style="width:${Math.max(2, Math.min(100, (val / max) * 100)).toFixed(0)}%"></b></i><em>${txt}</em></div>`;
+    return `<div class="panel rgc rg-${r.key}"><div class="ph"><span class="pt">${tf}</span><span class="rgl">${esc(r.label)}</span></div>
+      ${bar("Trend strength (ADX)", r.adx, 50, ok(r.adx) ? r.adx.toFixed(0) : "–")}${bar("Efficiency", r.er * 100, 100, ok(r.er) ? (r.er * 100).toFixed(0) + "%" : "–")}
+      ${bar("Band width vs 150 bars", r.bwPct, 100, ok(r.bwPct) ? `${r.bwPct.toFixed(0)}th pct` : "–")}${bar("Volatility (ATR) vs 150 bars", r.atrPct, 100, ok(r.atrPct) ? `${r.atrPct.toFixed(0)}th pct` : "–")}
+      <div class="sub" style="margin-top:6px">${r.key === "range" || r.key === "squeeze" ? `30-bar range <b>${n0(r.lo30)} – ${n0(r.hi30)}</b>. ` : ""}${esc(r.play)}</div></div>`; }).join("");
+  const d = v.dreg, g = v.gam;
+  $("#rgDeriv").innerHTML = `<div class="two"><div class="panel"><div class="ph"><span class="pt">Leverage regime</span></div><div class="big ${vcls(d.dir)}" style="font-size:18px">${esc(d.label)}</div><div class="sub">${esc(d.txt || "")}</div>${ok(d.oi24) ? `<div class="sub">OI 24h <b class="${cls(d.oi24)}">${pct(d.oi24)}</b></div>` : ""}<div class="src">OKX open interest (all BTC contracts), Binance spot price and CVD over 4h, funding across venues.</div></div>
+    <div class="panel"><div class="ph"><span class="pt">Gamma regime</span></div>${g ? `<div class="big ${g.pos ? "up" : "dn"}" style="font-size:18px">${g.pos ? "Positive gamma" : "Negative gamma"}</div><div class="sub">${g.pos ? "Dealers sell rips and buy dips: ranges, pinning, failed breakouts." : "Dealers chase the move: trends extend, wicks run further."}${ok(g.flip) ? ` Flip at <b>${n0(g.flip)}</b> (${distTxt(g.flip, v.px)}).` : ""}</div>` : `<div class="unavail">Waiting for Deribit options</div>`}<div class="src">From Deribit options open interest. Full detail in Flow → Options.</div></div></div>`;
+}
+function structSVG(k, s, lv) {
+  const el = $("#stChart"), W = Math.max(340, Math.min(1100, (el && el.clientWidth) || 640)), H = W < 500 ? 330 : 340, n = Math.min(k.length, W < 500 ? 80 : 140), K = k.slice(-n), off = k.length - n, C = chartColors(), pr = 80, pt = 10, pb = 18;
+  const lo = Math.min(...K.map((x) => x.l)), hi = Math.max(...K.map((x) => x.h)), pad = (hi - lo) * 0.06, y0 = lo - pad, y1 = hi + pad;
+  const X = (i) => ((i - off + 0.5) / n) * (W - pr), Y = (p) => pt + (1 - (p - y0) / (y1 - y0)) * (H - pt - pb), bw = Math.max(1.5, ((W - pr) / n) * 0.62);
+  const inR = (p) => p >= y0 && p <= y1, out = [];
+  s.fvg.forEach((f) => { if (f.i >= off) out.push(`<rect x="${X(f.i).toFixed(1)}" y="${Y(f.top).toFixed(1)}" width="${(W - pr - X(f.i)).toFixed(1)}" height="${Math.max(1.5, Y(f.bot) - Y(f.top)).toFixed(1)}" fill="${f.dir > 0 ? C.up : C.dn}" opacity=".13"/>`); });
+  s.ob.forEach((o) => { if (o.i >= off) out.push(`<rect x="${X(o.i).toFixed(1)}" y="${Y(o.top).toFixed(1)}" width="${(W - pr - X(o.i)).toFixed(1)}" height="${Math.max(1.5, Y(o.bot) - Y(o.top)).toFixed(1)}" fill="none" stroke="${o.dir > 0 ? C.up : C.dn}" stroke-dasharray="2 3" opacity=".7"/>`); });
+  K.forEach((x, j) => { const i = j + off, col = x.c >= x.o ? C.up : C.dn; out.push(`<line x1="${X(i).toFixed(1)}" x2="${X(i).toFixed(1)}" y1="${Y(x.h).toFixed(1)}" y2="${Y(x.l).toFixed(1)}" stroke="${col}" opacity=".7"/><rect x="${(X(i) - bw / 2).toFixed(1)}" y="${Y(Math.max(x.o, x.c)).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, Math.abs(Y(x.o) - Y(x.c))).toFixed(1)}" fill="${col}"/>`); });
+  s.ev.filter((e) => e.i >= off).forEach((e) => { const src = e.dir > 0 ? s.swings.hi : s.swings.lo, sw = [...src].reverse().find((q) => q.i < e.i && Math.abs(q.p - e.p) < 1e-6) || { i: Math.max(off, e.i - 8) };
+    const col = e.type === "CHoCH" ? cssv("--warn") : e.dir > 0 ? C.up : C.dn, xa = X(Math.max(off, sw.i)), xb = X(e.i);
+    out.push(`<line x1="${xa.toFixed(1)}" x2="${xb.toFixed(1)}" y1="${Y(e.p).toFixed(1)}" y2="${Y(e.p).toFixed(1)}" stroke="${col}" stroke-width="1.4" stroke-dasharray="4 3"/><text x="${((xa + xb) / 2).toFixed(1)}" y="${(Y(e.p) + (e.dir > 0 ? -4 : 12)).toFixed(1)}" font-size="11" font-weight="700" fill="${col}" text-anchor="middle">${e.type}</text>`); });
+  [...s.swings.hi, ...s.swings.lo].filter((q) => q.i >= off && q.lab.length === 2).forEach((q) => out.push(`<text x="${X(q.i).toFixed(1)}" y="${(q.kind === "H" ? Y(q.p) - 5 : Y(q.p) + 13).toFixed(1)}" font-size="10" fill="${C.fg3}" text-anchor="middle">${q.lab}</text>`));
+  s.pools.forEach((q) => { if (inR(q.p)) out.push(`<line x1="0" x2="${W - pr}" y1="${Y(q.p).toFixed(1)}" y2="${Y(q.p).toFixed(1)}" stroke="${cssv("--purple")}" stroke-dasharray="1 3" stroke-width="1.5"/><text x="${W - pr - 4}" y="${(Y(q.p) - 3).toFixed(1)}" font-size="10" fill="${cssv("--purple")}" text-anchor="end">EQ${q.side > 0 ? "H" : "L"} · stops</text>`); });
+  const tags = [];
+  if (ok(s.bosLv) && inR(s.bosLv)) tags.push([s.bosLv, s.trend > 0 ? C.up : C.dn, "BOS"]);
+  if (ok(s.chochLv) && inR(s.chochLv)) tags.push([s.chochLv, cssv("--warn"), "CHoCH"]);
+  tags.forEach(([p, col, t]) => out.push(`<line x1="0" x2="${W - pr}" y1="${Y(p).toFixed(1)}" y2="${Y(p).toFixed(1)}" stroke="${col}" opacity=".5"/><rect x="${W - pr + 2}" y="${(Y(p) - 8).toFixed(1)}" width="${pr - 4}" height="16" rx="4" fill="${col}"/><text x="${W - pr / 2}" y="${(Y(p) + 4).toFixed(1)}" font-size="10.5" font-weight="700" fill="#000" text-anchor="middle">${t} ${kfmt(p)}</text>`));
+  const pxl = k[k.length - 1].c; out.push(`<line x1="0" x2="${W - pr}" y1="${Y(pxl).toFixed(1)}" y2="${Y(pxl).toFixed(1)}" stroke="${cssv("--fg")}" stroke-dasharray="2 2" opacity=".6"/><text x="${W - pr + 4}" y="${(Y(pxl) + 4).toFixed(1)}" font-size="11" fill="${cssv("--fg")}">${n0(pxl)}</text>`);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block" aria-label="Structure chart">${out.join("")}</svg>`;
+}
+function drawStruct(a) {
+  const v = sigCompute(a), el = $("#stTbl"); if (!el) return;
+  if (!v) { el.innerHTML = `<div class="unavail">Loading…</div>`; return; }
+  el.innerHTML = `<table><thead><tr><th class="l">TF</th><th class="l">Trend · swings</th><th>Next BOS</th><th>CHoCH at</th></tr></thead><tbody>${SIG_TFS.map((tf) => { const s = v.st[tf]; if (!s) return `<tr><td class="l">${tf}</td><td colspan="3" class="l mut">loading</td></tr>`;
+    return `<tr><td class="l"><b>${tf}</b></td><td class="l">${s.trend > 0 ? `<b class="up">Bullish</b>` : s.trend < 0 ? `<b class="dn">Bearish</b>` : `<span class="mut">None</span>`}${s.run > 1 ? ` <span class="mut">×${s.run}</span>` : ""}<span class="stsq">${s.seq.slice(-4).join(" ")}</span></td><td>${ok(s.bosLv) ? `${n0(s.bosLv)}<div class="mut" style="font-size:11px">${distTxt(s.bosLv, v.px)}</div>` : "–"}</td><td class="wn">${ok(s.chochLv) ? `${n0(s.chochLv)}<div class="mut" style="font-size:11px">${distTxt(s.chochLv, v.px)}</div>` : "–"}</td></tr>`; }).join("")}</tbody></table>`;
+  $("#stSeg").innerHTML = SIG_TFS.map((tf) => `<button data-sigtf="${tf}" aria-pressed="${ST.sigTf === tf}">${tf}</button>`).join("");
+  const s = v.st[ST.sigTf], k = D.taK[ST.sigTf];
+  $("#stChart").innerHTML = s && k ? structSVG(k, s) : `<div class="unavail">Loading…</div>`;
+  $("#stRead").innerHTML = s ? stRead(s, v.px) : "";
+  const evs = SIG_TFS.flatMap((tf) => (v.st[tf] ? v.st[tf].ev : [])).filter((e) => e.t * 1000 > Date.now() - 4 * 864e5 && e.tf !== "15m").sort((x, y) => y.t - x.t).slice(0, 24);
+  $("#stEvents").innerHTML = evs.length ? `<div class="slog">${evs.map((e) => `<div class="sle"><span class="sld ${e.type === "CHoCH" ? "wn" : vcls(e.dir)}"></span><span class="slt">${new Date(e.t * 1000).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}</span><span><b>${e.tf}</b> ${sigEvTxt(e)}</span></div>`).join("")}</div>` : `<div class="unavail">No breaks in the last 4 days</div>`;
+  const items = [];
+  ["1h", "4h", "1d"].forEach((tf) => { const x = v.st[tf]; if (!x) return;
+    x.pools.forEach((q) => items.push({ p: q.p, txt: `${tf} equal ${q.side > 0 ? "highs" : "lows"} (${q.n} touches): stop orders rest just ${q.side > 0 ? "above" : "below"}. A sweep through and back is a classic reversal tell.`, c: "pool" }));
+    x.fvg.forEach((f) => items.push({ p: f.mid, txt: `${tf} ${f.dir > 0 ? "bullish" : "bearish"} fair value gap ${n0(f.bot)} – ${n0(f.top)} (${f.size.toFixed(2)}%): price often returns to fill it.`, c: f.dir > 0 ? "up" : "dn" }));
+    if (tf !== "1d") x.ob.forEach((o) => items.push({ p: o.mid, txt: `${tf} ${o.dir > 0 ? "bullish" : "bearish"} order block ${n0(o.bot)} – ${n0(o.top)}: last ${o.dir > 0 ? "down" : "up"} candle before the ${o.from}. Often defended on the first retest.`, c: o.dir > 0 ? "up" : "dn" }));
+  });
+  items.sort((x, y) => Math.abs(x.p - v.px) - Math.abs(y.p - v.px));
+  $("#stZones").innerHTML = items.length ? items.slice(0, 14).map((x) => `<div class="stz"><b class="${x.c === "pool" ? "pu" : x.c}">${n0(x.p)}</b><span class="mut">${distTxt(x.p, v.px)}</span><span>${esc(x.txt)}</span></div>`).join("") : `<div class="unavail">No open gaps, order blocks or equal highs/lows nearby</div>`;
+  drawSigLog(40, "#sigLogFull");
+}
+function stRead(s, px) {
+  const out = [];
+  if (s.trend > 0) out.push(`<b class="up">Bullish structure</b>${s.run > 1 ? ` (${s.run} breaks up in a row)` : ""}. ${ok(s.bosLv) ? `A close above <b>${n0(s.bosLv)}</b> continues it (BOS). ` : ""}${ok(s.chochLv) ? `A close below <b>${n0(s.chochLv)}</b>, the protected low, would be a change of character and flip it bearish.` : ""}`);
+  else if (s.trend < 0) out.push(`<b class="dn">Bearish structure</b>${s.run > 1 ? ` (${s.run} breaks down in a row)` : ""}. ${ok(s.bosLv) ? `A close below <b>${n0(s.bosLv)}</b> continues it (BOS). ` : ""}${ok(s.chochLv) ? `A close above <b>${n0(s.chochLv)}</b>, the protected high, would be a change of character and flip it bullish.` : ""}`);
+  else out.push("No clear structure yet.");
+  if (s.lastEv) out.push(`Last break: ${sigEvTxt(s.lastEv)}, ${agoS(s.lastEv.t)}.`);
+  if (ok(s.chochLv) && Math.abs(s.chochLv - px) / px < 0.004) out.push(`<b class="wn">Price is sitting on the CHoCH level</b>: a structure flip is close.`);
+  return out.join(" ");
+}
+function drawLevels(a) {
+  const v = sigCompute(a), el = $("#lvTbl"); if (!el) return;
+  if (!v) { el.innerHTML = `<div class="unavail">Loading…</div>`; return; }
+  drawMoves(v, "#lvMoves", true);
+  $("#lvMags").innerHTML = v.mags.length ? v.mags.map((m) => { const z = m.z; return `<div class="mag ${z.side > 0 ? "r" : "s"}"><div class="magp"><b>${n0(z.p)}</b><span class="mut">${distTxt(z.p, v.px)}</span>${stars(z.stars)}</div><div class="mago"><span>24h ${oddsTag(z.o24)}</span><span>3d ${oddsTag(z.o72)}</span></div><div class="magw">${esc(z.labels.slice(0, 4).join(" · "))}${z.liqUsd ? ` · <b>${usd(z.liqUsd)}</b> liquidations` : ""}</div></div>`; }).join("")
+    : `<div class="unavail">No strong levels within 6%</div>`;
+  const rows = v.lv.filter((z) => Math.abs(z.d) <= 7).sort((x, y) => y.p - x.p), C = chartColors();
+  // ladder
+  const W = 640, H = 420, lo = v.px * 0.95, hi = v.px * 1.05, Y = (p) => 10 + (1 - (p - lo) / (hi - lo)) * (H - 20);
+  const lad = rows.filter((z) => z.p > lo && z.p < hi && z.stars >= 2).map((z) => { const w = 40 + z.stars * 44, col = z.side > 0 ? C.dn : C.up;
+    return `<rect x="${W / 2 - w / 2}" y="${(Y(z.p) - 2.5).toFixed(1)}" width="${w}" height="5" rx="2.5" fill="${col}" opacity="${0.25 + z.stars * 0.15}"/><text x="${W / 2 + w / 2 + 8}" y="${(Y(z.p) + 4).toFixed(1)}" font-size="12" fill="${cssv("--fg")}">${n0(z.p)} <tspan fill="${C.fg3}">${esc(z.labels[0]).slice(0, 34)}</tspan></text>`; }).join("");
+  $("#lvLadder").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;max-height:520px">${lad}<line x1="40" x2="${W - 40}" y1="${Y(v.px)}" y2="${Y(v.px)}" stroke="${cssv("--acc")}" stroke-width="2"/><rect x="2" y="${Y(v.px) - 10}" width="74" height="20" rx="6" fill="${cssv("--acc")}"/><text x="39" y="${Y(v.px) + 4}" font-size="12" font-weight="700" fill="#000" text-anchor="middle">${n0(v.px)}</text><text x="4" y="22" font-size="11" fill="${C.fg3}">+5%</text><text x="4" y="${H - 8}" font-size="11" fill="${C.fg3}">−5%</text></svg>`;
+  el.innerHTML = `<table><thead><tr><th>Price</th><th>Dist</th><th class="l">Strength</th><th class="l">What's there</th><th>24h</th></tr></thead><tbody>${rows.map((z) => `<tr class="${z.side > 0 ? "lvr" : "lvs"}"><td><b>${n0(z.p)}</b></td><td class="${z.side > 0 ? "dn" : "up"}">${distTxt(z.p, v.px)}</td><td class="l">${stars(z.stars)}</td><td class="l wrap">${z.kinds.map((k) => `<span class="kchip k-${k}">${KIND[k] || k}</span>`).join("")}<div class="mut" style="font-size:11.5px">${esc(z.labels.slice(0, 4).join(" · "))}</div></td><td>${oddsTag(z.o24)}</td></tr>`).join("")}</tbody></table>`;
+}
+function drawBriefStrip(a) {
+  const el = $("#briefStrip"); if (!el) return; const v = sigCompute(a);
+  if (!v) { el.innerHTML = `<span class="mut">Building signals…</span>`; return; }
+  const r = v.reg["30m"], s = v.st["30m"], up = v.up[0], dn = v.dn[0];
+  el.innerHTML = `<button class="bsx" data-goto="now"><span class="bsi"><i>30m</i>${r ? esc(r.label) : "–"}</span><span class="bsi"><i>Structure</i>${s ? (s.trend > 0 ? "<b class=up>bull</b>" : s.trend < 0 ? "<b class=dn>bear</b>" : "flat") : "–"}</span>${up ? `<span class="bsi"><i>R</i><b class="dn">${n0(up.p)}</b> ${"★".repeat(up.stars)}</span>` : ""}${dn ? `<span class="bsi"><i>S</i><b class="up">${n0(dn.p)}</b> ${"★".repeat(dn.stars)}</span>` : ""}<span class="bsgo">›</span></button>`;
+}
+
+/* ---------- Trade brief uses the ranked level map ---------- */
+briefLevels = function (a) {
+  const v = sigCompute(a); if (!v) return { above: [], below: [] };
+  const map = (z) => ({ p: z.p, lo: z.lo, hi: z.hi, w: z.score, names: z.labels, my: z.kinds.includes("my"), gex: z.kinds.includes("gex"), d: z.d, str: z.stars >= 5 ? 3 : z.stars >= 3 ? 2 : 1 });
+  const ok2 = (z) => z.stars >= 2 && Math.abs(z.d) >= 0.04;
+  return { above: v.lv.filter((z) => z.side > 0 && ok2(z)).sort((x, y) => x.p - y.p).slice(0, 3).map(map), below: v.lv.filter((z) => z.side < 0 && ok2(z)).sort((x, y) => y.p - x.p).slice(0, 3).map(map) };
+};
+
+/* ---------- wiring ---------- */
+const _dSig = drawStage2;
+drawStage2 = function (tab) {
+  _dSig(tab);
+  try {
+    const a = analysis();
+    if (tab === "now") drawSigNow(a);
+    if (tab === "regime") drawRegime(a);
+    if (tab === "struct") drawStruct(a);
+    if (tab === "levels") drawLevels(a);
+    if (tab === "overview") drawBriefStrip(a);
+    const v = a ? sigCompute(a) : null, hl = $("#hLean"); if (v && hl) hl.innerHTML = `<button class="hlb" data-goto="regime">${tag(v.conf.label, v.conf.score)}<b class="${vcls(v.conf.score)}">${v.conf.score > 0 ? "+" : ""}${v.conf.score}</b></button>`;
+    sigBadge();
+  } catch (e) { console.error(e); }
+};
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-sigtf]"); if (b) { ST.sigTf = b.dataset.sigtf; LS.set("sigTf", ST.sigTf); render(); } });
+
+</script>
+<script>
+"use strict";
+/* ===================== Altcoins to watch =====================
+   Short-term (1–5 days, 4h candles) and long-term (weeks–months, daily candles) reads on a watchlist of liquid
+   alts. Binance spot candles (data-api.binance.vision, browser-friendly), Hyperliquid funding/OI (already loaded by
+   the "hl" venue source). Rules only, nothing is backtested. Candles load only while Alts (or Signals → Now) is open. */
+const ALT_DEFAULT = ["ETH", "SOL", "XRP", "BNB", "DOGE", "ADA", "AVAX", "LINK", "SUI", "TON", "DOT", "LTC", "BCH", "NEAR", "APT", "ARB", "OP", "INJ", "TIA", "SEI", "RENDER", "FET", "TAO", "ENA", "ONDO", "AAVE", "UNI", "PEPE", "WIF", "HBAR", "TRX", "XLM"];
+ST.altList = LS.get("altList", ALT_DEFAULT); ST.altMode = LS.get("altMode", "short");
+const ALTK = LS.get("altK", {}); // last candles per coin, kept so the tab opens instantly
+const altWanted = () => ["alts", "now"].includes(ST.tab);
+
+def("altT", "Alts: prices", "Alts tab: 24h tickers", 60000, async () => {
+  const list = ST.altList.filter((b) => !(ALTK[b] && ALTK[b].bad)), m = {};
+  const put = (t) => (m[t.symbol.replace(/USDT$/, "")] = { px: +t.lastPrice, chg: +t.priceChangePercent, qv: +t.quoteVolume, hi: +t.highPrice, lo: +t.lowPrice });
+  try { (await getJSON(`${BN}/ticker/24hr?symbols=${encodeURIComponent(JSON.stringify(list.map((b) => b + "USDT")))}`)).forEach(put); }
+  catch (e) { if (e.status !== 400) throw e; // one unknown symbol fails the batch: ask one by one and flag the bad ones
+    await Promise.all(list.map(async (b) => { try { put(await getJSON(`${BN}/ticker/24hr?symbol=${b}USDT`)); } catch (x) { if (x.status === 400) { (ALTK[b] = ALTK[b] || {}).bad = true; } } })); }
+  return { m };
+}, true);
+SRC.altT.when = altWanted;
+def("altK", "Alts: candles", "Alts tab: 4h and daily candles per coin", 15 * 60000, async (prev) => {
+  const now = Date.now(), jobs = [];
+  for (const b of ST.altList) {
+    const e = ALTK[b] || {};
+    if (!e.k4 || now - (e.a4 || 0) > 14 * 60000) jobs.push([b, "4h", 150]);
+    if (!e.kd || now - (e.ad || 0) > 3 * 3600000) jobs.push([b, "1d", 400]);
+  }
+  let fails = 0, okN = 0;
+  const run = async () => { while (jobs.length) { const [b, iv, lim] = jobs.shift();
+    try { const k = (await getJSON(`${BN}/klines?symbol=${b}USDT&interval=${iv}&limit=${lim}`)).map(pk); const e = (ALTK[b] = ALTK[b] || {}); if (iv === "4h") { e.k4 = k; e.a4 = Date.now(); } else { e.kd = k; e.ad = Date.now(); } okN++; }
+    catch (x) { fails++; if (x.status === 400) { const e = (ALTK[b] = ALTK[b] || {}); e.bad = true; e.a4 = e.ad = Date.now(); } } } };
+  await Promise.all([run(), run(), run(), run()]);
+  if (!okN && fails) throw new Error(`No candles (${fails} requests failed)`);
+  try { const slim = {}; for (const b in ALTK) slim[b] = { ...ALTK[b], k4: (ALTK[b].k4 || []).slice(-150), kd: (ALTK[b].kd || []).slice(-400) }; LS.set("altK", slim); } catch (e) {}
+  ALTC.key = ""; return { n: Object.keys(ALTK).length, at: Date.now() };
+}, true);
+SRC.altK.when = altWanted;
+
+/* ---------- scoring ---------- */
+const lst = (a) => a[a.length - 1];
+function altShort(b, k, btc4, info, hl) {
+  if (!k || k.length < 60) return null;
+  const c = k.map((x) => x.c), n = c.length, px = info ? info.px : c[n - 1], e20 = lst(TA.ema(c, 20)), e50 = lst(TA.ema(c, 50)), r = lst(TA.rsi(c)), atr = lst(TA.atr(k));
+  const prior = k.slice(-31, -1), hh = Math.max(...prior.map((x) => x.h)), ll = Math.min(...prior.map((x) => x.l));
+  const ch = (arr, bars) => (arr.length > bars ? ((lst(arr).c - arr[arr.length - 1 - bars].c) / arr[arr.length - 1 - bars].c) * 100 : null);
+  const rs3 = btc4 ? ch(k, 18) - ch(btc4, 18) : null, d1 = ch(k, 6);
+  const qv = k.map((x) => x.v * x.c), lastQ = qv.slice(-6).reduce((s, x) => s + x, 0), base = qv.slice(-42, -6).reduce((s, x) => s + x, 0) / 6, surge = base ? lastQ / base : null;
+  const st = SG.structure(k, "4h", 3), tags = []; let sc = 0;
+  if (px > e20 && e20 > e50) { sc += 25; tags.push(["Uptrend", 1]); } else if (px < e20 && e20 < e50) { sc -= 25; tags.push(["Downtrend", -1]); }
+  if (st) { sc += st.trend * 12; if (st.lastEv && st.lastEv.type === "CHoCH" && n - 1 - st.lastEv.i <= 4) { sc += st.lastEv.dir * 12; tags.push([`4h CHoCH ${st.lastEv.dir > 0 ? "up" : "down"}`, st.lastEv.dir]); } }
+  if (ok(rs3)) { sc += Math.max(-1, Math.min(1, rs3 / 6)) * 22; if (rs3 > 4) tags.push([`Beating BTC ${pct(rs3, 1)}`, 1]); if (rs3 < -4) tags.push([`Lagging BTC ${pct(rs3, 1)}`, -1]); }
+  if (ok(r)) { if (r >= 52 && r <= 70) sc += 8; else if (r > 76) { sc -= 6; tags.push([`RSI ${r.toFixed(0)} stretched`, 0]); } else if (r < 30) { sc += 6; tags.push([`RSI ${r.toFixed(0)} oversold`, 1]); } else if (r < 46) sc -= 8; }
+  if (px > hh) { sc += 15; tags.push(["Breakout · 5-day high", 1]); } else if (px < ll) { sc -= 15; tags.push(["Breakdown · 5-day low", -1]); }
+  if (ok(surge) && surge > 1.8 && ok(d1)) { sc += Math.sign(d1) * 8; tags.push([`Volume ${surge.toFixed(1)}× normal`, Math.sign(d1)]); }
+  if (hl && ok(hl.f8)) { if (hl.f8 > 0.0005) { sc -= 8; tags.push([`Funding hot ${(hl.f8 * 100).toFixed(3)}%`, -1]); } else if (hl.f8 < -0.0002) { sc += 6; tags.push([`Shorts paying ${(hl.f8 * 100).toFixed(3)}%`, 1]); } }
+  sc = Math.round(Math.max(-100, Math.min(100, sc)));
+  const side = sc >= 0 ? 1 : -1, brk = side > 0 ? px > hh : px < ll;
+  let entry = brk ? (side > 0 ? hh : ll) : side > 0 ? Math.min(px, Math.max(e20, px - 0.6 * atr)) : Math.max(px, Math.min(e20, px + 0.6 * atr));
+  let stop = entry - side * 1.6 * atr;
+  if (st && ok(st.chochLv) && side * (entry - st.chochLv) > 0 && Math.abs(entry - st.chochLv) < 3 * atr) stop = st.chochLv - side * 0.25 * atr;
+  const R = Math.abs(entry - stop), kd30 = k.slice(-180), far = side > 0 ? Math.max(...kd30.map((x) => x.h)) : Math.min(...kd30.map((x) => x.l));
+  const tp1 = entry + side * 2 * R, tp2 = side * (far - tp1) > R * 0.5 ? far : entry + side * 3.2 * R;
+  return { b, px, chg: info ? info.chg : null, qv: info ? info.qv : null, sc, side, tags, r, rs3, surge, entry, stop, tp1, tp2, brk, st, atrPct: (atr / px) * 100, spark: c.slice(-42) };
+}
+function altLong(b, kd, btcd, info) {
+  if (!kd || kd.length < 210) return null;
+  const c = kd.map((x) => x.c), n = c.length, px = info ? info.px : c[n - 1], s50a = TA.sma(c, 50), s200a = TA.sma(c, 200), s50 = lst(s50a), s200 = lst(s200a);
+  const slope = s200a[n - 21] ? ((s200 - s200a[n - 21]) / s200a[n - 21]) * 100 : 0;
+  const ch = (arr, bars) => (arr && arr.length > bars ? ((lst(arr).c - arr[arr.length - 1 - bars].c) / arr[arr.length - 1 - bars].c) * 100 : null);
+  const rs90 = btcd && btcd.length > 91 ? ch(kd, 90) - ch(btcd, 90) : null, y = kd.slice(-365), yH = Math.max(...y.map((x) => x.h)), dd = (px / yH - 1) * 100, d200 = (px / s200 - 1) * 100;
+  const lo30 = Math.min(...kd.slice(-30).map((x) => x.l)), lo60 = Math.min(...kd.slice(-60, -30).map((x) => x.l)), hl = lo30 > lo60;
+  const wk = []; for (let i = n - 1; i >= 0; i -= 7) wk.unshift(c[i]); const wr = TA.rsi(wk), wrsi = lst(wr), wrsiP = wr[wr.length - 2];
+  let sc = (px > s200 ? 20 : -20) + (slope > 0 ? 12 : -12) + (s50 > s200 ? 10 : -10) + (ok(rs90) ? Math.max(-1, Math.min(1, rs90 / 30)) * 25 : 0) + (hl ? 10 : -4) + (d200 > 45 ? -12 : 0) + (ok(wrsi) && wrsi > 40 && wrsi < 68 && wrsi > wrsiP ? 6 : 0);
+  sc = Math.round(Math.max(-100, Math.min(100, sc)));
+  let cat, zone, why;
+  const yL = Math.min(...y.map((x) => x.l)), h90 = Math.max(...kd.slice(-90).map((x) => x.h));
+  if (px > s200 && slope > 0 && s50 > s200 && (rs90 == null || rs90 > -5)) { cat = "leader"; zone = [Math.min(s50, px) * 0.97, Math.max(s50 * 1.02, Math.min(px, s50 * 1.06))]; why = `Above a rising 200-day average${ok(rs90) ? `, ${rs90 >= 0 ? "outperforming" : "keeping pace with"} BTC over 90 days (${pct(rs90, 0)})` : ""}. Dips toward the 50-day (${fmtPx(s50)}) have been the buy zone.`; }
+  else if (dd < -45 && hl && d200 > -25 && d200 < 12) { cat = "basing"; zone = [lo30, lo30 * 1.08]; why = `${pct(dd, 0)} from its 1-year high but making higher lows and back near the 200-day (${pct(d200, 0)}). Classic base-building; accumulation candidates scale in near the 30-day low.`; }
+  else if (px > s50 && px < s200 && hl) { cat = "recovering"; zone = [s50 * 0.97, s50 * 1.02]; why = `Reclaimed the 50-day, still under the 200-day (${fmtPx(s200)}). A daily close above the 200-day would turn it into a trend.`; }
+  else if (px < s200 && slope < 0) { cat = "avoid"; zone = null; why = `Below a falling 200-day average${ok(rs90) ? ` and ${pct(rs90, 0)} vs BTC over 90 days` : ""}. Bear trend until it reclaims ${fmtPx(s200)}.`; }
+  else { cat = "neutral"; zone = null; why = `Mixed: ${px > s200 ? "above" : "below"} the 200-day, ${slope > 0 ? "rising" : "falling"} slope, ${hl ? "higher lows" : "no higher lows yet"}.`; }
+  const inval = cat === "leader" ? Math.min(s200, lo60) * 0.97 : cat === "basing" ? Math.min(lo30, lo60) * 0.94 : cat === "recovering" ? Math.min(lo30, lo60) * 0.95 : null;
+  return { b, px, chg: info ? info.chg : null, sc, cat, why, zone, inval, yH, h90, dd, d200, rs90, slope, wrsi, s50, s200, hl, up: (yH / px - 1) * 100, spark: c.slice(-120) };
+}
+const fmtPx = (p) => (!ok(p) ? "–" : p >= 1000 ? n0(p) : p >= 1 ? nd(p, p >= 100 ? 1 : 3) : p >= 0.01 ? nd(p, 4) : p.toPrecision(3));
+let ALTC = { key: "", v: null };
+function altCompute() {
+  const T = live("altT") ? D.altT.m : {}, btc4 = live("taK") ? D.taK["4h"] : null, btcd = live("taK") ? D.taK["1d"] : null, hlA = live("hl") && D.hl.all ? D.hl.all : {};
+  const key = [SRC.altK.st.okAt, SRC.altT.st.okAt, SRC.taK.st.okAt, ST.altList.join()].join("|"); if (ALTC.key === key) return ALTC.v;
+  const S = [], L = [];
+  ST.altList.forEach((b) => { const e = ALTK[b]; if (!e || e.bad) return; const s = altShort(b, e.k4, btc4, T[b], hlA[b]); if (s) S.push(s); const l = altLong(b, e.kd, btcd, T[b]); if (l) L.push(l); });
+  const br = { n: S.length, up4: S.filter((s) => s.tags.some((t) => t[0] === "Uptrend")).length, above200: L.filter((l) => l.px > l.s200).length, nl: L.length,
+    rs3: S.length ? S.reduce((a, s) => a + (s.rs3 || 0), 0) / S.length : null, rs90: L.length ? L.filter((l) => ok(l.rs90)).reduce((a, l) => a + l.rs90, 0) / Math.max(1, L.filter((l) => ok(l.rs90)).length) : null };
+  const eth = S.find((s) => s.b === "ETH"), ethL = L.find((l) => l.b === "ETH"); br.eth = eth ? eth.rs3 : null; br.eth90 = ethL ? ethL.rs90 : null;
+  ALTC = { key, v: { S: S.sort((a, b) => b.sc - a.sc), L: L.sort((a, b) => b.sc - a.sc), br } }; return ALTC.v;
+}
+
+/* ---------- rendering ---------- */
+function altSpark(vals, up) { return spark(vals, 84, 26, up ? cssv("--up") : cssv("--dn")); }
+function altShortCard(s) {
+  const side = s.side > 0, R = Math.abs(s.entry - s.stop) / s.entry * 100;
+  return `<div class="acard ${side ? "up" : "dn"}"><div class="ach"><b class="asym">${s.b}</b><span class="apx">${fmtPx(s.px)}</span><span class="${cls(s.chg)} ach24">${pct(s.chg, 1)}</span>${altSpark(s.spark, s.spark[s.spark.length - 1] >= s.spark[0])}<span class="asc ${side ? "up" : "dn"}">${side ? "Long" : "Short"} ${Math.abs(s.sc)}</span></div>
+    <div class="atags">${s.tags.slice(0, 4).map(([t, d]) => `<span class="atag ${vcls(d)}">${esc(t)}</span>`).join("")}</div>
+    <div class="aplan"><span><i>${s.brk ? "Retest" : "Entry"}</i><b>${fmtPx(s.entry)}</b></span><span><i>Stop</i><b class="dn">${fmtPx(s.stop)}</b><small>${R.toFixed(1)}%</small></span><span><i>TP1</i><b class="up">${fmtPx(s.tp1)}</b><small>2R</small></span><span><i>TP2</i><b class="up">${fmtPx(s.tp2)}</b></span></div></div>`;
+}
+const CATS = { leader: ["Leaders · buy dips", "up"], basing: ["Basing · accumulate", "wn"], recovering: ["Recovering", "acc"], neutral: ["Mixed", "mut"], avoid: ["Downtrends · avoid", "dn"] };
+function altLongCard(l) {
+  return `<div class="acard ${l.cat === "avoid" ? "dn" : l.cat === "leader" ? "up" : ""}"><div class="ach"><b class="asym">${l.b}</b><span class="apx">${fmtPx(l.px)}</span><span class="mut ach24">${pct(l.dd, 0)} from 1y high</span>${altSpark(l.spark, l.px > l.s200)}<span class="asc ${l.sc >= 0 ? "up" : "dn"}">${l.sc > 0 ? "+" : ""}${l.sc}</span></div>
+    <div class="sub" style="margin:4px 0 6px">${esc(l.why)}</div>
+    <div class="aplan">${l.zone ? `<span><i>Accumulate</i><b>${fmtPx(l.zone[0])}–${fmtPx(l.zone[1])}</b></span>` : `<span><i>Reclaim</i><b>${fmtPx(l.s200)}</b></span>`}${l.inval ? `<span><i>Weekly close below</i><b class="dn">${fmtPx(l.inval)}</b></span>` : ""}<span><i>1y high</i><b class="up">${fmtPx(l.yH)}</b><small>${pct(l.up, 0)}</small></span><span><i>vs BTC 90d</i><b class="${cls(l.rs90)}">${pct(l.rs90, 0)}</b></span></div></div>`;
+}
+function drawAlts() {
+  const el = $("#altBody"); if (!el) return;
+  $("#altSeg").innerHTML = [["short", "Short-term · 1–5 days"], ["long", "Long-term · weeks–months"]].map(([k, t]) => `<button data-altm="${k}" aria-pressed="${ST.altMode === k}">${t}</button>`).join("");
+  const v = altCompute();
+  if (!v.S.length && !v.L.length) { el.innerHTML = `<div class="panel"><div class="unavail">${esc(SRC.altK.st.err || "Loading candles for " + ST.altList.length + " coins…")}</div></div>`; return; }
+  const br = v.br, bp = (x, n) => (n ? Math.round((x / n) * 100) : 0);
+  const climate = ok(br.rs3) && ok(br.rs90) ? (br.rs3 > 1.5 && br.rs90 > 0 ? ["Alts leading BTC", "up"] : br.rs3 < -1.5 && br.rs90 < 0 ? ["BTC dominance rising: alts bleeding", "dn"] : br.rs3 > 1.5 ? ["Short-term alt bounce, still lagging longer-term", "wn"] : br.rs3 < -1.5 ? ["Alts cooling off vs BTC", "wn"] : ["Alts moving with BTC", "mut"]) : ["Loading…", "mut"];
+  const head = `<div class="panel"><div class="ph"><span class="pt">Alt climate</span><span class="ftag ${climate[1]}" style="margin-left:auto;background:color-mix(in srgb,currentColor 12%,transparent)">${climate[0]}</span></div>
+    <div class="abr"><div><span>Above 4h trend</span><b>${bp(br.up4, br.n)}%</b><small>${br.up4} of ${br.n}</small></div><div><span>Above 200-day</span><b>${bp(br.above200, br.nl)}%</b><small>${br.above200} of ${br.nl}</small></div><div><span>Avg vs BTC · 3d</span><b class="${cls(br.rs3)}">${pct(br.rs3, 1)}</b></div><div><span>Avg vs BTC · 90d</span><b class="${cls(br.rs90)}">${pct(br.rs90, 0)}</b></div><div><span>ETH vs BTC · 3d / 90d</span><b class="${cls(br.eth)}">${pct(br.eth, 1)}</b><small class="${cls(br.eth90)}">${pct(br.eth90, 0)}</small></div></div></div>`;
+  let body;
+  if (ST.altMode === "short") {
+    const longs = v.S.filter((s) => s.sc >= 25).slice(0, 6), shorts = v.S.filter((s) => s.sc <= -25).sort((a, b) => a.sc - b.sc).slice(0, 4);
+    body = `<div class="ph" style="margin:2px 2px -4px"><span class="pt">Long ideas · strongest first</span></div><div class="agrid">${longs.map(altShortCard).join("") || `<div class="panel unavail">No alt scores a clear long right now</div>`}</div>
+      <div class="ph" style="margin:2px 2px -4px"><span class="pt">Short ideas · weakest first</span></div><div class="agrid">${shorts.map(altShortCard).join("") || `<div class="panel unavail">No alt scores a clear short right now</div>`}</div>
+      <div class="src" style="padding:0 4px">Score: 4h trend (price vs EMA 20/50), 4h structure and fresh CHoCH, 3-day strength vs BTC, RSI, 5-day breakout or breakdown, volume surge, Hyperliquid funding. Entry is the pullback to the 20 EMA or the retest of the breakout level; stop is 1.6 ATR or just past the protected swing; TP1 = 2R, TP2 = the 30-day extreme or 3.2R. Rules only, not advice. Alts move 2–4× BTC: size down.</div>`;
+  } else {
+    body = ["leader", "basing", "recovering", "avoid"].map((c) => { const L = v.L.filter((l) => l.cat === c).slice(0, c === "avoid" ? 5 : 6); if (!L.length) return "";
+      return `<div class="ph" style="margin:2px 2px -4px"><span class="pt ${CATS[c][1]}">${CATS[c][0]}</span></div><div class="agrid">${L.map(altLongCard).join("")}</div>`; }).join("") +
+      `<div class="src" style="padding:0 4px">Daily candles, up to 400 days. Leaders: above a rising 200-day with the 50 above the 200 and not lagging BTC. Basing: 45%+ off the high, higher lows, back near the 200-day. Avoid: below a falling 200-day. Invalidation is a weekly close below the level shown. Rules only, not advice.</div>`;
+  }
+  const all = (ST.altMode === "short" ? v.S : v.L);
+  const tbl = `<details class="panel"><summary class="pt" style="cursor:pointer">All ${all.length} coins · ranked</summary><div class="tw" style="margin-top:8px"><table><thead><tr><th class="l">Coin</th><th>Price</th><th>24h</th><th>Score</th><th class="l">${ST.altMode === "short" ? "Signals" : "Bucket"}</th></tr></thead><tbody>${all.map((x) => `<tr><td class="l"><b>${x.b}</b></td><td>${fmtPx(x.px)}</td><td class="${cls(x.chg)}">${pct(x.chg, 1)}</td><td class="${cls(x.sc)}"><b>${x.sc > 0 ? "+" : ""}${x.sc}</b></td><td class="l wrap" style="font-size:12px">${ST.altMode === "short" ? x.tags.map((t) => esc(t[0])).join(" · ") : CATS[x.cat][0]}</td></tr>`).join("")}</tbody></table></div></details>`;
+  const wl = `<details class="panel"><summary class="pt" style="cursor:pointer">Watchlist · ${ST.altList.length} coins</summary><p class="note" style="margin:8px 0">Tap a coin to remove it. Add any coin Binance lists against USDT.</p><div class="bchips">${ST.altList.map((b) => `<button class="chip" data-altrm="${b}">${b}${ALTK[b] && ALTK[b].bad ? " ⚠" : ""} ×</button>`).join("")}</div>
+    <div class="ctl" style="margin-top:8px"><input id="altAdd" placeholder="e.g. JUP" autocapitalize="characters" style="width:120px;font:inherit;padding:5px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--fg)"><button class="btn" id="bAltAdd">Add</button><button class="btn" id="bAltReset">Reset list</button></div></details>`;
+  el.innerHTML = head + body + tbl + wl;
+}
+function drawAltsOverview() {
+  const el = $("#ovAlts"); if (!el) return; const v = altCompute();
+  if (!v.S.length) { el.innerHTML = `<div class="unavail">${esc(SRC.altK.st.err || "Loading alts…")}</div>`; return; }
+  const top = v.S.filter((s) => s.sc >= 25).slice(0, 3), bot = v.S.filter((s) => s.sc <= -25).slice(-2).reverse();
+  el.innerHTML = [...top, ...bot].map((s) => `<button class="altrow" data-goto="alts"><b>${s.b}</b><span>${fmtPx(s.px)}</span><span class="${cls(s.chg)}">${pct(s.chg, 1)}</span><span class="atag ${vcls(s.side)}">${s.side > 0 ? "Long" : "Short"} ${Math.abs(s.sc)}</span><span class="mut">${esc((s.tags[0] || [""])[0])}</span></button>`).join("") || `<div class="unavail">No clear alt setups right now</div>`;
+}
+document.addEventListener("click", (e) => {
+  const m = e.target.closest("[data-altm]"); if (m) { ST.altMode = m.dataset.altm; LS.set("altMode", ST.altMode); drawAlts(); return; }
+  const r = e.target.closest("[data-altrm]"); if (r) { ST.altList = ST.altList.filter((b) => b !== r.dataset.altrm); LS.set("altList", ST.altList); ALTC.key = ""; drawAlts(); return; }
+  if (e.target.closest("#bAltAdd")) { const b = ($("#altAdd").value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/USDT$/, ""); if (b && !ST.altList.includes(b)) { ST.altList = [...ST.altList, b]; LS.set("altList", ST.altList); delete ALTK[b]; tick("altT"); tick("altK"); } drawAlts(); return; }
+  if (e.target.closest("#bAltReset")) { ST.altList = ALT_DEFAULT.slice(); LS.set("altList", ST.altList); ALTC.key = ""; tick("altT"); tick("altK"); drawAlts(); }
+});
+const _dAlt = drawStage2;
+drawStage2 = function (tab) { _dAlt(tab); try { if (tab === "alts") drawAlts(); if (tab === "now") drawAltsOverview(); } catch (e) { console.error(e); } };
+
+</script>
+<script>
+"use strict";
+/* ===================== Voices: what big BTC names are saying =====================
+   Google News search (RSS, through the site's /px/gnews pass-through) for a list of well-known bitcoin voices:
+   founders, fund managers, banks' analysts, traders, on-chain analysts and skeptics. Each headline is matched to the
+   person it names, toned with simple word rules, and scanned for BTC price targets ($150K, $1 million…).
+   No API keys, no AI; refreshes every 15 minutes while Intel or Signals is open. */
+const VOICES = [
+  // [name, group, role, regex (matched on the headline), usual stance]
+  ["Michael Saylor", "Bulls & treasuries", "Strategy (MSTR) chairman", /saylor/i, 1],
+  ["Larry Fink", "Funds & banks", "BlackRock CEO", /\bfink\b/i, 1],
+  ["Cathie Wood", "Funds & banks", "ARK Invest CEO", /cathie wood|\bark invest/i, 1],
+  ["Tom Lee", "Funds & banks", "Fundstrat / BitMine", /tom lee|fundstrat/i, 1],
+  ["Geoffrey Kendrick", "Funds & banks", "Standard Chartered", /kendrick|standard chartered/i, 1],
+  ["Matt Hougan", "Funds & banks", "Bitwise CIO", /hougan|bitwise/i, 1],
+  ["Mike Novogratz", "Funds & banks", "Galaxy CEO", /novogratz/i, 1],
+  ["Jurrien Timmer", "Funds & banks", "Fidelity macro", /timmer/i, 0],
+  ["Eric Balchunas", "Funds & banks", "Bloomberg ETF analyst", /balchunas|seyffart/i, 0],
+  ["Arthur Hayes", "Traders & macro", "BitMEX co-founder", /arthur hayes|\bhayes\b/i, 1],
+  ["Raoul Pal", "Traders & macro", "Real Vision", /raoul pal/i, 1],
+  ["Peter Brandt", "Traders & macro", "Veteran chartist", /peter brandt|\bbrandt\b/i, 0],
+  ["Lyn Alden", "Traders & macro", "Macro analyst", /lyn alden/i, 1],
+  ["Willy Woo", "On-chain", "On-chain analyst", /willy woo/i, 0],
+  ["Ki Young Ju", "On-chain", "CryptoQuant CEO", /ki young ju|cryptoquant/i, 0],
+  ["Glassnode", "On-chain", "On-chain data", /glassnode/i, 0],
+  ["Changpeng Zhao", "Industry", "Binance founder", /changpeng|\bcz\b/i, 1],
+  ["Brian Armstrong", "Industry", "Coinbase CEO", /brian armstrong/i, 1],
+  ["Jack Dorsey", "Industry", "Block CEO", /dorsey/i, 1],
+  ["Jack Mallers", "Industry", "Strike / Twenty One", /mallers/i, 1],
+  ["Samson Mow", "Industry", "JAN3 CEO", /samson mow/i, 1],
+  ["Anthony Pompliano", "Industry", "Investor, podcaster", /pompliano|\bpomp\b/i, 1],
+  ["Peter Schiff", "Skeptics", "Gold bug, BTC skeptic", /schiff/i, -1],
+  ["Jamie Dimon", "Skeptics", "JPMorgan CEO", /dimon/i, -1],
+];
+const VQ = [ // Google News OR-queries (kept short so each URL stays reasonable)
+  '("Michael Saylor" OR "Larry Fink" OR "Cathie Wood" OR "Tom Lee" OR "Standard Chartered" OR "Matt Hougan" OR "Novogratz" OR "Jurrien Timmer") bitcoin when:7d',
+  '("Arthur Hayes" OR "Raoul Pal" OR "Peter Brandt" OR "Lyn Alden" OR "Willy Woo" OR "Ki Young Ju" OR "Glassnode" OR "Balchunas") bitcoin when:7d',
+  '("Changpeng Zhao" OR "Brian Armstrong" OR "Jack Dorsey" OR "Jack Mallers" OR "Samson Mow" OR "Pompliano" OR "Peter Schiff" OR "Jamie Dimon") bitcoin when:7d',
+];
+const VBULL = /\b(bull(ish)?|rall(y|ies)|soar|surge|moon|breakout|higher|buy(ing|s)?|accumulat\w*|bottom(ed)? (is )?in|undervalued|parabolic|supercycle|all-time high|ath|record|\$\d[\d,.]*\s?(k|m|million)\b.*\b(by|in|target|predict))/i;
+const VBEAR = /\b(bear(ish)?|crash|plunge|collapse|bubble|sell(ing|s|-off)?|dump|top (is )?in|warns?|warning|fall|drop|risk|capitulat\w*|bear market|lower|correction|overvalued|ponzi|worthless)\b/i;
+ST.voGrp = LS.get("voGrp", "all");
+const voWanted = () => ["voices", "now"].includes(ST.tab);
+VQ.forEach((q, i) => {
+  const f = { id: "vo" + i, name: "Google News", px: "gnews", host: "https://news.google.com", path: `/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`, agg: true };
+  def(f.id, `Voices ${i + 1}/3`, "Intel → Voices", 15 * 60000, async () => ({ items: parseFeed(await getFeed(f), f) }), true);
+  SRC[f.id].when = voWanted;
+});
+function voTargets(t) { // BTC price targets in a headline: "$150K", "$1 million", "$200,000"
+  const out = []; const re = /\$\s?(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s?(k|K|thousand|m|M|million|mn)?\b/g; let m;
+  while ((m = re.exec(t))) { let v = parseFloat(m[1].replace(/,/g, "")); const u = (m[2] || "").toLowerCase(); if (u === "k" || u === "thousand") v *= 1e3; else if (u === "m" || u === "million" || u === "mn") v *= 1e6;
+    if (v >= 20000 && v <= 2e7 && /bitcoin|btc/i.test(t)) out.push(v); }
+  return out;
+}
+let VOC = { key: "", v: null };
+function voCompute() {
+  const ids = VQ.map((_, i) => "vo" + i), key = ids.map((id) => SRC[id].st.okAt).join("|"); if (VOC.key === key) return VOC.v;
+  const seen = new Set(), items = [];
+  ids.forEach((id) => { if (live(id)) D[id].items.forEach((x) => { const k = x.title.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 60); if (seen.has(k)) return; seen.add(k); items.push(x); }); });
+  const takes = [];
+  for (const x of items) {
+    const who = VOICES.filter((p) => p[3].test(x.title)); if (!who.length) continue;
+    const b = VBULL.test(x.title), r = VBEAR.test(x.title), tone = b && !r ? 1 : r && !b ? -1 : 0;
+    takes.push({ ...x, who: who.map((p) => p[0]), grp: who[0][1], tone, tg: voTargets(x.title) });
+  }
+  takes.sort((a, b) => b.t - a.t);
+  const ppl = VOICES.map(([name, grp, role, , lean]) => { const T = takes.filter((t) => t.who.includes(name)); const s = T.reduce((a, t) => a + t.tone, 0);
+    return { name, grp, role, lean, n: T.length, last: T[0] || null, tone: T.length ? s / T.length : 0, tg: T.flatMap((t) => t.tg) }; }).filter((p) => p.n).sort((a, b) => (b.last ? b.last.t : 0) - (a.last ? a.last.t : 0));
+  const bulls = takes.filter((t) => t.tone > 0).length, bears = takes.filter((t) => t.tone < 0).length;
+  const tg = takes.flatMap((t) => t.tg.map((v) => ({ v, who: t.who[0], t: t.t, link: t.link }))).sort((a, b) => a.v - b.v);
+  VOC = { key, v: { takes, ppl, bulls, bears, tg } }; return VOC.v;
+}
+const initials = (n) => n.split(/\s+/).map((w) => w[0]).slice(0, 2).join("");
+function drawVoices() {
+  const el = $("#voBody"); if (!el) return; const v = voCompute();
+  if (!v.takes.length) { const st = VQ.map((_, i) => status("vo" + i)); el.innerHTML = `<div class="panel"><div class="unavail">${st.includes("wait") ? "Searching the news for what big names are saying…" : esc(SRC.vo0.st.err || "No recent headlines found")}</div></div>`; return; }
+  const tot = v.bulls + v.bears || 1, px = curPx();
+  const tgt = v.tg.length ? `<div class="vtg">${[...new Map(v.tg.map((x) => [Math.round(x.v / 1000), x])).values()].slice(-12).map((x) => `<a class="bchip" href="${esc(x.link)}" target="_blank" rel="noopener"><b class="${px && x.v > px ? "up" : "dn"}">$${x.v >= 1e6 ? (x.v / 1e6).toFixed(x.v % 1e6 ? 1 : 0) + "M" : Math.round(x.v / 1000) + "K"}</b><i>${esc(x.who.split(" ").pop())}</i></a>`).join("")}</div>` : `<div class="mut" style="font-size:13px">No price targets in this week's headlines.</div>`;
+  const grps = ["all", ...new Set(VOICES.map((p) => p[1]))];
+  const ppl = v.ppl.filter((p) => ST.voGrp === "all" || p.grp === ST.voGrp);
+  el.innerHTML = `<div class="panel"><div class="ph"><span class="pt">Big-name sentiment · 7 days</span></div>
+      <div class="vmeter"><span class="up">Bullish ${v.bulls}</span><i><b class="vb" style="width:${(v.bulls / tot) * 100}%"></b><b class="vr" style="width:${(v.bears / tot) * 100}%"></b></i><span class="dn">${v.bears} Bearish</span></div>
+      <div class="sub" style="margin:6px 0 10px">${v.takes.length} headlines quoting ${v.ppl.length} people. ${v.bulls > v.bears * 2 ? "The loud voices are leaning bullish; that's usual, so watch for who turns cautious." : v.bears > v.bulls ? "More cautious headlines than usual from the big names: often a late-stage-fear signal, sometimes a real warning." : "Mixed."}</div>
+      <div class="bcap">Price targets mentioned</div>${tgt}</div>
+    <div class="ctl"><span class="seg" style="overflow-x:auto;max-width:100%">${grps.map((g) => `<button data-vog="${esc(g)}" aria-pressed="${ST.voGrp === g}">${g === "all" ? "All" : esc(g)}</button>`).join("")}</span></div>
+    <div class="vgrid">${ppl.map((p) => `<div class="panel vcard"><div class="vh"><span class="vav g${VOICES.findIndex((x) => x[0] === p.name) % 6}">${initials(p.name)}</span><div><b>${esc(p.name)}</b><small>${esc(p.role)}</small></div><span class="ftag ${vcls(p.tone)}" style="margin-left:auto;background:color-mix(in srgb,currentColor 12%,transparent)">${p.tone > 0.2 ? "Bullish" : p.tone < -0.2 ? "Bearish" : "Mixed"}</span></div>
+      ${p.last ? `<a class="vlast" href="${esc(p.last.link)}" target="_blank" rel="noopener">${esc(p.last.title)}<small>${esc(p.last.outlet)} · ${ago(p.last.t)}</small></a>` : ""}
+      <div class="mut" style="font-size:12px">${p.n} headline${p.n > 1 ? "s" : ""} this week${p.tg.length ? ` · targets ${[...new Set(p.tg.map((x) => "$" + (x >= 1e6 ? x / 1e6 + "M" : Math.round(x / 1000) + "K")))].join(", ")}` : ""}</div></div>`).join("") || `<div class="panel unavail">Nobody in this group made the news this week</div>`}</div>
+    <div class="panel"><div class="ph"><span class="pt">Latest takes</span></div>${v.takes.filter((t) => ST.voGrp === "all" || t.grp === ST.voGrp).slice(0, 30).map((t) => `<a class="vrow" href="${esc(t.link)}" target="_blank" rel="noopener"><span class="sld ${vcls(t.tone)}"></span><span><b>${esc(t.who.join(", "))}</b> · ${esc(t.title)}<small class="mut" style="display:block">${esc(t.outlet)} · ${ago(t.t)}</small></span></a>`).join("")}
+      <div class="src">Google News search for ${VOICES.length} well-known names, last 7 days. Headlines are matched to the person they name; tone comes from headline words only, so read the story before trading on it. Headlines can describe someone without quoting them. Refreshes every 15 min.</div></div>`;
+}
+function drawVoicesOverview() {
+  const el = $("#ovVoices"); if (!el) return; const v = voCompute();
+  if (!v.takes.length) { el.innerHTML = `<div class="unavail">Searching…</div>`; return; }
+  el.innerHTML = v.takes.slice(0, 4).map((t) => `<a class="vrow" href="${esc(t.link)}" target="_blank" rel="noopener"><span class="sld ${vcls(t.tone)}"></span><span><b>${esc(t.who[0])}</b> · ${esc(t.title)}<small class="mut" style="display:block">${ago(t.t)}</small></span></a>`).join("") + `<button class="btn" data-goto="voices" style="margin-top:6px">All voices ›</button>`;
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-vog]"); if (b) { ST.voGrp = b.dataset.vog; LS.set("voGrp", ST.voGrp); drawVoices(); } });
+const _dVo = drawStage2;
+drawStage2 = function (tab) { _dVo(tab); try { if (tab === "voices") drawVoices(); if (tab === "now") drawVoicesOverview(); } catch (e) { console.error(e); } };
+
+</script>
+<script>
+"use strict";
+/* ===================== UI glue (loads last) =====================
+   Explanations on/off with per-panel ⓘ, battery saver, phone notifications, home-screen app support. */
+ST.notes = LS.get("notes", false); ST.lite = LS.get("lite", false);
+function applyUi() { document.body.classList.toggle("notes", !!ST.notes); document.body.classList.toggle("lite", !!ST.lite); }
+applyUi(); syncCtl();
+// speed: sources that only feed one view refresh only while that view is open
+["cbS", "krS", "bsS", "okS", "bgS", "gmS", "mxS", "dbFut"].forEach((id) => { if (SRC[id]) SRC[id].when = () => ST.tab === "mkts"; });
+if (SRC.sess30) SRC.sess30.when = () => ST.tab === "sess";
+function askNotif() {
+  const off = (msg) => { ST.sigNotif = false; LS.set("sigNotif", false); syncCtl(); if (msg) sigToast({ dir: 0, kind: "info", txt: msg }); };
+  if (!("Notification" in window)) return off("Notifications aren't available here. On iPhone, add the dashboard to your Home Screen (Share → Add to Home Screen), open it from there, then turn this on.");
+  Notification.requestPermission().then((p) => { if (p !== "granted") off("Notifications were not allowed. You can allow them in Settings → Notifications."); });
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-tog]"); if (b) { const k = b.dataset.tog; if (k === "notes" || k === "lite") applyUi(); if (k === "sigNotif" && ST.sigNotif) askNotif(); }
+  const i = e.target.closest(".ib"); if (i) { const p = i.closest(".panel"); if (p) p.classList.toggle("showsrc"); }
+});
+// ⓘ on every panel that has small print
+function addInfo() {
+  document.querySelectorAll(".view:not([hidden]) .panel").forEach((p) => {
+    if (p.dataset.ib || !p.querySelector(".src")) return; const ph = p.querySelector(".ph"); if (!ph) return;
+    const b = document.createElement("button"); b.className = "ib"; b.type = "button"; b.textContent = "i"; b.title = "What this shows"; b.setAttribute("aria-label", "What this shows");
+    ph.appendChild(b); p.dataset.ib = "1";
+  });
+}
+const _dUi = drawStage2;
+drawStage2 = function (tab) { _dUi(tab); try { addInfo(); } catch (e) {} };
+// home-screen app: a service worker is needed for notifications on iPhone. It doesn't cache anything.
+if ("serviceWorker" in navigator && /^https:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
+render(true);
 
 </script>
 <script>new MutationObserver(()=>{try{recolorCharts();render();}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});</script>

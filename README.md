@@ -1,4 +1,6 @@
-# BTC Market Dashboard v2 (handoff export)
+# BTC Dashboard v3 (handoff export)
+
+v3.0 (Nov 18, 2026) adds the Signals tab (regime, confluence, market structure, ranked levels, big-move odds, change log), Alts and Voices, a new 5-tab layout and speed work. See HANDOFF §0.
 
 A static, client-only BTC futures dashboard. Live exchange data is fetched directly by the browser from free public APIs, and every indicator, signal and pattern is calculated locally in JavaScript. There are no runtime AI calls and no API keys.
 

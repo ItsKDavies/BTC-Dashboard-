@@ -735,7 +735,7 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("#bMyClear")) { MYLV = { at: 0, list: [] }; LS.set("myLevels", MYLV); $("#myTxt").value = ""; $("#myMsg").textContent = "Cleared."; drawMyLevels(); CH.xKey = null; chartExtras(); }
 });
 const _draw2 = drawStage2;
-drawStage2 = function (tab) { _draw2(tab); if (tab === "overview") { drawMood(); } };
+drawStage2 = function (tab) { _draw2(tab); if (tab === "now") { drawMood(); } };
 function syncLow() { document.querySelectorAll("[data-low]").forEach((b) => b.setAttribute("aria-pressed", ST.lowers.includes(b.dataset.low))); document.querySelectorAll("[data-lps]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lps === ST.lpStyle)); document.querySelectorAll("[data-tln]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tln === ST.tlN)); }
 syncLow(); $("#tfSeg").addEventListener("click", () => setTimeout(() => { if (D.pfc && D.pfc.per !== PFC_PER[ST.tf]) tick("pfc"); }, 0));
 if ($("#bClean")) $("#bClean").setAttribute("aria-pressed", ST.clean);

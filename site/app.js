@@ -7,7 +7,7 @@ const LS = {
   set(k, v) { try { localStorage.setItem("v2." + k, JSON.stringify(v)); } catch (e) {} },
 };
 const ST = {
-  tf: LS.get("tf", "30m"), auto: LS.get("auto", true), tab: LS.get("tab", "overview"),
+  tf: LS.get("tf", "30m"), auto: LS.get("auto", true), tab: LS.get("tab", "now"),
   ema: LS.get("ema", true), vwap: LS.get("vwap", true), lv: LS.get("lv", true), cvd: LS.get("cvd", true), oi: LS.get("oi", true),
   off: LS.get("off", {}),
 };
@@ -133,7 +133,9 @@ def("okxLS", "OKX long/short ratio", "Long/short accounts", 60000, async () => {
 def("hl", "Hyperliquid", "Venue: price, funding, OI", 30000, async () => {
   const j = await getJSON("https://api.hyperliquid.xyz/info", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "metaAndAssetCtxs" }) });
   const i = j[0].universe.findIndex((u) => u.name === "BTC"); const c = j[1][i];
-  if (!c) throw new Error("BTC not listed"); return { px: +c.markPx, f8: +c.funding * 8, oi: +c.openInterest };
+  if (!c) throw new Error("BTC not listed");
+  const all = {}; j[0].universe.forEach((u, k) => { const x = j[1][k]; if (x) all[u.name.replace(/^k/, "")] = { px: +x.markPx, f8: +x.funding * 8, oiUsd: +x.openInterest * +x.markPx, prev: +x.prevDayPx, vol: +x.dayNtlVlm }; }); // alts tab reuses this
+  return { px: +c.markPx, f8: +c.funding * 8, oi: +c.openInterest, all };
 });
 def("bitget", "Bitget perp", "Venue: price, funding, OI", 30000, async () => {
   const j = await getJSON("https://api.bitget.com/api/v2/mix/market/ticker?symbol=BTCUSDT&productType=usdt-futures");
@@ -185,7 +187,7 @@ const VENUES = [["okx", "OKX"], ["okxInv", "OKX coin-m"], ["bnf", "Binance"], ["
 /* ---------- scheduler ---------- */
 function status(id) {
   const s = SRC[id]; if (ST.off[id]) return "off";
-  if (s.st.s === "ok" && Date.now() - s.st.okAt > Math.max(3 * s.ms, 90000)) return "stale";
+  if (s.st.s === "ok" && Date.now() - s.st.okAt > Math.max(3 * s.ms, 90000) && !(s.when && !s.when())) return "stale";
   return s.st.s;
 }
 const live = (id) => { const x = status(id); return (x === "ok" || x === "stale") && D[id]; };
@@ -201,17 +203,18 @@ async function tick(id) {
     if (window.console) console.warn("[source]", id, e);
   } finally {
     s.busy = false;
-    const back = s.st.s === "ok" ? s.ms : s.st.s === "blocked" ? 30 * 60000 : Math.min(s.ms * 2 ** s.st.fails, 5 * 60000);
+    const back = s.st.s === "ok" ? s.ms * (ST.lite ? 2 : 1) : s.st.s === "blocked" ? 30 * 60000 : Math.min(s.ms * 2 ** s.st.fails, 5 * 60000);
     s.st.next = Date.now() + back; render();
   }
 }
-function tickAll() { for (const id in SRC) tick(id); }
+const gated = (s) => s.when && !s.when(); // sources only needed by one view wait until that view is open
+function tickAll() { for (const id in SRC) if (!gated(SRC[id])) tick(id); }
 setInterval(() => {
   if (!ST.auto || document.hidden) return;
-  const now = Date.now(); for (const id in SRC) if (!SRC[id].busy && SRC[id].st.next <= now) tick(id);
+  const now = Date.now(); for (const id in SRC) if (!SRC[id].busy && SRC[id].st.next <= now && !gated(SRC[id])) tick(id);
 }, 1000);
 setInterval(() => render(), 5000); // keep "ago" labels and stale states fresh
-document.addEventListener("visibilitychange", () => { if (!document.hidden && ST.auto) for (const id in SRC) if (Date.now() - SRC[id].st.okAt > SRC[id].ms) tick(id); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && ST.auto) for (const id in SRC) if (Date.now() - SRC[id].st.okAt > SRC[id].ms && !gated(SRC[id])) tick(id); });
 
 /* ---------- derived numbers ---------- */
 function win(k, bars) { if (!k || k.length <= bars) return null; const a = k[k.length - 1 - bars], b = k[k.length - 1]; let cvd = 0; for (let i = k.length - bars; i < k.length; i++) cvd += 2 * k[i].tb - k[i].v; return { pChg: ((b.c - a.c) / a.c) * 100, cvd }; }
@@ -381,8 +384,17 @@ function recolorCharts() {
 }
 
 /* ---------- rendering ---------- */
-let rq = false;
-function render() { if (rq) return; rq = true; requestAnimationFrame(() => { rq = false; try { draw(); } catch (e) { console.error(e); } }); }
+// Redraws are batched: at most one every 0.6s (1.5s in battery saver) unless you just tapped something, and none while the page is hidden.
+let rq = false, rqHidden = false, lastDraw = 0, lastUser = 0;
+["pointerdown", "keydown", "click"].forEach((ev) => document.addEventListener(ev, () => (lastUser = performance.now()), true));
+function render(now) {
+  if (document.hidden) { rqHidden = true; return; }
+  if (rq) return; rq = true;
+  const t = performance.now(), wait = now || t - lastUser < 500 ? 0 : Math.max(0, (ST.lite ? 1500 : 600) - (t - lastDraw));
+  const go = () => requestAnimationFrame(() => { rq = false; lastDraw = performance.now(); try { draw(); } catch (e) { console.error(e); } });
+  wait ? setTimeout(go, wait) : go();
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && rqHidden) { rqHidden = false; render(true); } });
 function draw() {
   const C = chartColors();
   // header
@@ -392,11 +404,12 @@ function draw() {
   const hc = $("#hChg"); hc.textContent = sp ? `${sp.chg >= 0 ? "▲" : "▼"} ${pct(sp.chg)} 24h` : "–"; hc.className = "chg " + (sp ? (sp.chg >= 0 ? "up" : "dn") : "");
   document.title = px ? `${n0(px)} · BTC Dashboard v2` : "BTC Market Dashboard v2";
   $("#hStats").innerHTML = sp ? `<span>24h range <b>${n0(sp.lo)}–${n0(sp.hi)}</b></span><span>Vol <b>${usd(sp.qv)}</b></span>` : "";
-  const ids = Object.keys(SRC).filter((id) => !ST.off[id]), counted = ids.filter((id) => status(id) !== "blocked"), nLive = counted.filter((id) => ["ok", "stale"].includes(status(id))).length;
+  const ids = Object.keys(SRC).filter((id) => !ST.off[id] && !(SRC[id].when && !SRC[id].when() && SRC[id].st.s === "wait")), counted = ids.filter((id) => status(id) !== "blocked"), nLive = counted.filter((id) => ["ok", "stale"].includes(status(id))).length;
   const last = Math.max(0, ...ids.map((id) => SRC[id].st.okAt));
-  $("#hLive").innerHTML = `<span class="dot ${ST.auto && !document.hidden ? "live" : ""}"></span><span>${nLive} of ${counted.length} sources live · ${ST.auto ? "updated " + ago(last) : "paused"}</span>`;
+  $("#hLive").innerHTML = `<span class="dot ${ST.auto && !document.hidden ? "live" : ""}"></span><span><b>${nLive}</b>/${counted.length}<span class="hlx"> sources</span> · ${ST.auto ? ago(last).replace(" ago", "") : "paused"}</span>`; $("#hLive").title = `${nLive} of ${counted.length} sources live · ${ST.auto ? "updated " + ago(last) : "paused"}`;
   $("#bAuto").setAttribute("aria-pressed", ST.auto); $("#bAuto").textContent = ST.auto ? "● Live" : "❚❚ Paused"; $("#bAuto").title = ST.auto ? "Auto-refresh is on · tap to pause" : "Paused · tap to resume auto-refresh";
-  if (ST.tab === "overview") { drawKpis(C); drawFlow(); const ks = status("kl"); $("#chartSt").className = "st " + ks; $("#chartSt").textContent = STL[ks]; updateChart(); }
+  if (ST.tab === "now") { drawKpis(C); drawFlow(); }
+  if (ST.tab === "overview") { const ks = status("kl"); $("#chartSt").className = "st " + ks; $("#chartSt").textContent = STL[ks]; updateChart(); }
   if (ST.tab === "derivs") drawDerivs(C);
   if (ST.tab === "sources") drawSources();
   if (typeof drawStage2 === "function") drawStage2(ST.tab);
@@ -480,7 +493,7 @@ function report() {
 
 /* ---------- controls ---------- */
 function setTab(t) {
-  if (!document.querySelector(`.tab[data-tab="${t}"]`)) t = "overview";
+  if (!document.querySelector(`.tab[data-tab="${t}"]`)) t = "now";
   ST.tab = t; LS.set("tab", t);
   document.querySelectorAll(".tab").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === t));
   // main tab + its sub-tabs
@@ -489,7 +502,9 @@ function setTab(t) {
   let nSub = 0; document.querySelectorAll(".tabs .tab").forEach((b) => { b.hidden = b.dataset.grp !== grp; if (!b.hidden) nSub++; });
   const tn = document.querySelector(".tabs"); if (tn) tn.classList.toggle("one", nSub < 2);
   document.querySelectorAll(".view").forEach((v) => (v.hidden = v.dataset.view !== t));
-  render();
+  document.body.dataset.tab = t; render(true);
+  // the chart is built while its tab may be hidden (zero width): size it properly the first time it's shown
+  if (t === "overview" && typeof CC !== "undefined" && CC && !CC.shown) requestAnimationFrame(() => { if (!CC.k.length) return; CC.shown = true; CC.resize(); CC.reset(); });
 }
 document.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
 document.querySelectorAll(".mtab").forEach((b) => b.addEventListener("click", () => { const g = b.dataset.main, last = LS.get("sub." + g, null), first = document.querySelector(`.tab[data-grp="${g}"]`);

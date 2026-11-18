@@ -13,9 +13,45 @@ function sampleRss(host) {
   return `<?xml version="1.0"?><rss version="2.0"><channel><title>${n}</title>${items}</channel></rss>`;
 }
 const NEWS_HOSTS = ["www.coindesk.com", "cointelegraph.com", "www.theblock.co", "decrypt.co", "bitcoinmagazine.com", "news.google.com"];
+  // ---- sample alts + voices (v3) ----
+  const ALTB = { ETH: 3150, SOL: 182, XRP: 2.31, BNB: 905, DOGE: 0.172, ADA: 0.61, AVAX: 19.4, LINK: 15.2, SUI: 2.4, TON: 2.9, DOT: 3.6, LTC: 92, BCH: 480, NEAR: 2.7, APT: 4.6, ARB: 0.31, OP: 0.52, INJ: 8.9, TIA: 1.4, SEI: 0.21, RENDER: 2.9, FET: 0.33, TAO: 340, ENA: 0.34, ONDO: 0.66, AAVE: 205, UNI: 7.6, PEPE: 0.0000081, WIF: 0.55, HBAR: 0.17, TRX: 0.29, XLM: 0.27 };
+  const AS = {};
+  function altSeries(b, iv) {
+    const key = b + iv; if (AS[key]) return AS[key];
+    let sd = [...b].reduce((a, c) => a * 31 + c.charCodeAt(0), 7) % 2147483647 || 11; const r = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+    const n = iv === "1d" ? 400 : 150, sec = iv === "1d" ? 86400 : 14400, base = ALTB[b] || 1, trend = (r() - 0.45) * (iv === "1d" ? 0.004 : 0.003), vol = iv === "1d" ? 0.035 : 0.012, out = [];
+    let p = base * (1 - trend * n * 0.9), t = (Math.floor(Date.now() / 1000 / sec) - n + 1) * sec;
+    for (let i = 0; i < n; i++) { const o = p, c = o * (1 + trend + (r() - 0.5) * vol * 2 + Math.sin(i / (9 + r() * 6)) * vol * 0.3); const h = Math.max(o, c) * (1 + r() * vol * 0.5), l = Math.min(o, c) * (1 - r() * vol * 0.5), v = (1e6 / base) * (0.5 + r()) * (i > n - 4 && r() > 0.6 ? 3 : 1); out.push([(t + i * sec) * 1000, o, h, l, c, v]); p = c; }
+    const k = base / out[n - 1][4]; out.forEach((x) => { for (let j = 1; j <= 4; j++) x[j] *= k; });
+    return (AS[key] = out);
+  }
+  function altAnswer(u, q) {
+    if (u.pathname.endsWith("/ticker/24hr") && (q.symbols || (q.symbol && q.symbol !== "BTCUSDT"))) {
+      const list = q.symbols ? JSON.parse(q.symbols) : [q.symbol];
+      const one = (s) => { const b = s.replace(/USDT$/, ""); if (!ALTB[b]) return null; const k = altSeries(b, "4h"), lst = k[k.length - 1], o = k[k.length - 7][4]; return { symbol: s, lastPrice: String(lst[4]), priceChangePercent: (((lst[4] - o) / o) * 100).toFixed(2), quoteVolume: String(lst[5] * lst[4] * 6 * 50), highPrice: String(lst[2]), lowPrice: String(lst[3]) }; };
+      if (q.symbols) { const r = list.map(one); if (r.some((x) => !x)) return { __status: 400 }; return r; }
+      return one(q.symbol) || { __status: 400 };
+    }
+    if (u.pathname.endsWith("/klines") && q.symbol && q.symbol !== "BTCUSDT") {
+      const b = q.symbol.replace(/USDT$/, ""); if (!ALTB[b]) return { __status: 400 };
+      return altSeries(b, q.interval === "1d" ? "1d" : "4h").slice(-(+q.limit || 150)).map((x) => [x[0], x[1].toPrecision(8), x[2].toPrecision(8), x[3].toPrecision(8), x[4].toPrecision(8), x[5].toFixed(2), x[0] + 1, (x[5] * x[4]).toFixed(2), 100, (x[5] * 0.5).toFixed(2), "0", "0"]);
+    }
+    return undefined;
+  }
+  function voicesRss(q) {
+    const T = [["Michael Saylor says Strategy will keep buying bitcoin, sees $1 million BTC by 2030", 3], ["Arthur Hayes warns bitcoin could drop to $70K before Fed liquidity returns", 9], ["Tom Lee predicts bitcoin at $200,000 by year-end despite pullback", 20],
+      ["Peter Schiff calls bitcoin rally a bubble as gold hits record", 30], ["Standard Chartered's Kendrick cuts bitcoin target to $150K", 40], ["Cathie Wood: ARK still bullish, sees bitcoin at $1.5 million in bull case", 50],
+      ["Willy Woo: on-chain data shows long-term holders distributing", 60], ["Raoul Pal says liquidity cycle points higher for crypto into 2026", 70], ["Peter Brandt flags possible bearish bitcoin chart pattern", 80],
+      ["Brian Armstrong says Coinbase will expand bitcoin lending", 90], ["Matt Hougan: ETF inflows to accelerate as advisers buy bitcoin", 100], ["Jamie Dimon repeats bitcoin skepticism at JPMorgan event", 120],
+      ["Lyn Alden explains why bitcoin is undervalued against the money supply", 130], ["Ki Young Ju: CryptoQuant data shows whales accumulating bitcoin", 140]];
+    const g = /Hayes|Pal/.test(q) ? 1 : /Zhao|Schiff/.test(q) ? 2 : 0;
+    const items = T.filter((_, i) => i % 3 === g).map(([t, h], i) => `<item><title>Sample: ${t} - CoinDesk</title><link>https://example.com/v${g}/${i}</link><pubDate>${new Date(Date.now() - h * 36e5).toUTCString()}</pubDate><source>CoinDesk</source></item>`).join("");
+    return `<?xml version="1.0"?><rss version="2.0"><channel><title>Google News</title>${items}</channel></rss>`;
+  }
 module.exports = function(url, method){
   const u = new URL(url); const q = Object.fromEntries(u.searchParams);
   if (u.host==='data-api.binance.vision'){
+    const am = altAnswer(u, q); if (am !== undefined) return am;
     if (u.pathname.endsWith('/ticker/24hr')) return {lastPrice:'80283.10',priceChangePercent:'-1.60',highPrice:'81682',lowPrice:'79221',volume:'11000',quoteVolume:'889222877'};
     if (u.pathname.endsWith('/klines')) return kl(q.interval, +q.limit);
   }
@@ -46,8 +82,11 @@ module.exports = function(url, method){
   if (u.host==='open-api.bingx.com') return {code:0,data:{markPrice:'80282',lastFundingRate:'0.00008'}};
   if (u.host==='api.alternative.me') return {data:[{value:'38',value_classification:'Fear'},{value:'44',value_classification:'Fear'}]};
   if (u.host==='nfs.faireconomy.media') return [{title:'Federal Funds Rate',country:'USD',date:new Date(Date.now()+864e5).toISOString(),impact:'High',forecast:'3.75%',previous:'4.00%'},{title:'JOLTS Job Openings',country:'USD',date:new Date(Date.now()-36e5).toISOString(),impact:'Medium'}];
+  if (/rss\/search/.test(url) && /when%3A7d|when:7d/.test(url)) return { __xml: voicesRss(decodeURIComponent(url)) };
   if (NEWS_HOSTS.includes(u.host)) return { __xml: sampleRss(u.host) };
   if (u.host==='api.bybit.com') return {__status:403};
   if (u.host==='fapi.binance.com') return {__status:451};
   return null;
 };
+
+module.exports.voicesRss = voicesRss;

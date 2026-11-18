@@ -27,9 +27,45 @@
   const kl = (iv, lim) => series(iv).slice(-lim).map((b) => [b.t * 1000, b.o.toFixed(2), b.h.toFixed(2), b.l.toFixed(2), b.c.toFixed(2), b.v.toFixed(4), (b.t + SEC[iv]) * 1000 - 1, (b.v * b.c).toFixed(2), 1000, b.tb.toFixed(4), "0", "0"]);
   const rub = (n, f, sec = 300) => Array.from({ length: n }, (_, i) => [String((Math.floor(now() / sec) * sec - i * sec) * 1000), ...f(i)]);
   const P = (o) => (+px() + o).toFixed(1);
+  // ---- sample alts + voices (v3) ----
+  const ALTB = { ETH: 3150, SOL: 182, XRP: 2.31, BNB: 905, DOGE: 0.172, ADA: 0.61, AVAX: 19.4, LINK: 15.2, SUI: 2.4, TON: 2.9, DOT: 3.6, LTC: 92, BCH: 480, NEAR: 2.7, APT: 4.6, ARB: 0.31, OP: 0.52, INJ: 8.9, TIA: 1.4, SEI: 0.21, RENDER: 2.9, FET: 0.33, TAO: 340, ENA: 0.34, ONDO: 0.66, AAVE: 205, UNI: 7.6, PEPE: 0.0000081, WIF: 0.55, HBAR: 0.17, TRX: 0.29, XLM: 0.27 };
+  const AS = {};
+  function altSeries(b, iv) {
+    const key = b + iv; if (AS[key]) return AS[key];
+    let sd = [...b].reduce((a, c) => a * 31 + c.charCodeAt(0), 7) % 2147483647 || 11; const r = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+    const n = iv === "1d" ? 400 : 150, sec = iv === "1d" ? 86400 : 14400, base = ALTB[b] || 1, trend = (r() - 0.45) * (iv === "1d" ? 0.004 : 0.003), vol = iv === "1d" ? 0.035 : 0.012, out = [];
+    let p = base * (1 - trend * n * 0.9), t = (Math.floor(Date.now() / 1000 / sec) - n + 1) * sec;
+    for (let i = 0; i < n; i++) { const o = p, c = o * (1 + trend + (r() - 0.5) * vol * 2 + Math.sin(i / (9 + r() * 6)) * vol * 0.3); const h = Math.max(o, c) * (1 + r() * vol * 0.5), l = Math.min(o, c) * (1 - r() * vol * 0.5), v = (1e6 / base) * (0.5 + r()) * (i > n - 4 && r() > 0.6 ? 3 : 1); out.push([(t + i * sec) * 1000, o, h, l, c, v]); p = c; }
+    const k = base / out[n - 1][4]; out.forEach((x) => { for (let j = 1; j <= 4; j++) x[j] *= k; });
+    return (AS[key] = out);
+  }
+  function altAnswer(u, q) {
+    if (u.pathname.endsWith("/ticker/24hr") && (q.symbols || (q.symbol && q.symbol !== "BTCUSDT"))) {
+      const list = q.symbols ? JSON.parse(q.symbols) : [q.symbol];
+      const one = (s) => { const b = s.replace(/USDT$/, ""); if (!ALTB[b]) return null; const k = altSeries(b, "4h"), lst = k[k.length - 1], o = k[k.length - 7][4]; return { symbol: s, lastPrice: String(lst[4]), priceChangePercent: (((lst[4] - o) / o) * 100).toFixed(2), quoteVolume: String(lst[5] * lst[4] * 6 * 50), highPrice: String(lst[2]), lowPrice: String(lst[3]) }; };
+      if (q.symbols) { const r = list.map(one); if (r.some((x) => !x)) return { __status: 400 }; return r; }
+      return one(q.symbol) || { __status: 400 };
+    }
+    if (u.pathname.endsWith("/klines") && q.symbol && q.symbol !== "BTCUSDT") {
+      const b = q.symbol.replace(/USDT$/, ""); if (!ALTB[b]) return { __status: 400 };
+      return altSeries(b, q.interval === "1d" ? "1d" : "4h").slice(-(+q.limit || 150)).map((x) => [x[0], x[1].toPrecision(8), x[2].toPrecision(8), x[3].toPrecision(8), x[4].toPrecision(8), x[5].toFixed(2), x[0] + 1, (x[5] * x[4]).toFixed(2), 100, (x[5] * 0.5).toFixed(2), "0", "0"]);
+    }
+    return undefined;
+  }
+  function voicesRss(q) {
+    const T = [["Michael Saylor says Strategy will keep buying bitcoin, sees $1 million BTC by 2030", 3], ["Arthur Hayes warns bitcoin could drop to $70K before Fed liquidity returns", 9], ["Tom Lee predicts bitcoin at $200,000 by year-end despite pullback", 20],
+      ["Peter Schiff calls bitcoin rally a bubble as gold hits record", 30], ["Standard Chartered's Kendrick cuts bitcoin target to $150K", 40], ["Cathie Wood: ARK still bullish, sees bitcoin at $1.5 million in bull case", 50],
+      ["Willy Woo: on-chain data shows long-term holders distributing", 60], ["Raoul Pal says liquidity cycle points higher for crypto into 2026", 70], ["Peter Brandt flags possible bearish bitcoin chart pattern", 80],
+      ["Brian Armstrong says Coinbase will expand bitcoin lending", 90], ["Matt Hougan: ETF inflows to accelerate as advisers buy bitcoin", 100], ["Jamie Dimon repeats bitcoin skepticism at JPMorgan event", 120],
+      ["Lyn Alden explains why bitcoin is undervalued against the money supply", 130], ["Ki Young Ju: CryptoQuant data shows whales accumulating bitcoin", 140]];
+    const g = /Hayes|Pal/.test(q) ? 1 : /Zhao|Schiff/.test(q) ? 2 : 0;
+    const items = T.filter((_, i) => i % 3 === g).map(([t, h], i) => `<item><title>Sample: ${t} - CoinDesk</title><link>https://example.com/v${g}/${i}</link><pubDate>${new Date(Date.now() - h * 36e5).toUTCString()}</pubDate><source>CoinDesk</source></item>`).join("");
+    return `<?xml version="1.0"?><rss version="2.0"><channel><title>Google News</title>${items}</channel></rss>`;
+  }
   function answer(url) {
     const u = new URL(url, "https://demo.local"), q = Object.fromEntries(u.searchParams), h = u.host, path = u.pathname;
     if (h === "data-api.binance.vision") {
+      const am = altAnswer(u, q); if (am !== undefined) return am;
       if (path.endsWith("/ticker/24hr")) { const s = series("1h"), o = s.at(-25).c; return { lastPrice: P(0), priceChangePercent: (((px() - o) / o) * 100).toFixed(2), highPrice: String(Math.max(...s.slice(-24).map((b) => b.h))), lowPrice: String(Math.min(...s.slice(-24).map((b) => b.l))), volume: "11000", quoteVolume: "889222877" }; }
       if (path.endsWith("/klines")) return kl(q.interval, +q.limit);
     }
@@ -47,7 +83,7 @@
       if (path.includes("taker-volume")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => { const tilt = Math.sin(i / 9) * 25; return [String(100 - tilt + rnd() * 40), String(100 + tilt + rnd() * 40)]; }, sec) }; }
       if (path.includes("long-short")) { const sec = q.period === "1H" ? 3600 : q.period === "1D" ? 86400 : 300; return { code: "0", data: rub(q.period === "1D" ? 120 : 300, (i) => [String(1.6 + Math.sin(i / 40) * 0.2 + Math.sin(i / 3) * 0.03)], sec) }; }
     }
-    if (h === "api.hyperliquid.xyz") return [{ universe: [{ name: "BTC" }] }, [{ markPx: P(-2), funding: "0.0000125", openInterest: "31000" }]];
+    if (h === "api.hyperliquid.xyz") { const nm = ["BTC", "ETH", "SOL", "DOGE", "kPEPE", "SUI"], f = [0.0000125, 0.00007, -0.00004, 0.00009, 0.0001, 0.00002]; return [{ universe: nm.map((name) => ({ name })) }, nm.map((x, i) => ({ markPx: i ? String(ALTB[x.replace(/^k/, "")] || 1) : P(-2), funding: String(f[i]), openInterest: i ? "100000" : "31000", prevDayPx: "1", dayNtlVlm: "1" }))]; }
     if (h === "api.bitget.com") return path.includes("/spot/") ? { code: "00000", data: [{ lastPr: P(-15), open: "80850", baseVolume: "3100", high24h: "81580", low24h: "79230" }] } : { code: "00000", data: [{ lastPr: P(-8), fundingRate: "0.00005", holdingAmount: "42000" }] };
     if (h === "www.deribit.com") {
       if (path.includes("book_summary") && q.kind === "future") return { result: [{ instrument_name: "BTC-PERPETUAL", mark_price: px(), open_interest: 9e8, volume_usd: 1e9 }, { instrument_name: "BTC-27NOV26", mark_price: px() * 1.004, open_interest: 1e8, volume_usd: 2e7 }, { instrument_name: "BTC-25DEC26", mark_price: px() * 1.011, open_interest: 3e8, volume_usd: 5e7 }, { instrument_name: "BTC-26MAR27", mark_price: px() * 1.027, open_interest: 2e8, volume_usd: 3e7 }] };
@@ -85,8 +121,10 @@
   window.fetch = async function (input, opt) {
     let url = typeof input === "string" ? input : input.url; const m = /^\/px\/(\w+)(\/.*)$/.exec(url); if (m) url = PXMAP[m[1]] + m[2];
     await new Promise((r) => setTimeout(r, 60 + rnd() * 120));
+    if (/rss\/search/.test(url) && /when%3A7d|when:7d/.test(url)) return new Response(voicesRss(decodeURIComponent(url)), { status: 200, headers: { "content-type": "application/rss+xml" } });
     if (NEWS_HOSTS.includes(new URL(url).host)) return new Response(sampleRss(new URL(url).host), { status: 200, headers: { "content-type": "application/rss+xml" } });
     const d = answer(url); if (d === null) throw new TypeError("Failed to fetch");
+    if (d && d.__status) return new Response("{}", { status: d.__status });
     return new Response(JSON.stringify(d), { status: d.__status || 200, headers: { "content-type": "application/json" } });
   };
   class FakeWS {

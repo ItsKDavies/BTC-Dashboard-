@@ -8,6 +8,26 @@ This document describes the project exactly as it exists. Nothing was rebuilt or
 
 ---
 
+## 0. v3.0 update (Nov 18, 2026): Signals tab, Alts, Voices, new layout, speed
+
+**Navigation (5 main tabs + gear).** Signals (Now · Regime & confluence · Structure · Levels & moves) · Chart · Trade (Setups · Alts · Technicals · Patterns · Sessions) · Flow (Positions · CVD · Liquidations · Options) · Intel (News · Voices · Macro & markets). Settings moved to the gear in the header. The app opens on Signals → Now. The chart view keeps its id `overview`; the old Overview panels (brief, mood, KPIs, flow read, assessment, GEX and news summaries) now live in view `now`.
+
+**New files** (load order after `brief.js`): `sigta.js` (pure engine, also runs in Node: ADX, efficiency ratio, Bollinger-width percentile, regime, pivots, BOS/CHoCH structure walk, protected swings, equal highs/lows, fair value gaps, order blocks, volume profile, level clustering, touch odds), `signals.js` (Signals views, confluence grid, leverage and gamma regime, ranked level map, big-move scenarios, magnets, expected range, change log + toasts/notifications, chart brief strip, and an override of `briefLevels` so the Trade brief and the chart's Watch levels use the ranked map), `alts.js` (Binance spot candles for a 32-coin watchlist, short-term 4h and long-term daily scoring, plans, alt climate), `voices.js` (Google News RSS for ~24 named BTC voices through `/px/gnews`, tone, price targets), `ui.js` (explanations toggle with per-panel ⓘ, battery saver, notifications, service worker registration), `sw.js` (no caching), `manifest.webmanifest` and icons (Add to Home Screen).
+
+**Confluence score** = 65% timeframe grid (Trend, Momentum, Structure, Regime, Location × 15m/30m/1h/4h/1D weighted 10/20/20/30/20) + 35% live signals (flow 40%, positioning contrarian 25%, Coinbase premium 15%, liquidity pull 20%). The header pill now shows confluence; the Trade brief still shows the older technical lean (70% multi-TF technicals + 30% flow).
+
+**Touch odds** use a random walk with the last 72 hourly returns' volatility and a small drift toward the confluence lean (`SG.touchOdds`). They're estimates, not backtested.
+
+**Change log** (localStorage `v2.sigLog`, last 120) records structure breaks 30m–1D, regime changes 1h–1D, confluence flips, gamma flips, leverage-regime changes and 4★+ levels crossed. State snapshot in `v2.sigState`; unseen count shows as a badge on Signals.
+
+**Speed.** `render()` batches redraws (≤ 1 per 0.6 s, 1.5 s in battery saver; immediate after a tap) and skips work while the page is hidden. Sources can declare `SRC[id].when()`: alts and voices load only while their views (or Signals → Now) are open; the 7 spot-venue tickers and Deribit futures only on Macro & markets; 30-day session candles only on Sessions. WebSockets close after 60 s in the background and reopen on return. The obsolete 700 ms overlay timer is gone. Panels below the fold use `content-visibility:auto`. The fixed page gradient moved to a fixed pseudo-element (cheaper scrolling on iOS). Explanations (`.src`) are hidden by default.
+
+**Proxy.** No new routes: voices reuse `/px/gnews`; alts use `data-api.binance.vision` directly (browser-friendly) and the Hyperliquid response the venue source already loads.
+
+**Tests.** `node tests/sigtest.js` (engine on synthetic candles), `node tests/v3test.js 390 [outdir]` (every tab with mocks, overflow and error check, then counts requests in 60 s idle on Signals). Mocks for alts and voices were added to `tests/mock.js` and `preview/shim.js`.
+
+---
+
 ## Contents
 
 1. [Source code and project structure](#1-source-code-and-project-structure)

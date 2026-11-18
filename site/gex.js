@@ -151,7 +151,7 @@ document.addEventListener("click", (e) => {
 const _d5 = drawStage2;
 drawStage2 = function (tab) {
   _d5(tab);
-  try { if (tab === "gex") drawGex(); if (tab === "overview") drawGexOverview(); } catch (e) { console.error(e); }
+  try { if (tab === "gex") drawGex(); if (tab === "now") drawGexOverview(); } catch (e) { console.error(e); }
 };
 if (typeof syncCtl === "function") syncCtl();
 render();

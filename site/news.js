@@ -161,7 +161,7 @@ function newsBadge() {
   const b = document.querySelector('.tab[data-tab="news"]'); if (!b) return;
   const n = ST.tab === "news" ? 0 : newsAll().filter((s) => s.lvl > 0 && s.t > ST.newsSeen && Date.now() - s.t < 24 * 36e5).length;
   const want = n ? `News <span class="nbadge">${n > 9 ? "9+" : n}</span>` : "News"; if (b.innerHTML !== want) b.innerHTML = want;
-  const m = document.querySelector('.mtab[data-main="markets"]'); if (m) { let d = m.querySelector(".nbadge"); if (n && !d) { d = document.createElement("span"); d.className = "nbadge mb"; m.appendChild(d); } if (d) { if (n) d.textContent = n > 9 ? "9+" : n; else d.remove(); } }
+  const m = document.querySelector('.mtab[data-main="intel"]'); if (m) { let d = m.querySelector(".nbadge"); if (n && !d) { d = document.createElement("span"); d.className = "nbadge mb"; m.appendChild(d); } if (d) { if (n) d.textContent = n > 9 ? "9+" : n; else d.remove(); } }
 }
 document.addEventListener("click", (e) => {
   const s = e.target.closest("[data-nscope]"); if (s) { ST.newsScope = s.dataset.nscope; LS.set("newsScope", ST.newsScope); drawNews(); return; }
@@ -176,7 +176,7 @@ drawStage2 = function (tab) {
   try {
     if (tab === "news") { if (!newsWasOpen) { NEWS_PREV_SEEN = ST.newsSeen; newsWasOpen = true; } ST.newsSeen = Date.now(); LS.set("newsSeen", ST.newsSeen); drawNews(); }
     else newsWasOpen = false;
-    if (tab === "overview") drawNewsOverview();
+    if (tab === "now") drawNewsOverview();
     newsBadge();
   } catch (e) { console.error(e); }
 };

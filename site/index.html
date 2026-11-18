@@ -3,8 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>BTC Market Dashboard v2</title>
-<meta name="theme-color" content="#0d1015">
+<title>BTC Dashboard v3</title>
+<meta name="theme-color" content="#07090f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BTC Dash">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -305,10 +311,10 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
 /* compact header on phones */
 @media (max-width:520px){
   header{backdrop-filter:none;-webkit-backdrop-filter:none}
-  .hd{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"px auto now" "stats stats stats" "lean lean lean" "live live live";gap:6px 8px;padding-block:8px 6px;align-items:center}
+  .hd{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;grid-template-areas:"px auto now set" "stats stats stats stats" "lean lean live live";gap:6px 8px;padding-block:8px 6px;align-items:center}
   .hd>div:first-child{grid-area:px}#hStats{grid-area:stats;font-size:12px;gap:8px}#hLean{grid-area:lean;min-width:0}
-  .hright{display:contents}#hLive{grid-area:live;justify-self:start;min-width:0;max-width:100%;overflow:hidden;padding:3px 9px;font-size:11.5px}#hLive span:last-child{overflow:hidden;text-overflow:ellipsis;min-width:0}#hStats{min-width:0;overflow:hidden;flex-wrap:nowrap;white-space:nowrap}
-  #bAuto{grid-area:auto}#bNow{grid-area:now;font-size:0;width:34px;padding:0}#bNow:before{content:"↻";font-size:17px}.hd .btn{padding:4px 10px;min-height:32px;font-size:12.5px;white-space:nowrap}
+  .hright{display:contents}#hLive{grid-area:live;justify-self:end;min-width:0;max-width:100%;overflow:hidden;padding:3px 9px;font-size:11.5px}#hLive span:last-child{overflow:hidden;text-overflow:ellipsis;min-width:0}#hStats{min-width:0;overflow:hidden;flex-wrap:nowrap;white-space:nowrap}
+  #bAuto{grid-area:auto}#bNow{grid-area:now}#bSet{grid-area:set}.hlx{display:none}.hd .btn{padding:4px 10px;min-height:32px;font-size:12.5px;white-space:nowrap}
   .hd>div:first-child>div:last-child{flex-wrap:nowrap;gap:8px!important}.chg{white-space:nowrap;font-size:13px;padding:2px 7px}.px{font-size:25px}
   #hLean{font-size:12.5px;flex-wrap:nowrap;overflow:hidden}#hLean>*{white-space:nowrap}
 }
@@ -346,6 +352,108 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
 .bset{display:grid;gap:2px;text-align:left;padding:8px 10px;border-radius:12px;border:1px solid var(--weak);background:color-mix(in srgb,var(--fg) 3%,transparent);font-size:13px}.bset b{font-size:12px;text-transform:uppercase;letter-spacing:.06em}.bset.up{border-left:3px solid var(--up)}.bset.up b{color:var(--up)}.bset.down{border-left:3px solid var(--dn)}.bset.down b{color:var(--dn)}.bset span:nth-of-type(1){font-weight:650}.bset .mut{font-size:12px}
 .bchips{display:flex;flex-wrap:wrap;gap:6px}.bchip{display:inline-flex;gap:6px;align-items:baseline;padding:4px 9px;border-radius:999px;border:1px solid var(--weak);background:color-mix(in srgb,var(--fg) 3%,transparent);font-size:12px}.bchip i{font-style:normal;color:var(--fg3)}.bchip b{font-weight:650}
 @media (max-width:520px){.blvs{grid-template-columns:1fr}.bnow{justify-self:start;display:flex;gap:8px;align-items:baseline;padding:4px 10px}.bsets{grid-template-columns:1fr}}
+
+/* ===================== v3 revamp: Signals, Alts, Voices, new look ===================== */
+html:not([data-cs="classic"]) body{background:var(--bg)}
+html:not([data-cs="classic"]) body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(1200px 600px at 10% -10%,var(--r1) 0%,transparent 60%),radial-gradient(900px 500px at 110% 10%,var(--r2) 0%,transparent 55%)}
+.hib{width:34px;padding:0!important;display:inline-grid;place-items:center;font-size:17px}.hib svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+#hLive b{font-weight:700}
+.tabs{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);scrollbar-width:none;padding-right:24px}.tabs::-webkit-scrollbar{display:none}
+.tabs .tab{flex:none}
+body[data-tab="sources"] .tabs{display:none}
+.ph{position:relative}
+.lnk{margin-left:auto;border:0;background:none;color:var(--acc);font-size:12.5px;font-weight:600;padding:2px 4px;min-height:24px}
+.ib{margin-left:6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--fg3);font:italic 700 11px/18px Georgia,serif;padding:0;flex:none}
+.ph .st~.ib,.ph .lnk~.ib{margin-left:6px}.ph>.pt+.ib{margin-left:auto}
+.src{display:none}body.notes .src,.panel.showsrc .src{display:block}.panel.showsrc .ib{background:var(--acc);color:#000;border-color:var(--acc)}
+.view:not([data-view="overview"]):not([data-view="now"]) .panel{content-visibility:auto;contain-intrinsic-size:auto 260px}
+body.lite *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}body.lite .panel{box-shadow:none!important}body.lite::before{display:none}
+/* hero */
+.heroP{padding:14px 16px}
+.hero{display:grid;gap:12px;grid-template-columns:minmax(220px,260px) 1fr;align-items:center}
+.hg{display:grid;justify-items:center;gap:2px}.gauge{width:100%;max-width:240px;display:block}
+.hgl{display:grid;justify-items:center;text-align:center}.hgl b{font-size:17px}.hgl span{font-size:12px;color:var(--fg3)}
+.htiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.htile{display:grid;gap:2px;padding:10px 12px;border-radius:14px;background:var(--tint,color-mix(in srgb,var(--fg) 4%,transparent));border:1px solid var(--edge,var(--weak));min-width:0}
+.htile span{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--fg3);font-weight:600}.htile b{font-size:15px;line-height:1.25}.htile small{font-size:12px;color:var(--fg2)}
+.htile.rg-up{border-color:color-mix(in srgb,var(--up) 45%,transparent)}.htile.rg-down{border-color:color-mix(in srgb,var(--dn) 45%,transparent)}.htile.rg-squeeze{border-color:color-mix(in srgb,var(--warn) 55%,transparent)}
+.hins{grid-column:1/-1;margin:0;font-size:14px;line-height:1.5;color:var(--fg)}.hcoil{grid-column:1/-1;margin:0;font-size:13.5px;color:var(--warn);font-weight:600}
+.erng{grid-column:1/-1;display:grid;gap:6px}.erc{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}.erc span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3);font-weight:600;width:100%}.erc b{font-size:16px}.erc small{color:var(--fg3)}
+.erbar{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,color-mix(in srgb,var(--dn) 35%,transparent),color-mix(in srgb,var(--fg3) 18%,transparent) 50%,color-mix(in srgb,var(--up) 35%,transparent))}
+.erbar i{position:absolute;top:-3px;bottom:-3px;width:3px;margin-left:-1.5px;border-radius:2px}.erbar i.now{background:var(--fg);top:-5px;bottom:-5px}.erbar i.r{background:var(--dn)}.erbar i.s{background:var(--up)}
+.erl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--fg3)}
+@media (max-width:640px){.hero{grid-template-columns:1fr}.htiles{grid-template-columns:1fr 1fr}.htiles .htile:last-child{grid-column:1/-1}.gauge{max-width:220px}}
+/* moves, magnets, stars, odds */
+.mvs{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.mvc{display:grid;gap:8px;padding:12px;border-radius:14px;border:1px solid var(--edge,var(--weak));background:var(--tint,transparent)}
+.mvc.up{border-left:3px solid var(--up)}.mvc.dn{border-left:3px solid var(--dn)}
+.mvh{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.mvh b{font-size:14px}.mvc.up .mvh b{color:var(--up)}.mvc.dn .mvh b{color:var(--dn)}.mvh small{width:100%;font-size:11px;color:var(--fg3)}
+.mvp{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.mvp>div{display:grid;gap:1px}.mvp span{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg3)}.mvp b{font-size:18px;font-variant-numeric:tabular-nums}.mvp small{font-size:11.5px;color:var(--fg3)}.mva{font-size:20px;color:var(--fg3)}
+.mvw{font-size:12px;color:var(--fg2)}.mvn{margin:0;padding-left:16px;font-size:12.5px;color:var(--fg2);line-height:1.45}
+.stars{color:var(--warn);letter-spacing:-1px;font-size:12px;white-space:nowrap}.stars i{font-style:normal;color:var(--fg3);opacity:.35}
+.odds{display:inline-block;min-width:38px;text-align:center;font-weight:700;font-size:12px;padding:1px 6px;border-radius:7px}
+.odds.hi{color:#000;background:var(--up)}.odds.md{color:var(--fg);background:color-mix(in srgb,var(--warn) 30%,transparent)}.odds.lo{color:var(--fg2);background:color-mix(in srgb,var(--fg3) 20%,transparent)}
+.mags{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.mag{display:grid;gap:4px;padding:9px 11px;border-radius:12px;border:1px solid var(--edge,var(--weak));background:var(--tint,transparent)}.mag.r{border-left:3px solid var(--dn)}.mag.s{border-left:3px solid var(--up)}
+.magp{display:flex;gap:8px;align-items:baseline}.magp b{font-size:16px}.magp .stars{margin-left:auto}.mago{display:flex;gap:12px;font-size:12px;color:var(--fg3)}.magw{font-size:12px;color:var(--fg2)}
+.kchip{display:inline-block;font-size:10.5px;font-weight:650;padding:0 6px;border-radius:5px;margin:0 3px 2px 0;background:color-mix(in srgb,var(--fg3) 18%,transparent);color:var(--fg2)}
+.k-struct{background:color-mix(in srgb,var(--warn) 22%,transparent);color:var(--warn)}.k-liq{background:color-mix(in srgb,var(--dn) 20%,transparent);color:var(--dn)}.k-gex{background:color-mix(in srgb,#e8c547 22%,transparent);color:#e8c547}.k-pool{background:color-mix(in srgb,var(--purple) 24%,transparent);color:var(--purple)}.k-my,.k-cw{background:color-mix(in srgb,var(--my) 22%,transparent);color:var(--my)}.k-fib{background:color-mix(in srgb,#ff6ec7 20%,transparent);color:#ff6ec7}.k-vp{background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc)}
+tr.lvr td:first-child{border-left:2px solid var(--dn)}tr.lvs td:first-child{border-left:2px solid var(--up)}
+/* confluence matrix + regime */
+.cfh{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:center;margin-bottom:10px}@media (max-width:560px){.cfh{grid-template-columns:1fr}.cfh .gauge{max-width:200px;margin:0 auto}}
+.cfg{table-layout:fixed}.cfg th{font-size:11.5px;color:var(--fg3);text-align:center}.cfg td{text-align:center;font-weight:700;border-radius:6px;padding:7px 2px;border:2px solid transparent;background-clip:padding-box}
+.cfg th:first-child{width:36%}.cfg td.l{text-align:left;font-weight:400;overflow:hidden}.cfg td.l b{display:block;font-size:13.5px}.cfg td.l small{display:block;font-size:11px;color:var(--fg3);line-height:1.3}
+.c2{background:color-mix(in srgb,var(--up) 50%,transparent);color:#fff}.c1{background:color-mix(in srgb,var(--up) 22%,transparent);color:var(--up)}.c0{background:color-mix(in srgb,var(--fg3) 12%,transparent);color:var(--fg3)}
+.c-1{background:color-mix(in srgb,var(--dn) 22%,transparent);color:var(--dn)}.c-2{background:color-mix(in srgb,var(--dn) 50%,transparent);color:#fff}.na{opacity:.4}
+.cfavg td{font-size:12px}.cfavg td.l b{font-size:12.5px}
+.cfnow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-top:10px}.cfn{display:grid;gap:1px;padding:8px 10px;border-radius:10px;text-align:left}.cfn b{font-size:13px;color:var(--fg)}.cfn span{font-size:13px;font-weight:700}.cfn small{font-size:11px;color:var(--fg2);font-weight:400}
+.rgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.rgc{border-left:3px solid var(--fg3)}.rgc.rg-up{border-left-color:var(--up)}.rgc.rg-down{border-left-color:var(--dn)}.rgc.rg-squeeze{border-left-color:var(--warn)}.rgc.rg-expand{border-left-color:var(--purple)}.rgc.rg-range{border-left-color:var(--acc)}
+.rgl{margin-left:auto;font-weight:700;font-size:14px}.rg-up .rgl{color:var(--up)}.rg-down .rgl{color:var(--dn)}.rg-squeeze .rgl{color:var(--warn)}.rg-range .rgl{color:var(--acc)}.rg-expand .rgl{color:var(--purple)}
+.rgb{display:grid;grid-template-columns:minmax(0,1.2fr) 1fr 64px;gap:8px;align-items:center;font-size:12.5px;color:var(--fg2);padding:3px 0}.rgb i{height:6px;border-radius:3px;background:color-mix(in srgb,var(--fg3) 20%,transparent);overflow:hidden}.rgb i b{display:block;height:100%;background:linear-gradient(90deg,var(--ga,var(--acc)),var(--gb,var(--acc)))}.rgb em{font-style:normal;text-align:right;font-weight:650;color:var(--fg)}
+/* structure + logs */
+.mono{font-family:var(--mono);font-size:12px}
+.slog{display:grid}.sle{display:grid;grid-template-columns:10px 96px 1fr;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--weak);font-size:13px}.sle:last-child{border-bottom:0}
+.sld{width:8px;height:8px;border-radius:50%;background:var(--fg3);display:inline-block}.sld.up{background:var(--up)}.sld.dn{background:var(--dn)}.sld.wn{background:var(--warn)}
+.slt{font-size:11.5px;color:var(--fg3);white-space:nowrap}
+.stz{display:grid;grid-template-columns:auto auto 1fr;gap:4px 10px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--weak);font-size:13px}.stz span:last-child{grid-column:1/-1;color:var(--fg2);font-size:12.5px}.pu{color:var(--purple)}
+/* chart brief strip */
+.bstrip:empty{display:none}.bstrip{min-width:0}
+.bsx{max-width:100%;min-width:0;display:flex;flex-wrap:nowrap;gap:6px 12px;align-items:center;width:100%;overflow-x:auto;scrollbar-width:none;text-align:left;border:1px solid var(--edge,var(--weak));background:var(--tint,var(--panel));border-radius:14px;padding:8px 12px;font-size:13px}.bsx::-webkit-scrollbar{display:none}
+.bsx .ftag{margin:0;white-space:nowrap}.bsi{white-space:nowrap}.bsi i{font-style:normal;color:var(--fg3);font-size:11px;margin-right:4px;text-transform:uppercase}.bsgo{margin-left:auto;color:var(--fg3);font-size:18px}
+/* alts */
+.agrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr))}
+.acard{display:grid;gap:6px;padding:12px 13px;border-radius:16px;border:1px solid var(--edge,var(--weak));background:linear-gradient(180deg,var(--p1,var(--panel)),var(--p2,var(--panel)))}
+.acard.up{border-left:3px solid var(--up)}.acard.dn{border-left:3px solid var(--dn)}
+.ach{display:flex;align-items:center;gap:8px;min-width:0}.asym{font-size:17px}.apx{font-variant-numeric:tabular-nums;color:var(--fg2);font-size:13.5px}.ach24{font-size:12.5px;font-weight:600}.ach .spark{margin-left:auto}
+.asc{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}.asc.up{color:var(--up);background:color-mix(in srgb,var(--up) 14%,transparent)}.asc.dn{color:var(--dn);background:color-mix(in srgb,var(--dn) 14%,transparent)}
+.atags{display:flex;flex-wrap:wrap;gap:4px}.atag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,currentColor 12%,transparent)}.atag.mut{color:var(--fg2)}
+.aplan{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.aplan>span{display:grid;gap:0;padding:6px 7px;border-radius:9px;background:color-mix(in srgb,var(--fg) 4%,transparent);font-size:13px;min-width:0}.aplan i{font-style:normal;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--fg3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.aplan b{font-variant-numeric:tabular-nums;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.aplan small{font-size:10.5px;color:var(--fg3)}
+.abr{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.abr>div{display:grid;gap:1px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--fg) 4%,transparent)}.abr span{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--fg3)}.abr b{font-size:17px}.abr small{font-size:11.5px;color:var(--fg3)}
+.pt.up{color:var(--up)!important}.pt.dn{color:var(--dn)!important}.pt.wn{color:var(--warn)!important}.pt.acc{color:var(--acc)!important}
+.altrow{display:grid;grid-template-columns:58px 74px 58px auto 1fr;gap:8px;align-items:center;width:100%;text-align:left;border:0;border-bottom:1px solid var(--weak);background:none;padding:7px 0;font-size:13px}.altrow:last-child{border-bottom:0}.altrow .mut{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:359px){.aplan{grid-template-columns:repeat(2,1fr)}}@media (max-width:420px){.aplan>span{padding:5px}.aplan b{font-size:12px}.altrow{grid-template-columns:52px 70px 54px auto}.altrow .mut{display:none}}
+/* voices */
+.vmeter{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-weight:700;font-size:13px}.vmeter i{display:flex;height:10px;border-radius:5px;overflow:hidden;background:color-mix(in srgb,var(--fg3) 20%,transparent)}.vmeter .vb{background:var(--up)}.vmeter .vr{background:var(--dn);margin-left:auto}
+.vtg{display:flex;flex-wrap:wrap;gap:6px}.vtg a{text-decoration:none;color:inherit}
+.vgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.vcard{display:grid;gap:8px;align-content:start}.vh{display:flex;align-items:center;gap:10px}.vh small{display:block;color:var(--fg3);font-size:12px}
+.vav{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;flex:none}
+.vav.g0{background:linear-gradient(135deg,#7c5cff,#20c3ff)}.vav.g1{background:linear-gradient(135deg,#ff6a00,#ffb347)}.vav.g2{background:linear-gradient(135deg,#00a152,#39d98a)}.vav.g3{background:linear-gradient(135deg,#d6336c,#ff8787)}.vav.g4{background:linear-gradient(135deg,#1c7ed6,#74c0fc)}.vav.g5{background:linear-gradient(135deg,#7048e8,#e599f7)}
+.vlast{display:grid;gap:2px;text-decoration:none;color:var(--fg);font-size:13.5px;line-height:1.4;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--fg) 4%,transparent)}.vlast small{color:var(--fg3);font-size:11.5px}
+.vrow{display:grid;grid-template-columns:12px 1fr;gap:6px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--weak);text-decoration:none;color:var(--fg);font-size:13.5px;line-height:1.4}
+#voBody .ctl{min-width:0;margin:0}#voBody .seg{max-width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}#voBody .seg button{white-space:nowrap;flex:none}
+.hlb{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;font-size:13px}.hlb .ftag{margin:0}
+.stsq{display:block;font-family:var(--mono);font-size:11px;color:var(--fg3);font-weight:400}
+@media (min-width:521px){.mtab .nbadge.mb{position:static;margin-left:2px}}
+/* toasts */
+#toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));z-index:80;display:grid;gap:8px;width:min(92vw,420px);pointer-events:none}
+@media (max-width:520px){#toasts{bottom:calc(76px + env(safe-area-inset-bottom))}}
+.toast{pointer-events:auto;display:grid;gap:2px;padding:10px 14px;border-radius:14px;background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);box-shadow:0 12px 30px rgba(0,0,0,.45);font-size:13.5px;animation:tin .25s ease-out;cursor:pointer;border-left:4px solid var(--fg3)}
+.toast.up{border-left-color:var(--up)}.toast.dn{border-left-color:var(--dn)}.toast b{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--fg3)}.toast.out{opacity:0;transform:translateY(8px);transition:all .5s}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}}
+/* settings rows outside the chart sheet */
+#sources .srow,section[data-view="sources"] .srow{border-bottom:1px solid var(--weak);border-radius:0}
 </style>
 <script>try{document.documentElement.dataset.cs=JSON.parse(localStorage.getItem("v2.cstyle")||'"neon"')}catch(e){document.documentElement.dataset.cs="neon"}</script>
 </head>
@@ -362,19 +470,81 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
       <div class="hright">
         <span class="pill" id="hLive"><span class="dot"></span><span>Starting…</span></span>
         <button class="btn" id="bAuto" aria-pressed="true" title="Pause or resume automatic updates">Auto</button>
-        <button class="btn" id="bNow" title="Fetch everything now">↻ Refresh</button>
+        <button class="btn hib" id="bNow" title="Fetch everything now" aria-label="Refresh now">↻</button>
+        <button class="btn hib" id="bSet" data-goto="sources" title="Settings, appearance and data sources" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
       </div>
     </div>
-    <nav class="mtabs" aria-label="Main sections"><button class="mtab" data-main="chart" aria-label="Chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg><span>Chart</span></button><button class="mtab" data-main="trade" aria-label="Trade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17l4-5 3 3 5-7"/><path d="M14 8h4v4"/></svg><span>Trade</span></button><button class="mtab" data-main="flow" aria-label="Flow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-6 6 6 9 0s6 6 9 0"/><path d="M3 18c3-4 6 4 9 0s6 4 9 0" opacity=".5"/></svg><span>Flow</span></button><button class="mtab" data-main="markets" aria-label="Markets"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 2.5 14.5 0 17M12 3.5c-2.5 2.5-2.5 14.5 0 17"/></svg><span>Markets</span></button><button class="mtab" data-main="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span>Settings</span></button></nav>
-    <nav class="tabs" role="tablist" aria-label="Sub-sections"><button class="tab" role="tab" data-tab="overview" data-grp="chart">Chart</button><button class="tab" role="tab" data-tab="setups" data-grp="trade">Setups</button><button class="tab" role="tab" data-tab="ta" data-grp="trade">Technicals</button><button class="tab" role="tab" data-tab="pat" data-grp="trade">Patterns</button><button class="tab" role="tab" data-tab="flow" data-grp="flow">CVD</button><button class="tab" role="tab" data-tab="derivs" data-grp="flow">Derivatives</button><button class="tab" role="tab" data-tab="liq" data-grp="flow">Liquidations</button><button class="tab" role="tab" data-tab="gex" data-grp="flow">Options · GEX</button><button class="tab" role="tab" data-tab="news" data-grp="markets">News</button><button class="tab" role="tab" data-tab="mkts" data-grp="markets">Markets & macro</button><button class="tab" role="tab" data-tab="sess" data-grp="markets">Sessions</button><button class="tab" role="tab" data-tab="sources" data-grp="settings">Data & settings</button></nav>
+    <nav class="mtabs" aria-label="Main sections"><button class="mtab" data-main="signals" aria-label="Signals"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6"/></svg><span>Signals</span></button><button class="mtab" data-main="chart" aria-label="Chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg><span>Chart</span></button><button class="mtab" data-main="trade" aria-label="Trade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17l4-5 3 3 5-7"/><path d="M14 8h4v4"/></svg><span>Trade</span></button><button class="mtab" data-main="flow" aria-label="Flow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-6 6 6 9 0s6 6 9 0"/><path d="M3 18c3-4 6 4 9 0s6 4 9 0" opacity=".5"/></svg><span>Flow</span></button><button class="mtab" data-main="intel" aria-label="Intel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/><path d="M9 9h6M9 12h4"/></svg><span>Intel</span></button></nav>
+    <nav class="tabs" role="tablist" aria-label="Sub-sections"><button class="tab" role="tab" data-tab="now" data-grp="signals">Now</button><button class="tab" role="tab" data-tab="regime" data-grp="signals">Regime & confluence</button><button class="tab" role="tab" data-tab="struct" data-grp="signals">Structure</button><button class="tab" role="tab" data-tab="levels" data-grp="signals">Levels & moves</button><button class="tab" role="tab" data-tab="overview" data-grp="chart">Chart</button><button class="tab" role="tab" data-tab="setups" data-grp="trade">Setups</button><button class="tab" role="tab" data-tab="alts" data-grp="trade">Alts</button><button class="tab" role="tab" data-tab="ta" data-grp="trade">Technicals</button><button class="tab" role="tab" data-tab="pat" data-grp="trade">Patterns</button><button class="tab" role="tab" data-tab="sess" data-grp="trade">Sessions</button><button class="tab" role="tab" data-tab="derivs" data-grp="flow">Positions</button><button class="tab" role="tab" data-tab="flow" data-grp="flow">CVD</button><button class="tab" role="tab" data-tab="liq" data-grp="flow">Liquidations</button><button class="tab" role="tab" data-tab="gex" data-grp="flow">Options</button><button class="tab" role="tab" data-tab="news" data-grp="intel">News</button><button class="tab" role="tab" data-tab="voices" data-grp="intel">Voices</button><button class="tab" role="tab" data-tab="mkts" data-grp="intel">Macro & markets</button><button class="tab" role="tab" data-tab="sources" data-grp="settings">Settings</button></nav>
   </div>
 </header>
 
 <div class="wrap">
 <main>
   <!-- OVERVIEW -->
-  <section data-view="overview" class="view" style="display:grid;gap:14px">
+  <!-- SIGNALS · NOW -->
+  <section data-view="now" class="view" style="display:grid;gap:14px">
+    <div class="panel heroP" id="sigHero"></div>
+    <div class="panel"><div class="ph"><span class="pt">Big-move watch</span><button class="lnk" data-goto="levels">All levels ›</button></div><div id="sigMoves"></div></div>
     <div class="panel brief" id="brief"></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">What changed</span><button class="lnk" data-goto="struct">Full log ›</button></div><div id="sigLogNow"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
+    </div>
+    <div class="grid" id="kpis"></div>
+    <div class="two">
+      <div class="panel">
+      <div class="ph"><span class="pt">Flow read</span><span class="st" id="flowSt"></span></div>
+      <div class="flow" id="flow"></div>
+      <div class="src">Price and spot CVD from Binance spot 5m · OI, taker flow from OKX 5m stats · rules only, not advice</div>
+    </div>
+      <div class="panel">
+      <div class="ph"><span class="pt">Assessment</span></div>
+      <div id="ovAssess"></div>
+      <div class="src">Multi-timeframe technicals (15m–1D) weighted 70%, live flow 30%. Full breakdown in the TA tab, entries in Setups. Not advice.</div>
+    </div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Alts on the move</span><button class="lnk" data-goto="alts">Alts ›</button></div><div id="ovAlts"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Big names · latest</span></div><div id="ovVoices"></div></div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Top crypto headlines · 24h</span></div><div id="ovNews" class="nov"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Options gamma (GEX)</span></div><div id="ovGex"></div></div>
+    </div>
+  </section>
+  <section data-view="regime" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Confluence</span></div><div id="cfHead"></div><div class="tw" id="cfGrid"></div>
+      <div class="src">Each cell is a vote: ▲ long, ▼ short, – neutral, darker = stronger. Timeframe weights 15m 10%, 30m 20%, 1h 20%, 4h 30%, 1D 20% make 65% of the score; the four live signals on the right make 35%. Agreement counts every vote that isn't neutral. Rules only, not advice.</div></div>
+    <div class="ph" style="margin:4px 2px -4px"><span class="pt">Regime by timeframe</span></div>
+    <div class="rgrid" id="rgGrid"></div>
+    <div id="rgDeriv"></div>
+    <div class="panel"><div class="ph"><span class="pt">How regimes are read</span></div><div class="src" style="display:block">Trend strength is ADX(14): 25+ trending, under 20 ranging. Efficiency is net move ÷ total path over 20 bars (1 = straight line). Squeeze = Bollinger width in the bottom 15% of the last 150 bars with ADX under 23. Expansion = width and ATR both in the top quarter. Regime colours the playbook: trends reward pullback entries, ranges reward fading edges, squeezes reward waiting for the break.</div></div>
+  </section>
+  <section data-view="struct" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Market structure</span></div><div class="tw" id="stTbl"></div>
+      <div class="src">Swings are 3-bar pivots (2 on 1D). BOS = a close beyond the last swing in the trend's direction (continuation). CHoCH = the first close beyond the protected swing against it (the trend changes character). Next BOS is where the trend continues; CHoCH at is where it flips. ×N = breaks in a row.</div></div>
+    <div class="panel"><div class="ph"><span class="pt">Structure map</span></div><div class="ctl"><span class="seg" id="stSeg"></span></div><div id="stRead" class="sub" style="margin:0 0 8px;line-height:1.55"></div><div id="stChart"></div>
+      <div class="src">Dashed lines: BOS (green/red) and CHoCH (amber) at the swing that broke. Shaded boxes: open fair value gaps. Dotted outlines: order blocks still intact. Purple dotted: equal highs/lows where stops collect.</div></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Breaks · last 4 days</span></div><div id="stEvents"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Gaps, order blocks, stop pools</span></div><div id="stZones"></div></div>
+    </div>
+    <div class="panel"><div class="ph"><span class="pt">Change log</span></div><div id="sigLogFull"></div><div class="src">Logged on this phone while the dashboard is open: structure breaks (30m–1D), regime changes (1h–1D), confluence flips, gamma flips, positioning changes and 4★+ levels crossed. Kept for the last 120 changes.</div></div>
+  </section>
+  <section data-view="levels" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Big-move scenarios</span></div><div id="lvMoves"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">Magnets · levels most likely to pull price</span></div><div class="mags" id="lvMags"></div>
+      <div class="src">Ranked by strength × odds of a touch in 24h, with extra pull for liquidation clusters, equal highs/lows (resting stops), open gaps and GEX magnets.</div></div>
+    <div class="two">
+      <div class="panel"><div class="ph"><span class="pt">Level ladder · ±5%</span></div><div id="lvLadder"></div></div>
+      <div class="panel"><div class="ph"><span class="pt">Every level within 7%</span></div><div class="tw" id="lvTbl"></div></div>
+    </div>
+    <div class="panel"><div class="ph"><span class="pt">Where the levels come from</span></div><div class="src" style="display:block">Swing highs/lows (30m, 4h), structure triggers and protected swings (30m–1D), equal highs/lows, fair value gaps and order blocks (1h–1D), estimated liquidation clusters, GEX flip/walls/magnets, 4h fib retracements and extensions, 7-day and 30-day volume profile, previous week/month high-low, day/week/month opens, PDH/PDL, VWAP, round numbers, your levels and pasted CoinWise levels. Anything within 0.18% is merged; stars rank the merged score (weight × how many different kinds agree) against the other levels on screen.</div></div>
+  </section>
+  <section data-view="overview" class="view" hidden style="display:grid;gap:14px">
+    <div class="bstrip" id="briefStrip"></div>
+    
     <div class="panel" id="chartPanel">
       <div class="ph"><span class="pt">BTC / USDT · Binance spot</span><span class="st" id="chartSt"></span></div>
       <div class="ctl">
@@ -401,20 +571,6 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
       <div id="fibGuide" class="fibg" hidden></div>
       <div class="hint">Drag to scroll · pinch or scroll-wheel to zoom · drag the price axis to stretch · tap for crosshair · double-tap to reset · bubbles are single trades over $150K–$400K</div>
     </div>
-    <div class="panel"><div class="ph"><span class="pt">Market mood</span></div><div id="mood" class="moodl"></div></div>
-    <div class="panel"><div class="ph"><span class="pt">Options gamma (GEX)</span></div><div id="ovGex"></div></div>
-    <div class="panel"><div class="ph"><span class="pt">Top crypto headlines · 24h</span></div><div id="ovNews" class="nov"></div></div>
-    <div class="grid" id="kpis"></div>
-    <div class="panel">
-      <div class="ph"><span class="pt">Assessment</span></div>
-      <div id="ovAssess"></div>
-      <div class="src">Multi-timeframe technicals (15m–1D) weighted 70%, live flow 30%. Full breakdown in the TA tab, entries in Setups. Not advice.</div>
-    </div>
-    <div class="panel">
-      <div class="ph"><span class="pt">Flow read</span><span class="st" id="flowSt"></span></div>
-      <div class="flow" id="flow"></div>
-      <div class="src">Price and spot CVD from Binance spot 5m · OI, taker flow from OKX 5m stats · rules only, not advice</div>
-    </div>
 
     <div class="panel">
       <div class="ph"><span class="pt">My levels · CoinWise</span></div>
@@ -422,6 +578,7 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
       <textarea id="myTxt" rows="4" placeholder="Daily VAH 81,240&#10;POC 80,610&#10;Support 79,750 / 79.2k" style="width:100%;font:13px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px"></textarea>
       <div class="ctl" style="margin-top:6px"><button class="btn" id="bMySave">Save levels</button><button class="btn" id="bMyClear">Clear</button><span class="mut" id="myMsg" style="font-size:13px"></span></div>
       <div id="myList"></div>
+    </div>
   </section>
 
   <!-- TA -->
@@ -456,6 +613,11 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
     <div class="panel"><div class="ph"><span class="pt">Divergences and double tops/bottoms</span></div><div id="chartPats"></div></div>
   </section>
 
+  <!-- ALTS -->
+  <section data-view="alts" class="view" hidden style="display:grid;gap:14px">
+    <div class="ctl" style="margin:0"><span class="seg" id="altSeg"></span></div>
+    <div id="altBody" style="display:grid;gap:14px"></div>
+  </section>
   <!-- SETUPS -->
   <section data-view="setups" class="view" hidden style="display:grid;gap:14px">
     <div class="panel">
@@ -523,6 +685,8 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
     </div>
   </section>
 
+  <!-- VOICES -->
+  <section data-view="voices" class="view" hidden style="display:grid;gap:14px"><div id="voBody" style="display:grid;gap:14px"></div></section>
   <!-- MARKETS -->
   <section data-view="mkts" class="view" hidden style="display:grid;gap:14px">
     <div class="panel"><div class="ph"><span class="pt">US economic calendar · this week</span></div><div id="calList"></div><div class="src">ForexFactory's weekly feed, high (red) and medium (amber) impact USD events. Times in your time zone. Next week's list appears over the weekend.</div></div>
@@ -567,6 +731,12 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
     <div class="panel"><div class="ph"><span class="pt">By weekday · biggest moves</span></div><div id="sessDays"></div><div class="src">Binance spot BTC/USDT 30m candles · refreshes every 10 minutes · history, not a prediction</div></div>
   </section>
   <section data-view="sources" class="view" hidden style="display:grid;gap:14px">
+    <div class="panel"><div class="ph"><span class="pt">Signals &amp; display</span></div>
+      <button class="srow" data-tog="sigToast"><i class="sw" style="--c:var(--acc)"></i><span class="sn">Pop-up when a signal changes<small>Structure breaks, regime and confluence flips, key levels crossed (while the dashboard is open)</small></span><span class="tg" aria-hidden="true"></span></button>
+      <button class="srow" id="bNotif" data-tog="sigNotif"><i class="sw" style="--c:var(--warn)"></i><span class="sn">Phone notifications<small>Also notify when the dashboard is in the background. iPhone: add it to the Home Screen first (Share → Add to Home Screen)</small></span><span class="tg" aria-hidden="true"></span></button>
+      <button class="srow" data-tog="notes"><i class="sw" style="--c:var(--fg3)"></i><span class="sn">Show explanations<small>The small print under each panel. Off keeps screens clean; tap ⓘ on a panel to read its note</small></span><span class="tg" aria-hidden="true"></span></button>
+      <button class="srow" data-tog="lite"><i class="sw" style="--c:var(--up)"></i><span class="sn">Battery saver<small>Slower refresh (×2), fewer redraws, no glass effects</small></span><span class="tg" aria-hidden="true"></span></button>
+    </div>
     <div class="panel"><div class="ph"><span class="pt">Appearance</span></div>
       <div style="display:grid;gap:8px"><div><b style="font-size:14px">Dashboard style</b><div class="sub">Changes the whole dashboard and the chart. Saved on this device.</div></div><div class="thg"><button class="thc" data-cst="neon"><span class="sw3"><i style="background:#07090f"></i><i style="background:#22e39a"></i><i style="background:#ff4d6d"></i><i style="background:linear-gradient(135deg,#7c5cff,#20c3ff)"></i></span><span>Neon<small>Glass, purple & cyan</small></span></button><button class="thc" data-cst="midnight"><span class="sw3"><i style="background:#0b0e14"></i><i style="background:#26a69a"></i><i style="background:#ef5350"></i><i style="background:linear-gradient(135deg,#2962ff,#5b8cff)"></i></span><span>Midnight<small>TradingView-style</small></span></button><button class="thc" data-cst="tangerine"><span class="sw3"><i style="background:#0e0906"></i><i style="background:#3ddc97"></i><i style="background:#ff5a4e"></i><i style="background:linear-gradient(135deg,#ff6a00,#ffb347)"></i></span><span>Tangerine<small>Warm orange</small></span></button><button class="thc" data-cst="ocean"><span class="sw3"><i style="background:#03111b"></i><i style="background:#2ee6c5"></i><i style="background:#ff6b8a"></i><i style="background:linear-gradient(135deg,#0077ff,#00d4ff)"></i></span><span>Ocean<small>Deep blue & teal</small></span></button><button class="thc" data-cst="matrix"><span class="sw3"><i style="background:#020604"></i><i style="background:#00ff88"></i><i style="background:#ff3b6b"></i><i style="background:linear-gradient(135deg,#00a152,#39ff14)"></i></span><span>Matrix<small>Terminal green</small></span></button><button class="thc" data-cst="paper"><span class="sw3"><i style="background:#f3efe6"></i><i style="background:#138a5e"></i><i style="background:#c8364b"></i><i style="background:linear-gradient(135deg,#3b5bdb,#7048e8)"></i></span><span>Paper<small>Light & warm</small></span></button><button class="thc" data-cst="classic"><span class="sw3"><i style="background:linear-gradient(90deg,#f6f7f9 50%,#0e1117 50%)"></i><i style="background:#16a34a"></i><i style="background:#dc2626"></i><i style="background:#2563eb"></i></span><span>Classic<small>Follows phone light/dark</small></span></button></div></div>
       <div class="src">Every past version is also saved on GitHub (branches <b>pre-revamp</b> and <b>chart-classic</b>), so anything can be restored.</div></div>
@@ -579,17 +749,22 @@ html:not([data-cs="classic"]) .fibg{background:color-mix(in srgb,var(--warn) 4%,
     </div>
   </section>
 </main>
-<footer>BTC Market Dashboard v2.0 · stage 4 + news + GEX · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
+<footer>BTC Dashboard v3.0 · signals, alts, voices · live data from public exchange APIs, fetched by your browser · times in your local time zone · not financial advice</footer>
 </div>
 
-<script src="ta.js?v=20261111a"></script>
-<script src="app.js?v=20261111a"></script>
-<script src="app2.js?v=20261111a"></script>
-<script src="chart2.js?v=20261111a"></script>
-<script src="stage4.js?v=20261111a"></script>
-<script src="news.js?v=20261111a"></script>
-<script src="gex.js?v=20261111a"></script>
-<script src="geom.js?v=20261111a"></script>
-<script src="brief.js?v=20261111a"></script>
+<script src="ta.js?v=20261118a"></script>
+<script src="app.js?v=20261118a"></script>
+<script src="app2.js?v=20261118a"></script>
+<script src="chart2.js?v=20261118a"></script>
+<script src="stage4.js?v=20261118a"></script>
+<script src="news.js?v=20261118a"></script>
+<script src="gex.js?v=20261118a"></script>
+<script src="geom.js?v=20261118a"></script>
+<script src="brief.js?v=20261118a"></script>
+<script src="sigta.js?v=20261118a"></script>
+<script src="signals.js?v=20261118a"></script>
+<script src="alts.js?v=20261118a"></script>
+<script src="voices.js?v=20261118a"></script>
+<script src="ui.js?v=20261118a"></script>
 </body>
 </html>

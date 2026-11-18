@@ -58,6 +58,8 @@ function wsDef(id, name, feeds, url, onOpen, onMsg, opt = {}) {
     ws.onerror = () => { W.err = opt.optional ? "Connection refused (likely blocked in your region)" : "Connection dropped or refused"; };
     ws.onclose = () => { clearInterval(W.pt); if (!W.err) W.err = "Disconnected, reconnecting"; };
   };
+  // iOS kills background sockets anyway: close them after a minute in the background, reopen on return
+  document.addEventListener("visibilitychange", () => { clearTimeout(W.hideT); if (document.hidden) W.hideT = setTimeout(() => { if (W.sock) { const s = W.sock; W.sock = null; clearInterval(W.pt); try { s.onclose = s.onerror = null; s.close(); } catch (e) {} } }, 60000); });
   def(id, name, feeds, 5000, async () => {
     if (W.sock && W.sock.readyState === 1) return { since: W.since, n: W.n };
     if (W.sock && W.sock.readyState === 3) { // report the failure once, reconnect on the next try
@@ -557,7 +559,6 @@ function initExtras() {
   const host = $("#cMain"); host.style.position = "relative"; OV = document.createElement("canvas"); OV.className = "ov"; host.appendChild(OV);
   let q = 0; const later = () => { if (q) return; q = setTimeout(() => { q = 0; chartExtras(true); }, 120); };
   CH.main.timeScale().subscribeVisibleLogicalRangeChange(later);
-  setInterval(() => { if (ST.tab === "overview" && !document.hidden) drawOverlay(); }, 700);
 }
 function chartExtras(fromScroll) {
   if (!CH.ready) return; initExtras(); const C = chartColors(), k = D.kl && D.kl.tf === ST.tf ? D.kl.k : null;
@@ -614,9 +615,11 @@ function drawStage2(tab) {
   const hl = $("#hLean"); if (hl) hl.innerHTML = a ? `${tag(`Lean ${a.verdict}`, a.bias)}<span class="mut" style="font-size:12.5px">${a.bias > 0 ? "+" : ""}${a.bias}</span>` : "";
   const need = (sel, fn) => { const el = $(sel); if (!el) return; if (!a) { el.innerHTML = `<div class="unavail">${esc(SRC.taK.st.err || "Loading candles for analysis…")}</div>`; return; } fn(a); };
   try {
-    if (tab === "overview") {
+    if (tab === "now") {
       need("#ovAssess", (x) => ($("#ovAssess").innerHTML = assessHTML(x, false)));
       if (typeof drawBrief === "function") drawBrief(a);
+    }
+    if (tab === "overview") {
       const fs = $("#fibSel"); fs.hidden = !ST.fib;
       if (ST.fib) { const on = FIBS.filter((r) => !ST.fibOff[r]), isKey = on.length === 6 && [0, 0.382, 0.5, 0.618, 0.786, 1].every((r) => !ST.fibOff[r]), isAll = on.length === FIBS.length, sm = "min-height:26px;padding:1px 9px;font-size:12px";
         const swi = ST.fibSrc === "auto" ? (typeof FIBA !== "undefined" ? FIBA.v : null) : ST.fibSrc !== "vis" && typeof fibSwing === "function" ? fibSwing(ST.fibSrc) : null;
